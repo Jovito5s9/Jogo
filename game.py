@@ -50,7 +50,7 @@ class Game(FloatLayout):
             self.keyboard_active()
             Clock.schedule_interval(self.keyboard_movs, 1/20)
         
-        
+
     def joystick_movs(self,*args):
         self.player.speed_x=self.interface.joystick.x_value
         self.player.speed_y=self.interface.joystick.y_value
@@ -71,7 +71,12 @@ class Game(FloatLayout):
             self.player.speed_y=0.9
         elif 115 in self.key_pressed:
             self.player.speed_y=-0.9
+        else:
+            self.player.speed_y=0
+
         if 100 in self.key_pressed:
             self.player.speed_x=0.9
         elif 97 in self.key_pressed:
             self.player.speed_x=-0.9
+        else:
+            self.player.speed_x=0
