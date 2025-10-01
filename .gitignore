@@ -5,3 +5,6 @@ __pycache__/
 .buildozer/
 dist/
 *.log
+.vscode
+.venv
+.git
