@@ -43,7 +43,8 @@ class Game(FloatLayout):
         self.interface=Interface()
         self.add_widget(self.interface)
         
-        Clock.schedule_interval(self.joystick_movs, 1/20)
+        if not self.interface.configs["teclado"]:
+            Clock.schedule_interval(self.joystick_movs, 1/20)
         
         #self.add_widget(BasicEnt())
     def joystick_movs(self,*args):
