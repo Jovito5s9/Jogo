@@ -1,8 +1,8 @@
 from kivy.app import App 
 from game import Game 
 
-class TwoPiece(App):
+class Jogo(App):
     def build(self):
         return Game()
-#testando
-TwoPiece().run()
+
+Jogo().run()
