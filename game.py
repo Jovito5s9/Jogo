@@ -1,5 +1,6 @@
 from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock 
+from kivy.core.window import Window
 from core.player import BasicEnt
 from core.world import World
 from utils.joystick import Joystick 
@@ -45,8 +46,32 @@ class Game(FloatLayout):
         
         if not self.interface.configs["teclado"]:
             Clock.schedule_interval(self.joystick_movs, 1/20)
+        else:
+            self.keyboard_active()
+            Clock.schedule_interval(self.keyboard_movs, 1/20)
         
-        #self.add_widget(BasicEnt())
+        
     def joystick_movs(self,*args):
         self.player.speed_x=self.interface.joystick.x_value
         self.player.speed_y=self.interface.joystick.y_value
+    
+    def keyboard_active(self,*args):
+        self.key_pressed=set()
+        Window.bind(on_key_down=self.on_key_down)
+        Window.bind(on_key_up=self.on_key_up)
+    
+    def on_key_down(self, window, key, *args):
+        self.key_pressed.add(key)
+    
+    def on_key_up(self, window, key, *args):
+        self.key_pressed.remove(key)
+    
+    def keyboard_movs(self,*args):
+        if 119 in self.key_pressed:
+            self.player.speed_y=0.9
+        elif 115 in self.key_pressed:
+            self.player.speed_y=-0.9
+        if 100 in self.key_pressed:
+            self.player.speed_x=0.9
+        elif 97 in self.key_pressed:
+            self.player.speed_x=-0.9
