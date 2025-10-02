@@ -4,7 +4,7 @@ from kivy.core.window import Window
 from core.player import BasicEnt
 from core.world import World
 from utils.joystick import Joystick 
-import json
+import json 
 
 class Interface(FloatLayout):
     def __init__(self,**kwargs):
