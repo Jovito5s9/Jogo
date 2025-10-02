@@ -1,8 +1,8 @@
 from kivy.app import App 
-from game import GameScreen 
+from game import GameScreenManager 
 
 class Jogo(App):
     def build(self):
-        return GameScreen()
+        return GameScreenManager
 
 Jogo().run()

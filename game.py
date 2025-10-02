@@ -88,5 +88,5 @@ class GameScreen(Screen):
         super().__init__(**kwargs)
         self.add_widget(Game())
 
-class GameScreenManager(ScreenManager):
-    pass
+GameScreenManager=ScreenManager()
+GameScreenManager.add_widget(GameScreen(name='game'))
