@@ -4,6 +4,7 @@ from kivy.core.window import Window
 from core.player import BasicEnt
 from core.world import World
 from utils.joystick import Joystick 
+from kivy.uix.screenmanager import ScreenManager,Screen
 import json 
 
 class Interface(FloatLayout):
@@ -80,3 +81,12 @@ class Game(FloatLayout):
             self.player.speed_x=-0.9
         else:
             self.player.speed_x=0
+
+
+class GameScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.add_widget(Game())
+
+class GameScreenManager(ScreenManager):
+    pass
