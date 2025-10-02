@@ -1,4 +1,6 @@
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.clock import Clock 
 from kivy.core.window import Window
 from core.player import BasicEnt
@@ -83,10 +85,20 @@ class Game(FloatLayout):
             self.player.speed_x=0
 
 
+class MenuScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layout = BoxLayout()
+        self.add_widget(self.layout)
+        self.label=Label(text='jogo',font_size=30)
+        self.layout.add_widget(self.label)
+
+
 class GameScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.add_widget(Game())
 
 GameScreenManager=ScreenManager()
+GameScreenManager.add_widget(MenuScreen(name='menu'))
 GameScreenManager.add_widget(GameScreen(name='game'))
