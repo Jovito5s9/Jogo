@@ -1,8 +1,8 @@
 from kivy.app import App 
 from game import GameScreenManager 
 
-class Jogo(App):
+class RadioRoots(App):
     def build(self):
         return GameScreenManager
 
-Jogo().run()
+RadioRoots().run()

@@ -94,7 +94,7 @@ class MenuScreen(Screen):
         self.layout.add_widget(self.label)
 
 
-class GameScreen(Screen):
+class GameScreen(Screen): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.add_widget(Game())
