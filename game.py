@@ -1,5 +1,6 @@
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.clock import Clock 
 from kivy.core.window import Window
@@ -111,11 +112,31 @@ class MenuScreen(Screen):
         GameScreenManager.current='game'
 
 
+class ConfiguracoesScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.layout=FloatLayout()
+        layout_inputs=FloatLayout(
+            size_hint=(0.2,1.0),
+            pos_hint={'center_x':0,'center_y':0.4}
+            )
+        label_inputs=Label(
+            text='Modelo de input:',
+            font_size=30,
+            size_hint=(0.6,1),
+            pos_hint={'center_x':0.5,'center_y':0.5}
+            )
+        layout_inputs.add_widget(label_inputs)
+        self.layout.add_widget(layout_inputs)
+
+        self.add_widget(self.layout)
+
 class GameScreen(Screen): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.add_widget(Game())
 
 GameScreenManager=ScreenManager()
+GameScreenManager.add_widget(ConfiguracoesScreen(name='configurações'))
 GameScreenManager.add_widget(MenuScreen(name='menu'))
 GameScreenManager.add_widget(GameScreen(name='game'))
