@@ -88,10 +88,21 @@ class Game(FloatLayout):
 class MenuScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.layout = FloatLayout(size_hint=(None,None))
+        self.layout = FloatLayout()
         self.add_widget(self.layout)
-        self.logo=Image(source='assets/geral/logo_RadioRoots.png', allow_stretch=True, keep_ratio=False, pos=(Window.width/2 - 100,Window.height/2), size=(200,120))
-        self.button_play=Button(size=(200,30),pos=(Window.width/2 - 45, Window.height/3 + 10), text='jogo')
+        self.logo = Image(
+            source='assets/geral/logo_RadioRoots.png',
+            allow_stretch=True,
+            keep_ratio=True,
+            size_hint=(0.4, 0.4),   
+            pos_hint={'center_x': 0.5, 'center_y': 0.65}
+        )
+          
+        self.button_play = Button(
+            text='Jogar',
+            size_hint=(0.25, 0.08),
+            pos_hint={'center_x': 0.5, 'center_y': 0.3}
+        )
         self.layout.add_widget(self.logo)
         self.layout.add_widget(self.button_play)
 
