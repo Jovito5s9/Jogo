@@ -1,6 +1,6 @@
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.image import Image
 from kivy.clock import Clock 
 from kivy.core.window import Window
 from core.player import BasicEnt
@@ -88,10 +88,12 @@ class Game(FloatLayout):
 class MenuScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.layout = BoxLayout()
+        self.layout = FloatLayout(size_hint=(None,None))
         self.add_widget(self.layout)
-        self.label=Label(text='jogo',font_size=30)
-        self.layout.add_widget(self.label)
+        self.logo=Image(source='assets/geral/logo_RadioRoots.png', allow_stretch=True, keep_ratio=False, pos=(Window.width/2 - 100,Window.height/2), size=(200,120))
+        self.button_play=Button(size=(200,30),pos=(Window.width/2 - 45, Window.height/3 + 10), text='jogo')
+        self.layout.add_widget(self.logo)
+        self.layout.add_widget(self.button_play)
 
 
 class GameScreen(Screen): 
