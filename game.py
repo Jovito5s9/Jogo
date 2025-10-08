@@ -103,8 +103,12 @@ class MenuScreen(Screen):
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.3}
         )
+        self.button_play.bind(on_release=self.jogar)
         self.layout.add_widget(self.logo)
         self.layout.add_widget(self.button_play)
+
+    def jogar(self,*args):
+        GameScreenManager.current='game'
 
 
 class GameScreen(Screen): 
