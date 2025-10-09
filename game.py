@@ -130,30 +130,30 @@ class ConfiguracoesScreen(Screen):
                 self.configs=json.load(config)
         self.teclado=self.configs["teclado"]
         if self.teclado:
-            input='Modo teclado'
+            self.input='Modo teclado'
         else:
-            input='Modo toque'
+            self.input='Modo toque'
 
         self.layout=FloatLayout()
         layout_inputs=FloatLayout(
             size_hint=(0.5,0.08),
             pos_hint={'center_x':0.5,'center_y':0.4}
             )
-        label_inputs=Label(
+        self.label_inputs=Label(
             text='Layout de controle:',
             font_size=30,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
             )
-        button_inputs=Button(
-            text=f'{input}',
+        self.button_inputs=Button(
+            text=f'{self.input}',
             font_size=25,
             size_hint=(0.5,1),
-            pos_hint={'center_x':0.75,'center_y':0.5}
+            pos_hint={'center_x':0.78,'center_y':0.5}
             )
-        button_inputs.bind(on_release=self.trocar_input)
-        layout_inputs.add_widget(button_inputs)
-        layout_inputs.add_widget(label_inputs)
+        self.button_inputs.bind(on_release=self.trocar_input)
+        layout_inputs.add_widget(self.button_inputs)
+        layout_inputs.add_widget(self.label_inputs)
         self.layout.add_widget(layout_inputs)
 
         self.add_widget(self.layout)
@@ -164,6 +164,11 @@ class ConfiguracoesScreen(Screen):
         self.configs["teclado"]=not self.configs["teclado"]
         with open("configuracoes.json","w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
+        if self.configs["teclado"]:
+            self.input='Modo teclado'
+        else:
+            self.input='Modo toque'
+        self.button_inputs.text=f'{self.input}'
 
 class GameScreen(Screen): 
     def __init__(self, **kwargs):
