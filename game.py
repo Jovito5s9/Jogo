@@ -45,14 +45,24 @@ class Game(FloatLayout):
         
         self.world.create(12,12)
         
+
+    def pre_enter(self,*args):
         self.interface=Interface()
         self.add_widget(self.interface)
-        
         if not self.interface.configs["teclado"]:
             Clock.schedule_interval(self.joystick_movs, 1/20)
         else:
             self.keyboard_active()
             Clock.schedule_interval(self.keyboard_movs, 1/20)
+
+    def pre_leave(self,*args):
+        if not self.interface.configs["teclado"]:
+            Clock.unschedule_interval(self.joystick_movs, 1/20)
+        else:
+            self.keyboard_desactive()
+            Clock.unschedule_interval(self.keyboard_movs, 1/20)
+        self.remove_widget(self.interface)
+
         
 
     def joystick_movs(self,*args):
@@ -63,6 +73,11 @@ class Game(FloatLayout):
         self.key_pressed=set()
         Window.bind(on_key_down=self.on_key_down)
         Window.bind(on_key_up=self.on_key_up)
+
+    def keyboard_desactive(self,*args):
+        self.key_pressed=set()
+        Window.unbind(on_key_down=self.on_key_down)
+        Window.unbind(on_key_up=self.on_key_up)
     
     def on_key_down(self, window, key, *args):
         self.key_pressed.add(key)
@@ -180,8 +195,12 @@ class ConfiguracoesScreen(Screen):
 class GameScreen(Screen): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.add_widget(Game())
         Window.bind(on_keyboard=self.ir_para_menu)
+    
+    def on_pre_enter(self, *args):
+        self.game=Game()
+        self.add_widget(self.game)
+        self.game.pre_enter()
     
     def ir_para_menu(self,window,key,*args):
         if key==27:
