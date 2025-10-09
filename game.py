@@ -105,11 +105,22 @@ class MenuScreen(Screen):
             pos_hint={'center_x': 0.5, 'center_y': 0.3}
         )
         self.button_play.bind(on_release=self.jogar)
+        self.button_configs = Button(
+            text='Configurações',
+            size_hint=(0.25, 0.08),
+            pos_hint={'center_x': 0.5, 'center_y': 0.2}
+        )
+        self.button_configs.bind(on_release=self.configurar)
+
         self.layout.add_widget(self.logo)
         self.layout.add_widget(self.button_play)
+        self.layout.add_widget(self.button_configs)
 
     def jogar(self,*args):
         GameScreenManager.current='game'
+    
+    def configurar(self,*args):
+        GameScreenManager.current='configurações'
 
 
 class ConfiguracoesScreen(Screen):
@@ -144,6 +155,7 @@ class GameScreen(Screen):
         self.add_widget(Game())
 
 GameScreenManager=ScreenManager()
-GameScreenManager.add_widget(ConfiguracoesScreen(name='configurações'))
+
 GameScreenManager.add_widget(MenuScreen(name='menu'))
 GameScreenManager.add_widget(GameScreen(name='game'))
+GameScreenManager.add_widget(ConfiguracoesScreen(name='configurações'))
