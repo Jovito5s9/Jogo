@@ -174,6 +174,13 @@ class GameScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.add_widget(Game())
+        Window.bind(on_keyboard=self.ir_para_menu)
+    
+    def ir_para_menu(self,window,key,*args):
+        if key==27:
+            GameScreenManager.current='menu'
+            return True
+        
 
 GameScreenManager=ScreenManager()
 
