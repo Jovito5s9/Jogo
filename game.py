@@ -157,6 +157,8 @@ class ConfiguracoesScreen(Screen):
         self.layout.add_widget(layout_inputs)
 
         self.add_widget(self.layout)
+
+        Window.bind(on_keyboard=self.ir_para_menu)
     
     def trocar_input(self,*args):
         with open("configuracoes.json","r",encoding="utf-8") as config:
@@ -169,6 +171,11 @@ class ConfiguracoesScreen(Screen):
         else:
             self.input='Modo toque'
         self.button_inputs.text=f'{self.input}'
+    
+    def ir_para_menu(self,window,key,*args):
+        if key==27:
+            GameScreenManager.current='menu'
+            return True
 
 class GameScreen(Screen): 
     def __init__(self, **kwargs):
