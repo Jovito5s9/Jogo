@@ -128,14 +128,14 @@ class ConfiguracoesScreen(Screen):
         super().__init__(**kwargs)
         self.layout=FloatLayout()
         layout_inputs=FloatLayout(
-            size_hint=(0.9,0.3),
-            pos_hint={'center_x':0,'center_y':0.4}
+            size_hint=(0.5,0.08),
+            pos_hint={'center_x':0.5,'center_y':0.4}
             )
         label_inputs=Label(
             text='Modelo de input:',
             font_size=30,
             size_hint=(0.5,1),
-            pos_hint={'center_x':0.25,'center_y':0.5}
+            pos_hint={'center_x':0.2,'center_y':0.5}
             )
         button_inputs=Button(
             text='teclado',
