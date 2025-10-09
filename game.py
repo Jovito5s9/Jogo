@@ -126,20 +126,28 @@ class MenuScreen(Screen):
 class ConfiguracoesScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        with open("configuracoes.json","r",encoding="utf-8") as config:
+                self.configs=json.load(config)
+        self.teclado=self.configs["teclado"]
+        if self.teclado:
+            input='Modo teclado'
+        else:
+            input='Modo toque'
+
         self.layout=FloatLayout()
         layout_inputs=FloatLayout(
             size_hint=(0.5,0.08),
             pos_hint={'center_x':0.5,'center_y':0.4}
             )
         label_inputs=Label(
-            text='Modelo de input:',
+            text='Layout de controle:',
             font_size=30,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
             )
         button_inputs=Button(
-            text='teclado',
-            font_size=30,
+            text=f'{input}',
+            font_size=25,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.75,'center_y':0.5}
             )
@@ -148,6 +156,9 @@ class ConfiguracoesScreen(Screen):
         self.layout.add_widget(layout_inputs)
 
         self.add_widget(self.layout)
+    
+    def trocar_input(self,*args):
+        pass
 
 class GameScreen(Screen): 
     def __init__(self, **kwargs):
