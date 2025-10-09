@@ -198,9 +198,12 @@ class GameScreen(Screen):
         Window.bind(on_keyboard=self.ir_para_menu)
     
     def on_pre_enter(self, *args):
-        self.game=Game()
-        self.add_widget(self.game)
-        self.game.pre_enter()
+        try:
+            self.game.pre_enter()
+        except:
+            self.game=Game()
+            self.add_widget(self.game)
+            self.game.pre_enter()
     
     def ir_para_menu(self,window,key,*args):
         if key==27:
