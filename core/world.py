@@ -138,7 +138,7 @@ class World(FloatLayout):
         self.colunas = ym
 
         # Tamanho fixo do tile
-        tile_w, tile_h = size/2, size/2
+        tile_w, tile_h = size/2, 0.8*size/2
 
         # Cálculo do ponto central
         map_width = self.colunas * tile_w
