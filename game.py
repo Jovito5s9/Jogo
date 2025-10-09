@@ -151,6 +151,7 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,1),
             pos_hint={'center_x':0.75,'center_y':0.5}
             )
+        button_inputs.bind(on_release=self.trocar_input)
         layout_inputs.add_widget(button_inputs)
         layout_inputs.add_widget(label_inputs)
         self.layout.add_widget(layout_inputs)
@@ -158,7 +159,11 @@ class ConfiguracoesScreen(Screen):
         self.add_widget(self.layout)
     
     def trocar_input(self,*args):
-        pass
+        with open("configuracoes.json","r",encoding="utf-8") as config:
+            self.configs=json.load(config)
+        self.configs["teclado"]=not self.configs["teclado"]
+        with open("configuracoes.json","w",encoding="utf-8") as old_config:
+            json.dump(self.configs,old_config)
 
 class GameScreen(Screen): 
     def __init__(self, **kwargs):
