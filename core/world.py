@@ -143,10 +143,12 @@ class World(FloatLayout):
         # Cálculo do ponto central
         map_width = self.colunas * tile_w
         map_height = self.linhas * tile_h
+        self.size=(size*xm,size*ym*0.8)
 
         # Posição inicial (superior esquerdo) para começar a desenhar centralizado
-        offset_x = (self.width/2) - map_width
-        offset_y = (self.height/2) - map_height
+        offset_x = (Window.width/2)-(self.width/2)
+        offset_y = (Window.height/2)-(self.height/2)
+        self.pos=(offset_x,offset_y)
 
         for y in range(self.linhas):
             for x in range(self.colunas):
