@@ -110,7 +110,7 @@ class Grid(FloatLayout):
 
         self.position()
         if self.type=="entrada_esgoto.png":
-            self.spawn()
+            Clock.schedule_once(self.spawn,3)
 
     def update_image_pos(self, *args):
         self.image.pos = self.pos
@@ -125,11 +125,15 @@ class Grid(FloatLayout):
         self.position()
     
     def spawn(self,*args):
+        world = self.parent
+        if not world:
+            return
         if self.type=="entrada_esgoto.png":
-            self.position()
-            rato=Rato(pos=(self.image.pos))
-            self.add_widget(rato)
-            self.ents.append(rato)
+            
+            rato=Rato()
+            rato.pos = (self.image.x,self.image.y)
+            world.add_widget(rato)
+            world.ents.append(rato)
     
     def unspawn(self,ent):
         self.ents.remove(ent)
@@ -149,6 +153,7 @@ class World(FloatLayout):
         self.player=None
         self.size = (Window.width, Window.height)
         self.limites=[]
+        self.ents=[]
 
     def create(self, xm, ym):
         global size
@@ -184,12 +189,13 @@ class World(FloatLayout):
                     )
                 self.add_widget(grid)
         self.player.image.pos=(offset_x,offset_y )
+        self.ents.append(self.player)
         
         for y in range(self.linhas):
             for x in range(self.colunas):
                 r=random.randint(0,10)
                 if r==0:
-                    if not(x==0 and y==0):
+                    if not((x==0 or x==1) and (y==0 or y==1)):
                         obj = Object(
                             posicao=(x, y),
                             patern_center=(offset_x, offset_y),
@@ -205,9 +211,10 @@ class World(FloatLayout):
     
     
     def collision_verify(self, *args):        
-        self.verificar_colisao_horizontal(self.player) 
-        self.verificar_colisao_vertical(self.player)
-        self.map_collision(self.player)
+        for ent in self.ents:
+            self.verificar_colisao_horizontal(ent) 
+            self.verificar_colisao_vertical(ent)
+            self.map_collision(ent)
         
             
 
