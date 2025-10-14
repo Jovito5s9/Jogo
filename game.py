@@ -1,3 +1,4 @@
+from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -126,16 +127,27 @@ class MenuScreen(Screen):
             pos_hint={'center_x': 0.5, 'center_y': 0.2}
         )
         self.button_configs.bind(on_release=self.configurar)
+        self.button_sair = Button(
+            text='Sair',
+            size_hint=(0.25, 0.08),
+            pos_hint={'center_x': 0.5, 'center_y': 0.1}
+        )
+        self.button_sair.bind(on_release=self.sair)
 
         self.layout.add_widget(self.logo)
         self.layout.add_widget(self.button_play)
         self.layout.add_widget(self.button_configs)
+        self.layout.add_widget(self.button_sair)
 
     def jogar(self,*args):
         GameScreenManager.current='game'
     
     def configurar(self,*args):
         GameScreenManager.current='configurações'
+    
+    def sair(self,*args):
+        jogo=App.get_running_app()
+        jogo.stop()
 
 
 class ConfiguracoesScreen(Screen):
