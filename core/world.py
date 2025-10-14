@@ -130,6 +130,7 @@ class World(FloatLayout):
         self.size_hint = (None, None)
         self.player=None
         self.size = (Window.width, Window.height)
+        self.limites=[]
 
     def create(self, xm, ym):
         global size
@@ -137,18 +138,13 @@ class World(FloatLayout):
         self.linhas = xm
         self.colunas = ym
 
-        # Tamanho fixo do tile
-        tile_w, tile_h = size/2, 0.8*size/2
-
-        # Cálculo do ponto central
-        map_width = self.colunas * tile_w
-        map_height = self.linhas * tile_h
         self.size=(size*xm,size*ym*0.8)
 
         # Posição inicial (superior esquerdo) para começar a desenhar centralizado
         offset_x = (Window.width/2)-(self.width/2)
         offset_y = (Window.height/2)-(self.height/2)
         self.pos=(offset_x,offset_y)
+        self.limites=(self.x,self.y,self.x+self.width,self.y+self.height)
 
         for y in range(self.linhas):
             for x in range(self.colunas):
@@ -177,15 +173,30 @@ class World(FloatLayout):
         
         self.add_widget(self.player)
         self.atualizar()
+        print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
     
     
-    def collision_verify(self, *args):
-        self.verificar_colisao_horizontal(self.player)
+    def collision_verify(self, *args):        
+        self.verificar_colisao_horizontal(self.player) 
         self.verificar_colisao_vertical(self.player)
+        self.map_collision(self.player)
+        
+            
 
     def map_collision(self,ent):
-        if self.collision(ent.hitbox,self.limites):
-            pass
+        original_x = ent.image.x-ent.speed_x
+        ent.image.x += ent.speed_x * ent.velocidade
+        original_y = ent.image.y-ent.speed_y
+        ent.image.y += ent.speed_y * ent.velocidade
+        ent.hitbox = ent.get_hitbox()
+        if not self.collision(ent.hitbox,self.limites):
+            ent.image.x = original_x
+            ent.speed_x = 0
+            ent.image.y = original_y
+            ent.speed_y = 0
+            ent.hitbox = ent.get_hitbox()
+            return False
+        return True
 
     def verificar_colisao_horizontal(self,ent):
         original_x = ent.image.x
@@ -223,8 +234,7 @@ class World(FloatLayout):
     
     def atualizar(self,*args):
         Clock.schedule_interval(self.collision_verify,1/60)
-        #atualização de posição do plsyer
-        Clock.schedule_interval(self.player.atualizar_pos ,1/30)
+        Clock.schedule_interval(self.player.atualizar_pos,1/30)
     
     def collision(self,hitbox1, hitbox2):
         x1, y1, w1, h1 = hitbox1
