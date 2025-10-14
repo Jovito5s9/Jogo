@@ -14,7 +14,7 @@ class BasicEnt(FloatLayout):
         self.recompensa = 0
         self.vida = 100
         self.dano = 5
-        self.velocidade = 7
+        self.velocidade = 3
         self.speed_x=0
         self.speed_y=0
         self.facing_right = True

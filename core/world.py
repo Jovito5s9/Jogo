@@ -220,10 +220,6 @@ class World(FloatLayout):
             
 
     def map_collision(self,ent):
-        original_x = ent.image.x
-        ent.image.x += ent.speed_x * ent.velocidade
-        original_y = ent.image.y
-        ent.image.y += ent.speed_y * ent.velocidade
         ent.hitbox = ent.get_hitbox()
         if ent.image.x>self.x+self.width-(ent.image.width*0.75):
             ent.image.x=self.width+self.x-(ent.image.width*0.75)
@@ -236,7 +232,7 @@ class World(FloatLayout):
             
     def verificar_colisao_horizontal(self,ent):
         original_x = ent.image.x
-        ent.image.x += ent.speed_x * ent.velocidade
+        ent.atualizar_pos()
         ent.hitbox = ent.get_hitbox()
     
         for obj in obj_list:
@@ -252,7 +248,7 @@ class World(FloatLayout):
 
     def verificar_colisao_vertical(self,ent):
         original_y = ent.image.y
-        ent.image.y += ent.speed_y * ent.velocidade
+        ent.atualizar_pos()
         ent.hitbox = ent.get_hitbox()
     
         for obj in obj_list:
@@ -270,7 +266,6 @@ class World(FloatLayout):
     
     def atualizar(self,*args):
         Clock.schedule_interval(self.collision_verify,1/60)
-        Clock.schedule_interval(self.player.atualizar_pos,1/30)
     
     def collision(self,hitbox1, hitbox2):
         x1, y1, w1, h1 = hitbox1
