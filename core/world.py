@@ -180,39 +180,42 @@ class World(FloatLayout):
     
     
     def collision_verify(self, *args):
-        self.verificar_colisao_horizontal()
-        self.verificar_colisao_vertical()
+        self.verificar_colisao_horizontal(self.player)
+        self.verificar_colisao_vertical(self.player)
 
+    def map_collision(self,ent):
+        if self.collision(ent.hitbox,self.limites):
+            pass
 
-    def verificar_colisao_horizontal(self):
-        original_x = self.player.image.x
-        self.player.image.x += self.player.speed_x * self.player.velocidade
-        self.player.hitbox = self.player.get_hitbox()
+    def verificar_colisao_horizontal(self,ent):
+        original_x = ent.image.x
+        ent.image.x += ent.speed_x * ent.velocidade
+        ent.hitbox = ent.get_hitbox()
     
         for obj in obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
-            if self.collision(self.player.hitbox, obj.hitbox):
+            if self.collision(ent.hitbox, obj.hitbox):
                 # Reverte X e zera velocidade no eixo X
-                self.player.image.x = original_x
-                self.player.speed_x = 0
-                self.player.hitbox = self.player.get_hitbox()
+                ent.image.x = original_x
+                ent.speed_x = 0
+                ent.hitbox = ent.get_hitbox()
                 return
 
 
-    def verificar_colisao_vertical(self):
-        original_y = self.player.image.y
-        self.player.image.y += self.player.speed_y * self.player.velocidade
-        self.player.hitbox = self.player.get_hitbox()
+    def verificar_colisao_vertical(self,ent):
+        original_y = ent.image.y
+        ent.image.y += ent.speed_y * ent.velocidade
+        ent.hitbox = ent.get_hitbox()
     
         for obj in obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
-            if self.collision(self.player.hitbox, obj.hitbox):
+            if self.collision(ent.hitbox, obj.hitbox):
                 # Reverte Y e zera velocidade no eixo Y
-                self.player.image.y = original_y
-                self.player.speed_y = 0
-                self.player.hitbox = self.player.get_hitbox()
+                ent.image.y = original_y
+                ent.speed_y = 0
+                ent.hitbox = ent.get_hitbox()
                 return
 
 
