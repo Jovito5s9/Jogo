@@ -7,6 +7,8 @@ from kivy.clock import Clock
 
 import random
 
+from core.player import Rato
+
 size=90
 obj_list=[ ]
 
@@ -87,7 +89,8 @@ class Grid(FloatLayout):
     def __init__(self,source, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        
+        self.ents=[]
+        self.type=source
         global size
         global obj_list
         self.source="assets/tiles/ground/"+f"{source}"
@@ -106,6 +109,8 @@ class Grid(FloatLayout):
         self.bind(patern_center=self.on_center_changed)
 
         self.position()
+        if self.type=="entrada_esgoto.png":
+            self.spawn()
 
     def update_image_pos(self, *args):
         self.image.pos = self.pos
@@ -118,6 +123,19 @@ class Grid(FloatLayout):
 
     def on_center_changed(self, *args):
         self.position()
+    
+    def spawn(self,*args):
+        if self.type=="entrada_esgoto.png":
+            self.position()
+            rato=Rato(pos=(self.image.pos))
+            self.add_widget(rato)
+            self.ents.append(rato)
+    
+    def unspawn(self,ent):
+        self.ents.remove(ent)
+        self.remove_widget(ent)
+        Clock.schedule_once(self.spawn, random.randint(0,20))
+
 
 #outra class começa a baixo
 
@@ -148,14 +166,24 @@ class World(FloatLayout):
 
         for y in range(self.linhas):
             for x in range(self.colunas):
-                grid = Grid(
+                m=self.linhas*self.colunas
+                m = random.randint(0,m)
+                if m < 3 :
+                    grid = Grid(
                     posicao=(x, y),
                     patern_center=(offset_x, offset_y),
                     max=(self.linhas, self.colunas),
-                    source="terra.png"
+                    source="entrada_esgoto.png"
                 )
+                else:
+                    grid = Grid(
+                        posicao=(x, y),
+                        patern_center=(offset_x, offset_y),
+                        max=(self.linhas, self.colunas),
+                        source="terra.png"
+                    )
                 self.add_widget(grid)
-        self.player.image.pos=(offset_x-20,offset_y )
+        self.player.image.pos=(offset_x,offset_y )
         
         for y in range(self.linhas):
             for x in range(self.colunas):
