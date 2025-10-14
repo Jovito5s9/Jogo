@@ -102,6 +102,14 @@ class BasicEnt(FloatLayout):
         height = self.image.height * 0.35
         return [x, y, width, height]
 
+
+
+class Rato(BasicEnt):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        pass
+
+
 class Player(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
