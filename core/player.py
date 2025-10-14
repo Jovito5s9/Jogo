@@ -50,6 +50,7 @@ class BasicEnt(FloatLayout):
 
         # Agendar a animação
         Clock.schedule_interval(self.animation, 0.3)
+        self.image.bind(pos=self.on_image_pos)
 
     def atualizar_pos(self,*args):
         if self.speed_x > 0:
@@ -63,7 +64,6 @@ class BasicEnt(FloatLayout):
             self.estado="running"
         else:
             self.estado="idle"
-        
         self.hitbox = self.get_hitbox()
 
     def on_estado(self,*args):
@@ -94,6 +94,19 @@ class BasicEnt(FloatLayout):
     def animation(self, dt):
         self.current_frame = (self.current_frame + 1) % self.total_frames
         self.update_texture()
+
+    def on_image_pos(self,*args):
+        try:
+            self.pos=self.image.pos
+        except:
+            pass
+    
+    def on_pos(self,*args):
+        try:
+            if self.pos!=self.image.pos:
+                self.image.pos=self.pos
+        except:
+            pass
     
     def get_hitbox(self,*args):
         x=self.image.x + (self.image.width *0.25)
