@@ -184,20 +184,20 @@ class World(FloatLayout):
             
 
     def map_collision(self,ent):
-        original_x = ent.image.x-ent.speed_x
+        original_x = ent.image.x
         ent.image.x += ent.speed_x * ent.velocidade
-        original_y = ent.image.y-ent.speed_y
+        original_y = ent.image.y
         ent.image.y += ent.speed_y * ent.velocidade
         ent.hitbox = ent.get_hitbox()
-        if not self.collision(ent.hitbox,self.limites):
-            ent.image.x = original_x
-            ent.speed_x = 0
-            ent.image.y = original_y
-            ent.speed_y = 0
-            ent.hitbox = ent.get_hitbox()
-            return False
-        return True
-
+        if ent.image.x>self.x+self.width-(ent.image.width*0.75):
+            ent.image.x=self.width+self.x-(ent.image.width*0.75)
+        elif ent.image.x<self.x-(ent.image.width*0.25):
+            ent.image.x=self.x-(ent.image.width*0.25)
+        if ent.image.y<self.y:
+            ent.image.y=self.y
+        elif ent.image.y>self.y+self.height-(ent.image.height/2):
+            ent.image.y=self.y+self.height-(ent.image.height/2)
+            
     def verificar_colisao_horizontal(self,ent):
         original_x = ent.image.x
         ent.image.x += ent.speed_x * ent.velocidade
