@@ -107,7 +107,10 @@ class BasicEnt(FloatLayout):
 class Rato(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        pass
+        self.sources["idle"]="assets/sprites/rato/idle.png"
+        self.sources["running"]="assets/sprites/rato/running.png"
+        self.atualizar()
+        self.image.size=(90,90)
 
 
 class Player(BasicEnt):
