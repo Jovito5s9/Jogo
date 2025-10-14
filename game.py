@@ -5,7 +5,7 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.clock import Clock 
 from kivy.core.window import Window
-from core.player import BasicEnt
+from core.player import Player
 from core.world import World
 from utils.joystick import Joystick 
 from kivy.uix.screenmanager import ScreenManager,Screen
@@ -41,7 +41,7 @@ class Game(FloatLayout):
         self.world=World()
         self.add_widget(self.world)
         
-        self.player=BasicEnt()
+        self.player=Player()
         self.world.player=self.player
         
         self.world.create(12,12)

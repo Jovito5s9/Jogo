@@ -21,8 +21,13 @@ class BasicEnt(FloatLayout):
         
         self.hitbox=( )
 
+        self.sources={}
+
+        
+        
+    def atualizar(self,*args):
         # Carrega o sprite sheet
-        self.sprite_sheet = Image(source="assets/sprites/player/idle.png").texture
+        self.sprite_sheet = Image(source=self.sources.get("idle")).texture
         self.frame_width = 32
         self.frame_height = 32
         self.total_frames = 2
@@ -45,7 +50,6 @@ class BasicEnt(FloatLayout):
 
         # Agendar a animação
         Clock.schedule_interval(self.animation, 0.3)
-        
 
     def atualizar_pos(self,*args):
         if self.speed_x > 0:
@@ -64,13 +68,13 @@ class BasicEnt(FloatLayout):
 
     def on_estado(self,*args):
         if self.estado=="idle":
-            self.sprite_sheet = Image(source="assets/sprites/player/idle.png").texture
+            self.sprite_sheet = Image(source=self.sources.get("idle")).texture
             self.frame_width = 32
             self.frame_height = 32
             self.total_frames = 2
             self.current_frame = 0
         elif self.estado=="running":
-            self.sprite_sheet = Image(source="assets/sprites/player/running.png").texture
+            self.sprite_sheet = Image(source=self.sources.get("running")).texture
             self.frame_width = 32
             self.frame_height = 32
             self.total_frames = 4
@@ -98,3 +102,9 @@ class BasicEnt(FloatLayout):
         height = self.image.height * 0.35
         return [x, y, width, height]
 
+class Player(BasicEnt):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sources["idle"]="assets/sprites/player/idle.png"
+        self.sources["running"]="assets/sprites/player/running.png"
+        self.atualizar()
