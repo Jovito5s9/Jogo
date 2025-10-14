@@ -131,7 +131,8 @@ class Grid(FloatLayout):
         if self.type=="entrada_esgoto.png":
             
             rato=Rato()
-            rato.pos = (self.image.x,self.image.y)
+            rato.image.pos = (self.image.x,self.image.y)
+            print(rato.pos)
             world.add_widget(rato)
             world.ents.append(rato)
     
