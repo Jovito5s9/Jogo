@@ -127,18 +127,14 @@ def mover(ent,dx,dy):
     ent.speed_y=dy
 
 def perseguir(rastreador):
-    if rastreador.player.image.center_x>rastreador.image.center_x:
+    if rastreador.player.image.center_x>=rastreador.image.center_x:
         dx=1
     elif rastreador.player.image.center_x<rastreador.image.center_x:
         dx=-1
-    else:
-        dx=0
-    if rastreador.player.image.center_y>rastreador.image.center_y:
+    if rastreador.player.image.center_y>=rastreador.image.center_y:
         dy=1
     elif rastreador.player.image.center_y<rastreador.image.center_y:
         dy=-1
-    else:
-        dx=0
     mover(rastreador,dx,dy)
 
 def rastrear(rastreador):
@@ -192,11 +188,11 @@ class Rato(BasicEnt):
         self.atributos()
     
     def atributos(self,*args):
-        self.raio_visao=200
+        self.raio_visao=300
         self.image.size=(90,90)
         self.vida=30
         self.dano=3
-        self.velocidade=1.8
+        self.velocidade=1.5
     
     def add_player(self,*args):
         self.player=self.parent.player
