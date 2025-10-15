@@ -57,14 +57,17 @@ class BasicEnt(FloatLayout):
         Clock.schedule_interval(self.animation, 0.3)
         self.image.bind(pos=self.on_image_pos)
 
+    def move_x(self,*args):
+        self.image.x+=self.speed_x*self.velocidade 
+    
+    def move_y(self,*args):
+        self.image.y+=self.speed_y*self.velocidade 
+
     def atualizar_pos(self,*args):
         if self.speed_x > 0:
             self.facing_right = True
         elif self.speed_x < 0:
             self.facing_right = False
-
-        self.image.x+=self.speed_x*self.velocidade 
-        self.image.y+=self.speed_y*self.velocidade 
         if self.speed_x!=0 or self.speed_y:
             self.estado="running"
         else:
