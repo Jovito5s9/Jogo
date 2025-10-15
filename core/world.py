@@ -243,6 +243,14 @@ class World(FloatLayout):
                 ent.image.x = original_x
                 ent.speed_x = 0
                 ent.hitbox = ent.get_hitbox()
+        for entit in self.ents:
+            if ent==entit:
+                continue
+            if self.collision(ent.hitbox, entit.hitbox):
+                # Reverte X e zera velocidade no eixo Y
+                ent.image.x = original_x
+                ent.speed_x = 0
+                ent.hitbox = ent.get_hitbox()
 
 
     def verificar_colisao_vertical(self,ent):
@@ -254,6 +262,15 @@ class World(FloatLayout):
             if not hasattr(obj, "hitbox"):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):
+                # Reverte Y e zera velocidade no eixo Y
+                ent.image.y = original_y
+                ent.speed_y = 0
+                ent.hitbox = ent.get_hitbox()
+
+        for entit in self.ents:
+            if ent==entit:
+                continue
+            if self.collision(ent.hitbox, entit.hitbox):
                 # Reverte Y e zera velocidade no eixo Y
                 ent.image.y = original_y
                 ent.speed_y = 0
