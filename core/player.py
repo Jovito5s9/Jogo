@@ -127,11 +127,11 @@ def mover(ent,dx,dy):
 def perseguir(rastreador):
     if rastreador.player.image.center_x>rastreador.image.center_x:
         dx=1
-    elif rastreador.player.image.center_x<rastreador.image.center_x:
+    elif rastreador.player.image.center_x<=rastreador.image.center_x:
         dx=-1
     if rastreador.player.image.center_y>rastreador.image.center_y:
         dy=1
-    elif rastreador.player.image.center_y<rastreador.image.center_y:
+    elif rastreador.player.image.center_y<=rastreador.image.center_y:
         dy=-1
     mover(rastreador,dx,dy)
 
@@ -161,6 +161,7 @@ def distancia(ent1,ent2=None):
         d1,d2=abs(ent2.image.center_x-ent1.image.center_x), abs(ent2.image.center_y-ent1.image.center_y)
         return ((d1*d1 + d2*d2)**0.5)
 
+#funcao destinada a colocar as possibilidades de acoes de entidades basicas
 def ia_base():
     acoes={
         "perseguir":perseguir,
@@ -169,17 +170,24 @@ def ia_base():
         }
     return acoes
 
+
 class Rato(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/rato/idle.png"
         self.sources["running"]="assets/sprites/rato/running.png"
         self.atualizar()
-        self.image.size=(90,90)
-        Clock.schedule_once(self.add_player,2)
         self.acoes=ia_base()
-        self.raio_visao=80
-        Clock.schedule_interval(self.ia,1/20)
+        Clock.schedule_interval(self.ia,1/10)
+        Clock.schedule_once(self.add_player,2)
+        self.atributos()
+    
+    def atributos(self,*args):
+        self.raio_visao=200
+        self.image.size=(90,90)
+        self.vida=30
+        self.dano=3
+        self.velocidade=1.8
     
     def add_player(self,*args):
         self.player=self.parent.player
