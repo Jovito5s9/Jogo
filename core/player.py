@@ -136,8 +136,11 @@ def perseguir(rastreador):
     mover(rastreador,dx,dy)
 
 def rastrear(rastreador):
-    if (distancia(rastreador)<=rastreador.raio_visao):
-        rastreador.alvo=True
+    try:
+        if (distancia(rastreador)<=rastreador.raio_visao):
+            rastreador.alvo=True
+    except:
+        pass
 
 def atacar(atacante,alvo=None):
     if alvo is not None:
@@ -149,8 +152,11 @@ def atacar(atacante,alvo=None):
 
 def distancia(ent1,ent2=None):
     if ent2 is None:
-        d1,d2=abs(ent1.player.image.center_x-ent1.image.center_x), abs(ent1.player.image.center_y-ent1.image.center_y)
-        return ((d1*d1 + d2*d2)**0.5)
+        try:
+            d1,d2=abs(ent1.player.image.center_x-ent1.image.center_x), abs(ent1.player.image.center_y-ent1.image.center_y)
+            return ((d1*d1 + d2*d2)**0.5)
+        except:
+            pass
     else:
         d1,d2=abs(ent2.image.center_x-ent1.image.center_x), abs(ent2.image.center_y-ent1.image.center_y)
         return ((d1*d1 + d2*d2)**0.5)
@@ -170,10 +176,14 @@ class Rato(BasicEnt):
         self.sources["running"]="assets/sprites/rato/running.png"
         self.atualizar()
         self.image.size=(90,90)
+        Clock.schedule_once(self.add_player,2)
         self.acoes=ia_base()
         self.raio_visao=80
         Clock.schedule_interval(self.ia,1/20)
     
+    def add_player(self,*args):
+        self.player=self.parent.player
+
     def ia(self,*args):
         if self.alvo:
             self.acoes["perseguir"](self)
