@@ -18,6 +18,8 @@ class BasicEnt(FloatLayout):
         self.speed_x=0
         self.speed_y=0
         self.facing_right = True
+        self.idle_frames=1
+        self.running_frames=1
 
         self.alvo=False
         self.player=None
@@ -33,7 +35,7 @@ class BasicEnt(FloatLayout):
         self.sprite_sheet = Image(source=self.sources.get("idle")).texture
         self.frame_width = 32
         self.frame_height = 32
-        self.total_frames = 2
+        self.total_frames = self.idle_frames
         self.current_frame = 0
 
         # Cria o widget de imagem animada
@@ -74,13 +76,13 @@ class BasicEnt(FloatLayout):
             self.sprite_sheet = Image(source=self.sources.get("idle")).texture
             self.frame_width = 32
             self.frame_height = 32
-            self.total_frames = 2
+            self.total_frames = self.idle_frames
             self.current_frame = 0
         elif self.estado=="running":
             self.sprite_sheet = Image(source=self.sources.get("running")).texture
             self.frame_width = 32
             self.frame_height = 32
-            self.total_frames = 4
+            self.total_frames = self.running_frames
             self.current_frame = 0
 
     def update_texture(self):
@@ -127,12 +129,16 @@ def mover(ent,dx,dy):
 def perseguir(rastreador):
     if rastreador.player.image.center_x>rastreador.image.center_x:
         dx=1
-    elif rastreador.player.image.center_x<=rastreador.image.center_x:
+    elif rastreador.player.image.center_x<rastreador.image.center_x:
         dx=-1
+    else:
+        dx=0
     if rastreador.player.image.center_y>rastreador.image.center_y:
         dy=1
-    elif rastreador.player.image.center_y<=rastreador.image.center_y:
+    elif rastreador.player.image.center_y<rastreador.image.center_y:
         dy=-1
+    else:
+        dx=0
     mover(rastreador,dx,dy)
 
 def rastrear(rastreador):
@@ -176,6 +182,9 @@ class Rato(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/rato/idle.png"
         self.sources["running"]="assets/sprites/rato/running.png"
+        self.idle_frames=2
+        self.running_frames=2
+        
         self.atualizar()
         self.acoes=ia_base()
         Clock.schedule_interval(self.ia,1/10)
@@ -205,5 +214,8 @@ class Player(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/player/idle.png"
         self.sources["running"]="assets/sprites/player/running.png"
+        self.idle_frames=2
+        self.running_frames=4
+
         self.atualizar()
         self.acoes={}
