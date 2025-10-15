@@ -18,6 +18,9 @@ class BasicEnt(FloatLayout):
         self.speed_x=0
         self.speed_y=0
         self.facing_right = True
+
+        self.alvo=False
+        self.player=None
         
         self.hitbox=( )
 
@@ -117,6 +120,49 @@ class BasicEnt(FloatLayout):
 
 
 
+def mover(ent,dx,dy):
+    ent.speed_x=dx
+    ent.speed_y=dy
+
+def perseguir(rastreador):
+    if rastreador.player.image.center_x>rastreador.image.center_x:
+        dx=1
+    elif rastreador.player.image.center_x<rastreador.image.center_x:
+        dx=-1
+    if rastreador.player.image.center_y>rastreador.image.center_y:
+        dy=1
+    elif rastreador.player.image.center_y<rastreador.image.center_y:
+        dy=-1
+    mover(rastreador,dx,dy)
+
+def rastrear(rastreador):
+    if (distancia(rastreador)<=rastreador.raio_visao):
+        rastreador.alvo=True
+
+def atacar(atacante,alvo=None):
+    if alvo is not None:
+        if distancia(atacante,alvo):
+            alvo.vida-=atacante.dano
+    else:
+        if distancia(atacante):
+            atacante.player.vida-=atacante.dano
+
+def distancia(ent1,ent2=None):
+    if ent2 is None:
+        d1,d2=abs(ent1.player.image.center_x-ent1.image.center_x), abs(ent1.player.image.center_y-ent1.image.center_y)
+        return ((d1*d1 + d2*d2)**0.5)
+    else:
+        d1,d2=abs(ent2.image.center_x-ent1.image.center_x), abs(ent2.image.center_y-ent1.image.center_y)
+        return ((d1*d1 + d2*d2)**0.5)
+
+def ia_base():
+    acoes={
+        "perseguir":perseguir,
+        "rastrear":rastrear,
+        "atacar":atacar
+        }
+    return acoes
+
 class Rato(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -124,6 +170,16 @@ class Rato(BasicEnt):
         self.sources["running"]="assets/sprites/rato/running.png"
         self.atualizar()
         self.image.size=(90,90)
+        self.acoes=ia_base()
+        self.raio_visao=80
+        Clock.schedule_interval(self.ia,1/20)
+    
+    def ia(self,*args):
+        if self.alvo:
+            self.acoes["perseguir"](self)
+        else:
+            self.acoes["rastrear"](self)
+        pass
 
 
 class Player(BasicEnt):
@@ -132,3 +188,4 @@ class Player(BasicEnt):
         self.sources["idle"]="assets/sprites/player/idle.png"
         self.sources["running"]="assets/sprites/player/running.png"
         self.atualizar()
+        self.acoes={}
