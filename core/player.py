@@ -9,22 +9,21 @@ class Barra(Widget):
     modificador=NumericProperty(100)
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.cor=(1,0,0,0.8)
+        self.cor=([1,0,0,1])
+        self.w=1
+        self.h=1
         with self.canvas:
+            self.color=Color(*self.cor)
             self.rect=Rectangle(
                 pos=self.pos,
-                size=(self.width*(self.modificador/100)+1,self.height),
-                Color=self.cor
+                size=(self.w*(self.modificador/100)+1,self.h),
             )
-            self.bind(pos=self.atualizar_pos)
-            self.bind(modificador=self.atualizar_tamanho)
-    
-    def atualizar_tamanho(self,*args):
-        with self.canvas:
-            self.rect.size=(self.width*(self.modificador/100)+1,self.height)
+            self.bind(pos=self.atualizar)
+            self.bind(modificador=self.atualizar)
             
-    def atualizar_pos(self,*args):
-        self.rect.pos=self.pos
+    def atualizar(self,*args):
+        self.rect.pos=(self.x-(self.w/2),self.y)
+        self.rect.size=(self.w*(self.modificador/100)+1,self.h)
 
 
 class BasicEnt(FloatLayout):
@@ -80,7 +79,10 @@ class BasicEnt(FloatLayout):
         # Agendar a animação
         Clock.schedule_interval(self.animation, 0.3)
         self.image.bind(pos=self.on_image_pos)
-        self.barra_vida=Barra(size=(self.image.width,10),pos=(self.image.x,self.image.center_y))
+        self.barra_vida=Barra(size=(self.image.width,10),pos=(self.image.center_x,self.image.center_y))
+        self.barra_vida.w=self.image.width/3
+        self.barra_vida.h=10
+        self.add_widget(self.barra_vida)
 
     def move_x(self,*args):
         self.image.x+=self.speed_x*self.velocidade 
@@ -97,6 +99,7 @@ class BasicEnt(FloatLayout):
             self.estado="running"
         else:
             self.estado="idle"
+        self.barra_vida.pos=(self.image.center_x,self.image.center_y)
         self.hitbox = self.get_hitbox()
 
     def on_estado(self,*args):
