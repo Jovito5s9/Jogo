@@ -208,10 +208,10 @@ def rastrear(rastreador):
 def atacar(atacante,alvo=None):
     if alvo is None:
         alvo=atacante.player
-    if distancia(atacante)<=atacante.alcance_fisico and not alvo.i_frames:
+    if not alvo.i_frames:
         atacante.speed_x=0
         atacante.speed_y=0
-        atacante.player.vida-=atacante.dano
+        alvo.vida-=atacante.dano
     print(alvo.vida)
 
 def distancia(ent1,ent2=None):
@@ -280,4 +280,21 @@ class Player(BasicEnt):
         self.running_frames=4
 
         self.atualizar()
-        self.acoes={}
+        self.ataque_size=20
+        self.acoes={"atacar":self.atacar}
+
+    def atacar(self,*args):
+        self.ataque=Widget(
+            size=(self.ataque_size,self.ataque_size),
+            pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2))
+            )
+        ataque_hitbox=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2),self.ataque_size,self.ataque_size)
+        self.add_widget(self.ataque)
+        for ent in self.parent.ents:
+            if not ent==self:
+                if (self.parent.collision(ent.hitbox,ataque_hitbox)):
+                    atacar(self,ent)
+        Clock.schedule_once(self.remover_ataque,1)
+    
+    def remover_ataque(self,*args):
+        self.remove_widget(self.ataque)
