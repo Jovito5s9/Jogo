@@ -162,6 +162,13 @@ class BasicEnt(FloatLayout):
         self.parent.remove_widget(self)
 
     def on_vida(self,*args):
+        vida_mod=100*self.vida/self.vida_maxima
+        if vida_mod<0:
+            vida_mod=0
+        try:
+            self.barra_vida.modificador=vida_mod
+        except:
+            print("sem barra_vida")
         if self.vida<=0:
             self.morrer()
     
@@ -235,6 +242,7 @@ class Rato(BasicEnt):
     def atributos(self,*args):
         self.raio_visao=300
         self.image.size=(90,90)
+        self.vida_maxima=30
         self.vida=30
         self.dano=3
         self.velocidade=1.5
