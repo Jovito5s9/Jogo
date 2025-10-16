@@ -1,14 +1,15 @@
 from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
-from kivy.properties import OptionProperty 
+from kivy.properties import OptionProperty,BooleanProperty, NumericProperty
 
 class BasicEnt(FloatLayout):
+    vida=NumericProperty(1)
+    i_frames=BooleanProperty(False)
     estado=OptionProperty ("idle",
     options=("idle","running"))
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.size = (32, 32)
         self.pos = (100, 100)
         self.recompensa = 0
@@ -17,15 +18,13 @@ class BasicEnt(FloatLayout):
         self.velocidade = 3
         self.speed_x=0
         self.speed_y=0
+        self.i_frames_time=1.2
         self.facing_right = True
         self.idle_frames=1
         self.running_frames=1
-
         self.alvo=False
         self.player=None
-        
-        self.hitbox=( )
-
+        self.hitbox=()
         self.sources={}
 
         
@@ -122,6 +121,21 @@ class BasicEnt(FloatLayout):
         width = self.image.width * 0.5
         height = self.image.height * 0.35
         return [x, y, width, height]
+    
+    def perder_i_frames(self,*args):
+        self.i_frames=False
+
+    def on_i_frames(self,*args):
+        if self.i_frames:
+            Clock.schedule_once(self.perder_i_frames,self.i_frames_time)
+    
+    def morrer(self,*args):
+        self.parent.remove_widget(self)
+
+    def on_vida(self,*args):
+        if self.vida<=0:
+            self.morrer()
+    
 
 
 
@@ -148,12 +162,11 @@ def rastrear(rastreador):
         pass
 
 def atacar(atacante,alvo=None):
-    if alvo is not None:
-        if distancia(atacante,alvo):
-            alvo.vida-=atacante.dano
-    else:
-        if distancia(atacante):
-            atacante.player.vida-=atacante.dano
+    if alvo is None:
+        alvo=atacante.player
+    if distancia(atacante)<30 and not alvo.i_frames:
+        atacante.player.vida-=atacante.dano
+    print(alvo.vida)
 
 def distancia(ent1,ent2=None):
     if ent2 is None:
@@ -202,7 +215,10 @@ class Rato(BasicEnt):
 
     def ia(self,*args):
         if self.alvo:
-            self.acoes["perseguir"](self)
+            if distancia(self)<30:
+                self.acoes["atacar"](self)
+            else:
+                self.acoes["perseguir"](self)
         else:
             self.acoes["rastrear"](self)
         pass
