@@ -36,19 +36,22 @@ class BasicEnt(FloatLayout):
         self.size = (32, 32)
         self.pos = (100, 100)
         self.recompensa = 0
+        self.i_frames_time=0.8
         self.vida_maxima=100
         self.vida = self.vida_maxima
         self.dano = 5
+        self.alcance_fisico=70
         self.velocidade = 3
         self.speed_x=0
         self.speed_y=0
-        self.i_frames_time=1.2
         self.facing_right = True
         self.idle_frames=1
         self.running_frames=1
         self.alvo=False
         self.player=None
         self.hitbox=()
+        self.center_hitbox_x=0
+        self.center_hitbox_y=0
         self.sources={}
 
         
@@ -144,11 +147,15 @@ class BasicEnt(FloatLayout):
         except:
             pass
     
+    def get_center_hitbox(self,x,y,w,h):
+        self.center_hitbox_x,self.center_hitbox_y=(x+w/2,y+h/2)
+    
     def get_hitbox(self,*args):
         x=self.image.x + (self.image.width *0.25)
         y = self.image.y + (self.image.height *0.1)
         width = self.image.width * 0.5
         height = self.image.height * 0.35
+        self.get_center_hitbox(x,y,width,height)
         return [x, y, width, height]
     
     def perder_i_frames(self,*args):
@@ -162,6 +169,7 @@ class BasicEnt(FloatLayout):
         self.parent.remove_widget(self)
 
     def on_vida(self,*args):
+        self.i_frames=True
         vida_mod=100*self.vida/self.vida_maxima
         if vida_mod<0:
             vida_mod=0
@@ -200,19 +208,21 @@ def rastrear(rastreador):
 def atacar(atacante,alvo=None):
     if alvo is None:
         alvo=atacante.player
-    if distancia(atacante)<30 and not alvo.i_frames:
+    if distancia(atacante)<=atacante.alcance_fisico and not alvo.i_frames:
+        atacante.speed_x=0
+        atacante.speed_y=0
         atacante.player.vida-=atacante.dano
     print(alvo.vida)
 
 def distancia(ent1,ent2=None):
     if ent2 is None:
         try:
-            d1,d2=abs(ent1.player.image.center_x-ent1.image.center_x), abs(ent1.player.image.center_y-ent1.image.center_y)
+            d1,d2=ent1.player.center_hitbox_x-ent1.center_hitbox_x, ent1.player.center_hitbox_y-ent1.center_hitbox_y
             return ((d1*d1 + d2*d2)**0.5)
         except:
             pass
     else:
-        d1,d2=abs(ent2.image.center_x-ent1.image.center_x), abs(ent2.image.center_y-ent1.image.center_y)
+        d1,d2=ent2.center_hitbox_x-ent1.center_hitbox_x, ent2.center_hitbox_y-ent1.center_hitbox_y
         return ((d1*d1 + d2*d2)**0.5)
 
 #funcao destinada a colocar as possibilidades de acoes de entidades basicas
@@ -244,7 +254,7 @@ class Rato(BasicEnt):
         self.image.size=(90,90)
         self.vida_maxima=30
         self.vida=30
-        self.dano=3
+        self.dano=5
         self.velocidade=1.5
     
     def add_player(self,*args):
@@ -252,7 +262,7 @@ class Rato(BasicEnt):
 
     def ia(self,*args):
         if self.alvo:
-            if distancia(self)<30:
+            if distancia(self)<=self.alcance_fisico:
                 self.acoes["atacar"](self)
             else:
                 self.acoes["perseguir"](self)
