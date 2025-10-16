@@ -13,22 +13,17 @@ class Barra(Widget):
         with self.canvas:
             self.rect=Rectangle(
                 pos=self.pos,
-                size=self.size*(self.modificador/100)+1,
+                size=(self.width*(self.modificador/100)+1,self.height),
                 Color=self.cor
             )
+            self.bind(pos=self.atualizar_pos)
+            self.bind(modificador=self.atualizar_tamanho)
     
-    def atualizar_rect(self,*args):
+    def atualizar_tamanho(self,*args):
         with self.canvas:
-            self.rect=Rectangle(
-                pos=self.pos,
-                size=self.size*(self.modificador/100)+1,
-                Color=self.cor
-            )
-    
-    def on_modificador(self,*args):
-        self.atualizar_rect()
-    
-    def on_pos(self,*args):
+            self.rect.size=(self.width*(self.modificador/100)+1,self.height)
+            
+    def atualizar_pos(self,*args):
         self.rect.pos=self.pos
 
 
@@ -85,6 +80,7 @@ class BasicEnt(FloatLayout):
         # Agendar a animação
         Clock.schedule_interval(self.animation, 0.3)
         self.image.bind(pos=self.on_image_pos)
+        self.barra_vida=Barra(size=(self.image.width,10),pos=(self.image.x,self.image.center_y))
 
     def move_x(self,*args):
         self.image.x+=self.speed_x*self.velocidade 
