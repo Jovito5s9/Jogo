@@ -1,7 +1,36 @@
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty,BooleanProperty, NumericProperty
+
+class Barra(Widget):
+    modificador=NumericProperty(100)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.cor=(1,0,0,0.8)
+        with self.canvas:
+            self.rect=Rectangle(
+                pos=self.pos,
+                size=self.size*(self.modificador/100)+1,
+                Color=self.cor
+            )
+    
+    def atualizar_rect(self,*args):
+        with self.canvas:
+            self.rect=Rectangle(
+                pos=self.pos,
+                size=self.size*(self.modificador/100)+1,
+                Color=self.cor
+            )
+    
+    def on_modificador(self,*args):
+        self.atualizar_rect()
+    
+    def on_pos(self,*args):
+        self.rect.pos=self.pos
+
 
 class BasicEnt(FloatLayout):
     vida=NumericProperty(1)
@@ -13,7 +42,8 @@ class BasicEnt(FloatLayout):
         self.size = (32, 32)
         self.pos = (100, 100)
         self.recompensa = 0
-        self.vida = 100
+        self.vida_maxima=100
+        self.vida = self.vida_maxima
         self.dano = 5
         self.velocidade = 3
         self.speed_x=0
