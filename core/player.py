@@ -280,21 +280,38 @@ class Player(BasicEnt):
         self.running_frames=4
 
         self.atualizar()
-        self.ataque_size=20
+        self.ataque_size=200
         self.acoes={"atacar":self.atacar}
+        self.acao=""
+        Clock.schedule_interval(self.verificar_acao,1/20)
 
     def atacar(self,*args):
         self.ataque=Widget(
             size=(self.ataque_size,self.ataque_size),
-            pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2))
+            pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2)),
             )
-        ataque_hitbox=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2),self.ataque_size,self.ataque_size)
+        print("ataque gerado")
+        ataque_hitbox=[self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2),self.ataque_size,self.ataque_size]
         self.add_widget(self.ataque)
         for ent in self.parent.ents:
             if not ent==self:
                 if (self.parent.collision(ent.hitbox,ataque_hitbox)):
                     atacar(self,ent)
+                    print("player atacou")
         Clock.schedule_once(self.remover_ataque,1)
     
     def remover_ataque(self,*args):
         self.remove_widget(self.ataque)
+    
+    def verificar_acao(self, *args):
+        if not self.acao:
+            return
+
+        action = self.acoes.get(self.acao)
+        if action and callable(action):
+            try:
+                action() 
+            except Exception as e:
+                print("Erro ao executar ação", self.acao, ":", e)
+        else:
+            self.acao = ""

@@ -19,11 +19,24 @@ class Interface(FloatLayout):
         self.configuracoes()
 
         if not self.configs["teclado"]:
-            self.add_joytick()
+            self.add_ui()
+            
+    def add_ui(self,*args):
+        self.add_joytick()
+        self.add_button_ataque()
+
+        Clock.schedule_once(self.bind_buttons,1)
     
     def add_joytick(self):
         self.joystick = Joystick(size_hint=(None, None), size=(400, 400), pos_hint={'center_x': 2, 'center_y': 2})
         self.add_widget(self.joystick)
+    
+    def add_button_ataque(self,*args):
+        self.button_ataque=Button(size=(200,200),pos_hint={'center_x' : 15,'center_y' : 7},text='ataque')
+        self.add_widget(self.button_ataque)
+    
+    def bind_buttons(self,*args):
+        self.button_ataque.bind(on_release=self.parent.ataque)
     
     def configuracoes(self):
         try:
@@ -54,14 +67,14 @@ class Game(FloatLayout):
             Clock.schedule_interval(self.joystick_movs, 1/20)
         else:
             self.keyboard_active()
-            Clock.schedule_interval(self.keyboard_movs, 1/20)
+            Clock.schedule_interval(self.keyboard_actions, 1/20)
 
     def pre_leave(self,*args):
         if not self.interface.configs["teclado"]:
             Clock.unschedule_interval(self.joystick_movs, 1/20)
         else:
             self.keyboard_desactive()
-            Clock.unschedule_interval(self.keyboard_movs, 1/20)
+            Clock.unschedule_interval(self.keyboard_actions, 1/20)
         self.remove_widget(self.interface)
 
         
@@ -69,6 +82,9 @@ class Game(FloatLayout):
     def joystick_movs(self,*args):
         self.player.speed_x=self.interface.joystick.x_value
         self.player.speed_y=self.interface.joystick.y_value
+    
+    def ataque(self,*args):
+        self.player.acao="atacar"
     
     def keyboard_active(self,*args):
         self.key_pressed=set()
@@ -86,7 +102,9 @@ class Game(FloatLayout):
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)
     
-    def keyboard_movs(self,*args):
+    def keyboard_actions(self,*args):
+        if 32 in self.key_pressed:
+            self.player.acao="atacar"
         if 119 in self.key_pressed:
             self.player.speed_y=0.9
         elif 115 in self.key_pressed:
