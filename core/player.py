@@ -166,7 +166,8 @@ class BasicEnt(FloatLayout):
             Clock.schedule_once(self.perder_i_frames,self.i_frames_time)
     
     def morrer(self,*args):
-        self.parent.remove_widget(self)
+        self.parent.ents.remove(self)
+        #self.parent.remove_widget(self)
 
     def on_vida(self,*args):
         self.i_frames=True
@@ -298,6 +299,7 @@ class Player(BasicEnt):
                 if (self.parent.collision(ent.hitbox,ataque_hitbox)):
                     atacar(self,ent)
                     print("player atacou")
+        ataque_hitbox=None
         Clock.schedule_once(self.remover_ataque,1)
     
     def remover_ataque(self,*args):
