@@ -40,6 +40,7 @@ class BasicEnt(FloatLayout):
         self.vida_maxima=100
         self.vida = self.vida_maxima
         self.dano = 5
+        self.atacando=False
         self.alcance_fisico=70
         self.velocidade = 3
         self.speed_x=0
@@ -213,7 +214,7 @@ def atacar(atacante,alvo=None):
         atacante.speed_x=0
         atacante.speed_y=0
         alvo.vida-=atacante.dano
-    print(alvo.vida)
+    return
 
 def distancia(ent1,ent2=None):
     if ent2 is None:
@@ -287,6 +288,11 @@ class Player(BasicEnt):
         Clock.schedule_interval(self.verificar_acao,1/20)
 
     def atacar(self,*args):
+        if self.atacando:
+            ataque_hitbox=[]
+            self.acao=""
+            return
+        self.atacando=True
         self.ataque=Widget(
             size=(self.ataque_size,self.ataque_size),
             pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2)),
@@ -299,11 +305,11 @@ class Player(BasicEnt):
                 if (self.parent.collision(ent.hitbox,ataque_hitbox)):
                     atacar(self,ent)
                     print("player atacou")
-        ataque_hitbox=None
-        Clock.schedule_once(self.remover_ataque,1)
+        Clock.schedule_once(self.remover_ataque,0.2)
     
     def remover_ataque(self,*args):
         self.remove_widget(self.ataque)
+        self.atacando=False
     
     def verificar_acao(self, *args):
         if not self.acao:
