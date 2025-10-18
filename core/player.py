@@ -212,14 +212,18 @@ def mover(ent,dx,dy):
     ent.speed_y=dy
 
 def perseguir(rastreador):
-    if rastreador.player.image.center_x>=rastreador.image.center_x:
+    if rastreador.player.image.center_x>rastreador.image.center_x:
         dx=1
     elif rastreador.player.image.center_x<rastreador.image.center_x:
         dx=-1
-    if rastreador.player.image.center_y>=rastreador.image.center_y:
+    else:
+        dx=0
+    if rastreador.player.image.center_y>rastreador.image.center_y:
         dy=1
     elif rastreador.player.image.center_y<rastreador.image.center_y:
         dy=-1
+    else:
+        dx=0
     mover(rastreador,dx,dy)
 
 def rastrear(rastreador):
@@ -331,35 +335,31 @@ class Player(BasicEnt):
         self.atacando_frames=3
 
         self.atualizar()
-        self.ataque_size=80
         self.repulsao=20
+        self.alcance_fisico=90
         self.acoes={"atacar":self.atacar}
         self.acao=""
         Clock.schedule_interval(self.verificar_acao,1/20)
 
     def atacar(self,*args):
         if self.atacando:
-            ataque_hitbox=[]
             self.acao=""
             return
         self.atacando=True
         self.ataque_name="soco"
-        self.ataque=Widget(
-            size=(self.ataque_size,self.ataque_size),
-            pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/3),self.center_hitbox_y+(self.speed_y*self.ataque_size/3)),
-            )
         print("ataque gerado")
-        ataque_hitbox=[self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2),self.ataque_size,self.ataque_size]
-        self.add_widget(self.ataque)
         for ent in self.parent.ents:
             if not ent==self:
-                if (self.parent.collision(ent.hitbox,ataque_hitbox)):
-                    atacar(self,ent)
-                    print("player atacou")
+                if distancia(self,ent)<=self.alcance_fisico:
+                    if self.facing_right and ent.image.x>=self.image.x:
+                        atacar(self,ent)
+                        print("player atacou")
+                    elif not self.facing_right and ent.image.x<=self.image.x:
+                        atacar(self,ent)
+                        print("player atacou")
         Clock.schedule_once(self.remover_ataque,0.4)
     
     def remover_ataque(self,*args):
-        self.remove_widget(self.ataque)
         self.atacando=False
         if self.speed_x or self.speed_y:
             self.estado = "running"
