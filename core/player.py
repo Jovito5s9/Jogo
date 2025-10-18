@@ -40,6 +40,7 @@ class BasicEnt(FloatLayout):
         self.vida_maxima=100
         self.vida = self.vida_maxima
         self.vivo=True
+        self.repulsao=10
         self.dano = 5
         self.atacando=False
         self.alcance_fisico=70
@@ -213,6 +214,8 @@ def atacar(atacante,alvo=None):
     if alvo is None:
         alvo=atacante.player
     if not alvo.i_frames:
+        alvo.image.x+=atacante.speed_x*atacante.repulsao
+        alvo.image.y+=atacante.speed_y*atacante.repulsao
         atacante.speed_x=0
         atacante.speed_y=0
         alvo.vida-=atacante.dano
@@ -291,7 +294,8 @@ class Player(BasicEnt):
         self.running_frames=4
 
         self.atualizar()
-        self.ataque_size=200
+        self.ataque_size=80
+        self.repulsao=20
         self.acoes={"atacar":self.atacar}
         self.acao=""
         Clock.schedule_interval(self.verificar_acao,1/20)
