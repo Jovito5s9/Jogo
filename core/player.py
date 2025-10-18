@@ -30,7 +30,7 @@ class BasicEnt(FloatLayout):
     vida=NumericProperty(1)
     i_frames=BooleanProperty(False)
     estado=OptionProperty ("idle",
-    options=("idle","running"))
+    options=("idle","running","atacando"))
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size = (32, 32)
@@ -40,6 +40,7 @@ class BasicEnt(FloatLayout):
         self.vida_maxima=100
         self.vida = self.vida_maxima
         self.vivo=True
+        self.ataque_name=""
         self.repulsao=10
         self.dano = 5
         self.atacando=False
@@ -50,6 +51,7 @@ class BasicEnt(FloatLayout):
         self.facing_right = True
         self.idle_frames=1
         self.running_frames=1
+        self.atacando_frames=1
         self.alvo=False
         self.player=None
         self.hitbox=()
@@ -83,7 +85,7 @@ class BasicEnt(FloatLayout):
         self.update_texture()
 
         # Agendar a animação
-        Clock.schedule_interval(self.animation, 0.3)
+        Clock.schedule_interval(self.animation, 0.2)
         self.image.bind(pos=self.on_image_pos)
         self.barra_vida=Barra(size=(self.image.width,10),pos=(self.image.center_x,self.image.center_y))
         self.barra_vida.w=self.image.width/3
@@ -101,7 +103,9 @@ class BasicEnt(FloatLayout):
             self.facing_right = True
         elif self.speed_x < 0:
             self.facing_right = False
-        if self.speed_x!=0 or self.speed_y:
+        if self.atacando:
+            self.estado="atacando"
+        elif self.speed_x!=0 or self.speed_y:
             self.estado="running"
         else:
             self.estado="idle"
@@ -109,6 +113,12 @@ class BasicEnt(FloatLayout):
         self.hitbox = self.get_hitbox()
 
     def on_estado(self,*args):
+        if self.estado=="atacando":
+            self.sprite_sheet = Image(source=self.sources.get(f"{self.ataque_name}")).texture
+            self.frame_width = 32
+            self.frame_height = 32
+            self.total_frames = self.atacando_frames
+            self.current_frame = 0
         if self.estado=="idle":
             self.sprite_sheet = Image(source=self.sources.get("idle")).texture
             self.frame_width = 32
@@ -214,11 +224,13 @@ def atacar(atacante,alvo=None):
     if alvo is None:
         alvo=atacante.player
     if not alvo.i_frames:
+        atacante.estado="atacando"
         alvo.image.x+=atacante.speed_x*atacante.repulsao
         alvo.image.y+=atacante.speed_y*atacante.repulsao
         atacante.speed_x=0
         atacante.speed_y=0
         alvo.vida-=atacante.dano
+        print(atacante.estado)
     return
 
 def distancia(ent1,ent2=None):
@@ -247,8 +259,10 @@ class Rato(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/rato/idle.png"
         self.sources["running"]="assets/sprites/rato/running.png"
+        self.sources["garras"]="assets/sprites/rato/garras.png"
         self.idle_frames=2
         self.running_frames=2
+        self.atacando_frames=2
         
         self.atualizar()
         self.acoes=ia_base()
@@ -272,9 +286,10 @@ class Rato(BasicEnt):
             return
         if self.alvo:
             if distancia(self)<=self.alcance_fisico and not self.atacando:
+                self.ataque_name="garras"
                 self.acoes["atacar"](self)
                 self.atacando=True
-                Clock.schedule_once(self.atualizar_atacando)
+                Clock.schedule_once(self.atualizar_atacando,0.4)
             else:
                 self.acoes["perseguir"](self)
         else:
@@ -283,7 +298,10 @@ class Rato(BasicEnt):
     
     def atualizar_atacando(self,*args):
         self.atacando=False
-
+        if self.speed_x or self.speed_y:
+            self.estado = "running"
+        else:
+            self.estado = "idle"
 
 class Player(BasicEnt):
     def __init__(self, **kwargs):
@@ -318,11 +336,15 @@ class Player(BasicEnt):
                 if (self.parent.collision(ent.hitbox,ataque_hitbox)):
                     atacar(self,ent)
                     print("player atacou")
-        Clock.schedule_once(self.remover_ataque,0.2)
+        Clock.schedule_once(self.remover_ataque,0.4)
     
     def remover_ataque(self,*args):
         self.remove_widget(self.ataque)
         self.atacando=False
+        if self.speed_x or self.speed_y:
+            self.estado = "running"
+        else:
+            self.estado = "idle"
     
     def verificar_acao(self, *args):
         if not self.acao:
