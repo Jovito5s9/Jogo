@@ -30,7 +30,7 @@ class BasicEnt(FloatLayout):
     vida=NumericProperty(1)
     i_frames=BooleanProperty(False)
     estado=OptionProperty ("idle",
-    options=("idle","running","atacando"))
+    options=("idle","running","atacando","morto"))
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size = (32, 32)
@@ -101,6 +101,8 @@ class BasicEnt(FloatLayout):
             self.image.y+=self.speed_y*self.velocidade 
 
     def atualizar_pos(self,*args):
+        if not self.vivo:
+            return
         if self.speed_x > 0:
             self.facing_right = True
         elif self.speed_x < 0:
@@ -115,13 +117,17 @@ class BasicEnt(FloatLayout):
         self.hitbox = self.get_hitbox()
 
     def on_estado(self,*args):
+        if not self.vivo:
+            self.sprite_sheet = Image(source=self.sources.get("morto")).texture
+            self.total_frames = 1
+            return
         if self.estado=="atacando":
             self.sprite_sheet = Image(source=self.sources.get(f"{self.ataque_name}")).texture
             self.frame_width = 32
             self.frame_height = 32
             self.total_frames = self.atacando_frames
             self.current_frame = 0
-        if self.estado=="idle":
+        elif self.estado=="idle":
             self.sprite_sheet = Image(source=self.sources.get("idle")).texture
             self.frame_width = 32
             self.frame_height = 32
@@ -182,6 +188,7 @@ class BasicEnt(FloatLayout):
     
     def morrer(self,*args):
         self.vivo=False
+        self.estado="morto"
         self.speed_x=0
         self.speed_y=0
 
@@ -267,6 +274,7 @@ class Rato(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/rato/idle.png"
         self.sources["running"]="assets/sprites/rato/running.png"
+        self.sources["morto"]="assets/sprites/rato/morto.png"
         self.sources["garras"]="assets/sprites/rato/garras.png"
         self.idle_frames=2
         self.running_frames=2
@@ -316,6 +324,7 @@ class Player(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/player/idle.png"
         self.sources["running"]="assets/sprites/player/running.png"
+        self.sources["morto"]="assets/sprites/player/morto.png"
         self.sources["soco"]="assets/sprites/player/soco.png"
         self.idle_frames=2
         self.running_frames=4
