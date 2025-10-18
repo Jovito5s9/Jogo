@@ -31,6 +31,7 @@ class Object(FloatLayout):
         
         global size
         self.s=source
+        self.type=source
         self.source="assets/tiles/objects/"+f"{source}"
         self.size = (size, size*0.8)
 
@@ -43,7 +44,10 @@ class Object(FloatLayout):
         )
         if source=='pedra.png':
             self.hitbox=[self.x+(self.width*0.05),self.y+(self.height*0.2),self.width*0.6, self.height*0.6]
-            
+        
+        if self.type=="entrada_esgoto.png":
+            Clock.schedule_once(self.spawn,3)
+        
         self.add_widget(self.image)
 
         self.bind(pos=self.update_image_pos)
@@ -65,7 +69,17 @@ class Object(FloatLayout):
         if self.s=='pedra.png':
             self.hitbox=[self.x+(self.width*0.15),self.y+(self.height*0.5),self.width*0.7, self.height*0.6]
         
-        
+    def spawn(self,*args):
+        world = self.parent
+        if not world:
+            return
+        if self.type=="entrada_esgoto.png":
+            
+            rato=Rato()
+            rato.image.pos = (self.image.x,self.image.y)
+            print(rato.pos)
+            world.add_widget(rato)
+            world.ents.append(rato)
         
 
     def on_center_changed(self, *args):
@@ -109,8 +123,6 @@ class Grid(FloatLayout):
         self.bind(patern_center=self.on_center_changed)
 
         self.position()
-        if self.type=="entrada_esgoto.png":
-            Clock.schedule_once(self.spawn,3)
 
     def update_image_pos(self, *args):
         self.image.pos = self.pos
@@ -124,22 +136,6 @@ class Grid(FloatLayout):
     def on_center_changed(self, *args):
         self.position()
     
-    def spawn(self,*args):
-        world = self.parent
-        if not world:
-            return
-        if self.type=="entrada_esgoto.png":
-            
-            rato=Rato()
-            rato.image.pos = (self.image.x,self.image.y)
-            print(rato.pos)
-            world.add_widget(rato)
-            world.ents.append(rato)
-    
-    def unspawn(self,ent):
-        self.ents.remove(ent)
-        self.remove_widget(ent)
-        Clock.schedule_once(self.spawn, random.randint(0,20))
 
 
 #outra class começa a baixo
@@ -172,22 +168,12 @@ class World(FloatLayout):
 
         for y in range(self.linhas):
             for x in range(self.colunas):
-                m=self.linhas*self.colunas
-                m = random.randint(0,m)
-                if m < 3 :
-                    grid = Grid(
+                grid = Grid(
                     posicao=(x, y),
                     patern_center=(offset_x, offset_y),
                     max=(self.linhas, self.colunas),
-                    source="entrada_esgoto.png"
+                    source="terra.png"
                 )
-                else:
-                    grid = Grid(
-                        posicao=(x, y),
-                        patern_center=(offset_x, offset_y),
-                        max=(self.linhas, self.colunas),
-                        source="terra.png"
-                    )
                 self.add_widget(grid)
         self.player.image.pos=(offset_x,offset_y )
         self.ents.append(self.player)
@@ -197,12 +183,22 @@ class World(FloatLayout):
                 r=random.randint(0,10)
                 if r==0:
                     if not((x==0 or x==1) and (y==0 or y==1)):
-                        obj = Object(
+                        m=self.linhas*self.colunas
+                        m = random.randint(0,m)
+                        if m < 10 :
+                            obj = Object(
                             posicao=(x, y),
                             patern_center=(offset_x, offset_y),
                             max=(self.linhas, self.colunas),
-                            source="pedra.png"
+                            source="entrada_esgoto.png"
                         )
+                        else:
+                            obj = Object(
+                                posicao=(x, y),
+                                patern_center=(offset_x, offset_y),
+                                max=(self.linhas, self.colunas),
+                                source="pedra.png"
+                            )
                         obj_list.append(obj)
                         self.add_widget(obj)
         
