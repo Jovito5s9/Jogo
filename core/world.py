@@ -183,9 +183,8 @@ class World(FloatLayout):
                 r=random.randint(0,10)
                 if r==0:
                     if not((x==0 or x==1) and (y==0 or y==1)):
-                        m=self.linhas*self.colunas
-                        m = random.randint(0,m)
-                        if m < 10 :
+                        m = random.randint(0,100)
+                        if m < 30  :
                             obj = Object(
                             posicao=(x, y),
                             patern_center=(offset_x, offset_y),
@@ -239,6 +238,11 @@ class World(FloatLayout):
                 ent.image.x = original_x
                 ent.speed_x = 0
                 ent.hitbox = ent.get_hitbox()
+                if self.collision(ent.hitbox, obj.hitbox):
+                    #segundo teste
+                    ent.image.x = obj.image.x+obj.image.width
+                    ent.speed_x = 0
+                    ent.hitbox = ent.get_hitbox()
         for entit in self.ents:
             if ent==entit:
                 continue
@@ -262,6 +266,11 @@ class World(FloatLayout):
                 ent.image.y = original_y
                 ent.speed_y = 0
                 ent.hitbox = ent.get_hitbox()
+                if self.collision(ent.hitbox, obj.hitbox):
+                    #segundo teste
+                    ent.image.y = obj.image.y
+                    ent.speed_y = 0
+                    ent.hitbox = ent.get_hitbox()
 
         for entit in self.ents:
             if ent==entit:

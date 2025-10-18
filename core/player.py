@@ -212,18 +212,16 @@ def mover(ent,dx,dy):
     ent.speed_y=dy
 
 def perseguir(rastreador):
+    dx=0
+    dy=0
     if rastreador.player.image.center_x>rastreador.image.center_x:
         dx=1
     elif rastreador.player.image.center_x<rastreador.image.center_x:
         dx=-1
-    else:
-        dx=0
     if rastreador.player.image.center_y>rastreador.image.center_y:
         dy=1
     elif rastreador.player.image.center_y<rastreador.image.center_y:
         dy=-1
-    else:
-        dx=0
     mover(rastreador,dx,dy)
 
 def rastrear(rastreador):
