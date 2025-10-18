@@ -85,7 +85,7 @@ class BasicEnt(FloatLayout):
         self.update_texture()
 
         # Agendar a animação
-        Clock.schedule_interval(self.animation, 0.2)
+        Clock.schedule_interval(self.animation, 0.1)
         self.image.bind(pos=self.on_image_pos)
         self.barra_vida=Barra(size=(self.image.width,10),pos=(self.image.center_x,self.image.center_y))
         self.barra_vida.w=self.image.width/3
@@ -308,8 +308,10 @@ class Player(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/player/idle.png"
         self.sources["running"]="assets/sprites/player/running.png"
+        self.sources["soco"]="assets/sprites/player/soco.png"
         self.idle_frames=2
         self.running_frames=4
+        self.atacando_frames=3
 
         self.atualizar()
         self.ataque_size=80
@@ -324,9 +326,10 @@ class Player(BasicEnt):
             self.acao=""
             return
         self.atacando=True
+        self.ataque_name="soco"
         self.ataque=Widget(
             size=(self.ataque_size,self.ataque_size),
-            pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2)),
+            pos=(self.center_hitbox_x+(self.speed_x*self.ataque_size/3),self.center_hitbox_y+(self.speed_y*self.ataque_size/3)),
             )
         print("ataque gerado")
         ataque_hitbox=[self.center_hitbox_x+(self.speed_x*self.ataque_size/2),self.center_hitbox_y+(self.speed_y*self.ataque_size/2),self.ataque_size,self.ataque_size]
@@ -336,7 +339,7 @@ class Player(BasicEnt):
                 if (self.parent.collision(ent.hitbox,ataque_hitbox)):
                     atacar(self,ent)
                     print("player atacou")
-        Clock.schedule_once(self.remover_ataque,0.4)
+        Clock.schedule_once(self.remover_ataque,0.3)
     
     def remover_ataque(self,*args):
         self.remove_widget(self.ataque)
