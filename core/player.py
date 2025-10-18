@@ -39,6 +39,7 @@ class BasicEnt(FloatLayout):
         self.i_frames_time=0.8
         self.vida_maxima=100
         self.vida = self.vida_maxima
+        self.vivo=True
         self.dano = 5
         self.atacando=False
         self.alcance_fisico=70
@@ -167,8 +168,9 @@ class BasicEnt(FloatLayout):
             Clock.schedule_once(self.perder_i_frames,self.i_frames_time)
     
     def morrer(self,*args):
-        self.parent.ents.remove(self)
-        #self.parent.remove_widget(self)
+        self.vivo=False
+        self.speed_x=0
+        self.speed_y=0
 
     def on_vida(self,*args):
         self.i_frames=True
@@ -263,14 +265,21 @@ class Rato(BasicEnt):
         self.player=self.parent.player
 
     def ia(self,*args):
+        if not self.vivo:
+            return
         if self.alvo:
-            if distancia(self)<=self.alcance_fisico:
+            if distancia(self)<=self.alcance_fisico and not self.atacando:
                 self.acoes["atacar"](self)
+                self.atacando=True
+                Clock.schedule_once(self.atualizar_atacando)
             else:
                 self.acoes["perseguir"](self)
         else:
             self.acoes["rastrear"](self)
         pass
+    
+    def atualizar_atacando(self,*args):
+        self.atacando=False
 
 
 class Player(BasicEnt):
