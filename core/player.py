@@ -85,7 +85,7 @@ class BasicEnt(FloatLayout):
         self.update_texture()
 
         # Agendar a animação
-        Clock.schedule_interval(self.animation, 0.1)
+        Clock.schedule_interval(self.animation, 0.15)
         self.image.bind(pos=self.on_image_pos)
         self.barra_vida=Barra(size=(self.image.width,10),pos=(self.image.center_x,self.image.center_y))
         self.barra_vida.w=self.image.width/3
@@ -93,10 +93,12 @@ class BasicEnt(FloatLayout):
         self.add_widget(self.barra_vida)
 
     def move_x(self,*args):
-        self.image.x+=self.speed_x*self.velocidade 
+        if self.vivo:
+            self.image.x+=self.speed_x*self.velocidade 
     
     def move_y(self,*args):
-        self.image.y+=self.speed_y*self.velocidade 
+        if self.vivo:
+            self.image.y+=self.speed_y*self.velocidade 
 
     def atualizar_pos(self,*args):
         if self.speed_x > 0:
@@ -225,8 +227,14 @@ def atacar(atacante,alvo=None):
         alvo=atacante.player
     if not alvo.i_frames:
         atacante.estado="atacando"
-        alvo.image.x+=atacante.speed_x*atacante.repulsao
-        alvo.image.y+=atacante.speed_y*atacante.repulsao
+        knockback=1
+        if not alvo.vivo:
+            knockback=2
+        if atacante.facing_right:
+            alvo.image.x+=atacante.repulsao*knockback
+        else:
+            alvo.image.x-=atacante.repulsao*knockback
+        alvo.image.y+=atacante.speed_y*atacante.repulsao*knockback
         atacante.speed_x=0
         atacante.speed_y=0
         alvo.vida-=atacante.dano
@@ -339,7 +347,7 @@ class Player(BasicEnt):
                 if (self.parent.collision(ent.hitbox,ataque_hitbox)):
                     atacar(self,ent)
                     print("player atacou")
-        Clock.schedule_once(self.remover_ataque,0.3)
+        Clock.schedule_once(self.remover_ataque,0.4)
     
     def remover_ataque(self,*args):
         self.remove_widget(self.ataque)
@@ -350,7 +358,7 @@ class Player(BasicEnt):
             self.estado = "idle"
     
     def verificar_acao(self, *args):
-        if not self.acao:
+        if not self.acao or not self.vivo:
             return
 
         action = self.acoes.get(self.acao)
