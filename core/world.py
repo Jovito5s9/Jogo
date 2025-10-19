@@ -7,6 +7,8 @@ from kivy.clock import Clock
 
 import random
 
+from core.player import Rato
+
 size=90
 obj_list=[ ]
 
@@ -29,6 +31,7 @@ class Object(FloatLayout):
         
         global size
         self.s=source
+        self.type=source
         self.source="assets/tiles/objects/"+f"{source}"
         self.size = (size, size*0.8)
 
@@ -41,7 +44,10 @@ class Object(FloatLayout):
         )
         if source=='pedra.png':
             self.hitbox=[self.x+(self.width*0.05),self.y+(self.height*0.2),self.width*0.6, self.height*0.6]
-            
+        
+        if self.type=="entrada_esgoto.png":
+            Clock.schedule_once(self.spawn,3)
+        
         self.add_widget(self.image)
 
         self.bind(pos=self.update_image_pos)
@@ -63,7 +69,17 @@ class Object(FloatLayout):
         if self.s=='pedra.png':
             self.hitbox=[self.x+(self.width*0.15),self.y+(self.height*0.5),self.width*0.7, self.height*0.6]
         
-        
+    def spawn(self,*args):
+        world = self.parent
+        if not world:
+            return
+        if self.type=="entrada_esgoto.png":
+            
+            rato=Rato()
+            rato.image.pos = (self.image.x,self.image.y)
+            print(rato.pos)
+            world.add_widget(rato)
+            world.ents.append(rato)
         
 
     def on_center_changed(self, *args):
@@ -87,7 +103,8 @@ class Grid(FloatLayout):
     def __init__(self,source, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        
+        self.ents=[]
+        self.type=source
         global size
         global obj_list
         self.source="assets/tiles/ground/"+f"{source}"
@@ -118,6 +135,8 @@ class Grid(FloatLayout):
 
     def on_center_changed(self, *args):
         self.position()
+    
+
 
 #outra class começa a baixo
 
@@ -131,6 +150,7 @@ class World(FloatLayout):
         self.player=None
         self.size = (Window.width, Window.height)
         self.limites=[]
+        self.ents=[]
 
     def create(self, xm, ym):
         global size
@@ -155,19 +175,29 @@ class World(FloatLayout):
                     source="terra.png"
                 )
                 self.add_widget(grid)
-        self.player.image.pos=(offset_x-20,offset_y )
+        self.player.image.pos=(offset_x,offset_y )
+        self.ents.append(self.player)
         
         for y in range(self.linhas):
             for x in range(self.colunas):
                 r=random.randint(0,10)
                 if r==0:
-                    if not(x==0 and y==0):
-                        obj = Object(
+                    if not((x==0 or x==1) and (y==0 or y==1)):
+                        m = random.randint(0,100)
+                        if m < 30  :
+                            obj = Object(
                             posicao=(x, y),
                             patern_center=(offset_x, offset_y),
                             max=(self.linhas, self.colunas),
-                            source="pedra.png"
+                            source="entrada_esgoto.png"
                         )
+                        else:
+                            obj = Object(
+                                posicao=(x, y),
+                                patern_center=(offset_x, offset_y),
+                                max=(self.linhas, self.colunas),
+                                source="pedra.png"
+                            )
                         obj_list.append(obj)
                         self.add_widget(obj)
         
@@ -177,17 +207,14 @@ class World(FloatLayout):
     
     
     def collision_verify(self, *args):        
-        self.verificar_colisao_horizontal(self.player) 
-        self.verificar_colisao_vertical(self.player)
-        self.map_collision(self.player)
+        for ent in self.ents:
+            self.verificar_colisao_horizontal(ent) 
+            self.verificar_colisao_vertical(ent)
+            self.map_collision(ent)
         
             
 
     def map_collision(self,ent):
-        original_x = ent.image.x
-        ent.image.x += ent.speed_x * ent.velocidade
-        original_y = ent.image.y
-        ent.image.y += ent.speed_y * ent.velocidade
         ent.hitbox = ent.get_hitbox()
         if ent.image.x>self.x+self.width-(ent.image.width*0.75):
             ent.image.x=self.width+self.x-(ent.image.width*0.75)
@@ -200,7 +227,7 @@ class World(FloatLayout):
             
     def verificar_colisao_horizontal(self,ent):
         original_x = ent.image.x
-        ent.image.x += ent.speed_x * ent.velocidade
+        ent.move_x()
         ent.hitbox = ent.get_hitbox()
     
         for obj in obj_list:
@@ -211,12 +238,24 @@ class World(FloatLayout):
                 ent.image.x = original_x
                 ent.speed_x = 0
                 ent.hitbox = ent.get_hitbox()
-                return
+                if self.collision(ent.hitbox, obj.hitbox):
+                    #segundo teste
+                    ent.image.x = obj.image.x+obj.image.width
+                    ent.speed_x = 0
+                    ent.hitbox = ent.get_hitbox()
+        for entit in self.ents:
+            if ent==entit:
+                continue
+            if self.collision(ent.hitbox, entit.hitbox):
+                # Reverte X e zera velocidade no eixo Y
+                ent.image.x = original_x
+                ent.speed_x = 0
+                ent.hitbox = ent.get_hitbox()
 
 
     def verificar_colisao_vertical(self,ent):
         original_y = ent.image.y
-        ent.image.y += ent.speed_y * ent.velocidade
+        ent.move_y()
         ent.hitbox = ent.get_hitbox()
     
         for obj in obj_list:
@@ -227,14 +266,29 @@ class World(FloatLayout):
                 ent.image.y = original_y
                 ent.speed_y = 0
                 ent.hitbox = ent.get_hitbox()
-                return
+                if self.collision(ent.hitbox, obj.hitbox):
+                    #segundo teste
+                    ent.image.y = obj.image.y
+                    ent.speed_y = 0
+                    ent.hitbox = ent.get_hitbox()
 
+        for entit in self.ents:
+            if ent==entit:
+                continue
+            if self.collision(ent.hitbox, entit.hitbox):
+                # Reverte Y e zera velocidade no eixo Y
+                ent.image.y = original_y
+                ent.speed_y = 0
+                ent.hitbox = ent.get_hitbox()
 
+    def atualizar_sprites(self,*args):
+        for ent in self.ents:
+            ent.atualizar_pos()
         
     
     def atualizar(self,*args):
         Clock.schedule_interval(self.collision_verify,1/60)
-        Clock.schedule_interval(self.player.atualizar_pos,1/30)
+        Clock.schedule_interval(self.atualizar_sprites,1/30)
     
     def collision(self,hitbox1, hitbox2):
         x1, y1, w1, h1 = hitbox1
