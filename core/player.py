@@ -5,6 +5,8 @@ from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty,BooleanProperty, NumericProperty
 
+import random
+
 class Barra(Widget):
     modificador=NumericProperty(100)
     def __init__(self, **kwargs):
@@ -58,6 +60,7 @@ class BasicEnt(FloatLayout):
         self.center_hitbox_x=0
         self.center_hitbox_y=0
         self.sources={}
+        self.list_drops={}
         self.inventario={}
 
         
@@ -186,12 +189,23 @@ class BasicEnt(FloatLayout):
     def on_i_frames(self,*args):
         if self.i_frames:
             Clock.schedule_once(self.perder_i_frames,self.i_frames_time)
+        
+    def drop(self, *args):
+        if not self.list_drops:
+            print("sem drops")
+            return
+        for drop, quantidade in self.list_drops.items():
+            self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
+        print("Inventário após drops:", self.parent.player.inventario)
+
     
     def morrer(self,*args):
         self.vivo=False
         self.estado="morto"
         self.speed_x=0
         self.speed_y=0
+        if not self.parent.player==self:
+            self.drop()
 
     def on_vida(self,*args):
         self.i_frames=True
@@ -296,6 +310,7 @@ class Rato(BasicEnt):
         self.vida=30
         self.dano=5
         self.velocidade=1.5
+        self.list_drops["carne"]=random.randint(0,2)
     
     def add_player(self,*args):
         self.player=self.parent.player
