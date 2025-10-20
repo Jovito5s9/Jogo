@@ -58,6 +58,7 @@ class BasicEnt(FloatLayout):
         self.center_hitbox_x=0
         self.center_hitbox_y=0
         self.sources={}
+        self.inventario={}
 
         
         
