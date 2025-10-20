@@ -61,6 +61,7 @@ class BasicEnt(FloatLayout):
         self.center_hitbox_y=0
         self.sources={}
         self.list_drops={}
+        self.droped=False
         self.inventario={}
 
         
@@ -191,12 +192,13 @@ class BasicEnt(FloatLayout):
             Clock.schedule_once(self.perder_i_frames,self.i_frames_time)
         
     def drop(self, *args):
-        if not self.list_drops:
+        if not self.list_drops or self.droped:
             print("sem drops")
             return
         for drop, quantidade in self.list_drops.items():
             self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
         print("Inventário após drops:", self.parent.player.inventario)
+        self.droped=True
 
     
     def morrer(self,*args):
