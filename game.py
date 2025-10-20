@@ -40,11 +40,12 @@ class Interface(FloatLayout):
     
     def configuracoes(self):
         try:
-            with open("configuracoes.json","r",encoding="utf-8") as config:
+            with open("saved/configuracoes.json","r",encoding="utf-8") as config:
                 self.configs=json.load(config)
         except:
-            with open("configuracoes.json","w",encoding="utf-8") as config:
+            with open("saved/configuracoes.json","w",encoding="utf-8") as config:
                 newconfig={"teclado": False}
+                self.configs=newconfig
                 json.dump(newconfig, config)
 
 
@@ -171,7 +172,7 @@ class MenuScreen(Screen):
 class ConfiguracoesScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        with open("configuracoes.json","r",encoding="utf-8") as config:
+        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
                 self.configs=json.load(config)
         self.teclado=self.configs["teclado"]
         if self.teclado:
@@ -206,10 +207,10 @@ class ConfiguracoesScreen(Screen):
         Window.bind(on_keyboard=self.ir_para_menu)
     
     def trocar_input(self,*args):
-        with open("configuracoes.json","r",encoding="utf-8") as config:
+        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
             self.configs=json.load(config)
         self.configs["teclado"]=not self.configs["teclado"]
-        with open("configuracoes.json","w",encoding="utf-8") as old_config:
+        with open("saved/configuracoes.json","w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         if self.configs["teclado"]:
             self.input='Modo teclado'
