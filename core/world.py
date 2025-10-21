@@ -207,14 +207,18 @@ class World(FloatLayout):
     
 
     def add_objects(self,type,grid):
+        grid_x,grid_y=grid
         obj=Object(
-            posicao=grid,
+            posicao=(grid_y,grid_x),
             patern_center=(self.offset_x,self.offset_y),
             max=(self.linhas,self.colunas),
             source=type+".png"
         )
         self.add_widget(obj)
         obj_list.append(obj)
+        for ent in self.ents:
+            self.remove_widget(ent)
+            self.add_widget(ent)
     
     
     def collision_verify(self, *args):        
