@@ -161,21 +161,21 @@ class World(FloatLayout):
         self.size=(size*xm,size*ym*0.8)
 
         # Posição inicial (superior esquerdo) para começar a desenhar centralizado
-        offset_x = (Window.width/2)-(self.width/2)
-        offset_y = (Window.height/2)-(self.height/2)
-        self.pos=(offset_x,offset_y)
+        self.offset_x = (Window.width/2)-(self.width/2)
+        self.offset_y = (Window.height/2)-(self.height/2)
+        self.pos=(self.offset_x,self.offset_y)
         self.limites=(self.x,self.y,self.x+self.width,self.y+self.height)
 
         for y in range(self.linhas):
             for x in range(self.colunas):
                 grid = Grid(
                     posicao=(x, y),
-                    patern_center=(offset_x, offset_y),
+                    patern_center=(self.offset_x, self.offset_y),
                     max=(self.linhas, self.colunas),
                     source="terra.png"
                 )
                 self.add_widget(grid)
-        self.player.image.pos=(offset_x,offset_y )
+        self.player.image.pos=(self.offset_x,self.offset_y )
         self.ents.append(self.player)
         
         for y in range(self.linhas):
@@ -187,14 +187,14 @@ class World(FloatLayout):
                         if m < 30  :
                             obj = Object(
                             posicao=(x, y),
-                            patern_center=(offset_x, offset_y),
+                            patern_center=(self.offset_x, self.offset_y),
                             max=(self.linhas, self.colunas),
                             source="entrada_esgoto.png"
                         )
                         else:
                             obj = Object(
                                 posicao=(x, y),
-                                patern_center=(offset_x, offset_y),
+                                patern_center=(self.offset_x, self.offset_y),
                                 max=(self.linhas, self.colunas),
                                 source="pedra.png"
                             )
@@ -204,6 +204,17 @@ class World(FloatLayout):
         self.add_widget(self.player)
         self.atualizar()
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
+    
+
+    def add_objects(self,type,grid):
+        obj=Object(
+            posicao=grid,
+            patern_center=(self.offset_x,self.offset_y),
+            max=(self.linhas,self.colunas),
+            source=type+".png"
+        )
+        self.add_widget(obj)
+        obj_list.append(obj)
     
     
     def collision_verify(self, *args):        
