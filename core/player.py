@@ -63,6 +63,7 @@ class BasicEnt(FloatLayout):
         self.list_drops={}
         self.droped=False
         self.inventario={}
+        self.grid=[]
 
         
         

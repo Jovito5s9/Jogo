@@ -211,8 +211,15 @@ class World(FloatLayout):
             self.verificar_colisao_horizontal(ent) 
             self.verificar_colisao_vertical(ent)
             self.map_collision(ent)
+            self.grid_verify(ent)
         
-            
+    def grid_verify(self,ent):
+        grid_x=(ent.center_hitbox_x-self.x)/(self.width/self.colunas)
+        grid_y=(ent.center_hitbox_y-self.y)/(self.height/self.linhas)
+        grid_x=int(grid_x)
+        grid_y=int(grid_y)
+        ent.grid=grid_x,grid_y
+
 
     def map_collision(self,ent):
         ent.hitbox = ent.get_hitbox()
