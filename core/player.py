@@ -6,6 +6,8 @@ from kivy.uix.image import Image
 from kivy.properties import OptionProperty,BooleanProperty, NumericProperty
 
 import random
+import json
+import os
 
 class Barra(Widget):
     modificador=NumericProperty(100)
@@ -198,6 +200,7 @@ class BasicEnt(FloatLayout):
             return
         for drop, quantidade in self.list_drops.items():
             self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
+            self.save_data("inventario",{drop:self.parent.player.inventario[drop]})
         print("Inventário após drops:", self.parent.player.inventario)
         self.droped=True
 
@@ -222,6 +225,44 @@ class BasicEnt(FloatLayout):
         if self.vida<=0:
             self.morrer()
     
+
+    def save_data(self, item, key):
+        path = "saved/player.json"
+        if not os.path.exists(path):
+            data = {}
+        else:
+            with open(path, "r", encoding="utf-8") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
+        encontrado = False
+        if item in data:
+            if isinstance(data[item], list):
+                if key not in data[item]:
+                    data[item].append(key)
+            elif isinstance(data[item], dict):
+                data[item].update(key)
+            else:
+                data[item] = key
+            encontrado = True
+        else:
+            for k, v in data.items():
+                if isinstance(v, dict):
+                    if item in v:
+                        v[item] = key
+                        encontrado = True
+                        break
+                elif isinstance(v, list):
+                    if item in v:
+                        v.append(key)
+                        encontrado = True
+                        break
+        if not encontrado:
+            data[item] = key
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
 
 
 
