@@ -1,8 +1,10 @@
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
+from kivy.properties import OptionProperty
 from kivy.clock import Clock 
 from kivy.core.window import Window
 from core.player import Player
@@ -120,6 +122,21 @@ class Game(FloatLayout):
         else:
             self.player.speed_x=0
 
+class Menu_player(Popup):
+    tipo=OptionProperty ("inventario",
+    options=("inventario"," "))
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.title=''
+        self.separator_height=0
+        self.size_hint=(0.8,0.8)
+        self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        self.layout=FloatLayout()
+        self.add_widget(self.layout)
+        self.inventario
+    
+    def inventario(self,*args):
+        pass
 
 class MenuScreen(Screen):
     def __init__(self, **kwargs):
