@@ -119,6 +119,7 @@ class Game(FloatLayout):
             self.player.speed_x=0.9
         elif 97 in self.key_pressed:
             self.player.speed_x=-0.9
+            self.add_widget(Menu_player())
         else:
             self.player.speed_x=0
 
@@ -133,10 +134,39 @@ class Menu_player(Popup):
         self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
         self.layout=FloatLayout()
         self.add_widget(self.layout)
-        self.inventario
+        self.inventario()
     
-    def inventario(self,*args):
-        pass
+    def inventario(self, *args):
+        self.itens_layout = FloatLayout(
+            size_hint=(0.8, 0.8),
+            pos_hint={'center_x': 0.5, 'center_y': 0.4}
+        )
+        try:
+            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
+                player = json.load(arquivo)
+                inventario = player.get("inventario", [])
+            if inventario:
+                y = 0.8
+                for nome, quantidade in inventario.items():
+                    item = Label(
+                        text=f"- {nome} : {quantidade}",
+                        font_size=24,
+                        size_hint=(None, None),
+                        pos_hint={"center_x": 0.5, "center_y": y}
+                    )
+                    self.itens_layout.add_widget(item)
+                    y -= 0.1
+            else:
+                sem_itens = Label(text="Sem itens", font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.5})
+                self.itens_layout.add_widget(sem_itens)
+        except FileNotFoundError:
+            sem_itens = Label(text="Sem arquivo de save", font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.5})
+            self.itens_layout.add_widget(sem_itens)
+        except json.JSONDecodeError:
+            sem_itens = Label(text="Erro ao ler o save", font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.5})
+            self.itens_layout.add_widget(sem_itens)
+        self.layout.add_widget(self.itens_layout)
+
 
 class MenuScreen(Screen):
     def __init__(self, **kwargs):
