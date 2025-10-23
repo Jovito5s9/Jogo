@@ -7,10 +7,13 @@ from kivy.uix.image import Image
 from kivy.properties import OptionProperty
 from kivy.clock import Clock 
 from kivy.core.window import Window
+from kivy.uix.screenmanager import ScreenManager,Screen
+
 from core.player import Player
 from core.world import World
 from utils.joystick import Joystick 
-from kivy.uix.screenmanager import ScreenManager,Screen
+from saved.itens_db import ITENS
+
 import json 
 
 class Interface(FloatLayout):
@@ -138,7 +141,7 @@ class Menu_player(Popup):
     
     def inventario(self, *args):
         self.itens_layout = FloatLayout(
-            size_hint=(0.8, 0.8),
+            size_hint=(1, 0.8),
             pos_hint={'center_x': 0.5, 'center_y': 0.4}
         )
         try:
@@ -148,12 +151,31 @@ class Menu_player(Popup):
             if inventario:
                 y = 0.8
                 for nome, quantidade in inventario.items():
-                    item = Label(
-                        text=f"- {nome} : {quantidade}",
-                        font_size=24,
-                        size_hint=(None, None),
+                    info=ITENS.get(nome,{})
+                    item=FloatLayout(
+                        size_hint=(0.8,0.2),
                         pos_hint={"center_x": 0.5, "center_y": y}
                     )
+                    item_image=Image(
+                        size_hint=(0.6,0.6),
+                        pos_hint={"center_x": 0.1, "center_y": 0.7},
+                        source=info["source"]
+                    )
+                    item_label = Label(
+                        text=f"- {nome} : {quantidade}\n {info["raridade"]}",
+                        font_size=20,
+                        size_hint=(None, None),
+                        pos_hint={"center_x": 0.1, "center_y": 0.2}
+                    )
+                    item_descricao=Label(
+                        text=f"- Descriçâo : {info["descrição"]}",
+                        font_size=20,
+                        size_hint=(None, None),
+                        pos_hint={"center_x": 0.6, "center_y": 0.5}
+                    )
+                    item.add_widget(item_descricao)
+                    item.add_widget(item_image)
+                    item.add_widget(item_label)
                     self.itens_layout.add_widget(item)
                     y -= 0.1
             else:
