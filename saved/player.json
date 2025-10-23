@@ -1,5 +1,8 @@
 {
     "inventario": {
-        "carne": 0
+        "carne": 0,
+        "apatita": 0,
+        "mica" : 0,
+        "cristal vital" : 0
     }
 }

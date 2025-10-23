@@ -1,5 +1,6 @@
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -8,6 +9,7 @@ from kivy.properties import OptionProperty
 from kivy.clock import Clock 
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager,Screen
+from kivy.uix.scrollview import ScrollView
 
 from core.player import Player
 from core.world import World
@@ -64,6 +66,8 @@ class Game(FloatLayout):
         self.world.player=self.player
         
         self.world.create(12,12)
+        self.inventario_menu=False
+        self.menu_player=Menu_player()
         
 
     def pre_enter(self,*args):
@@ -74,6 +78,7 @@ class Game(FloatLayout):
         else:
             self.keyboard_active()
             Clock.schedule_interval(self.keyboard_actions, 1/20)
+        Clock.schedule_interval(self.menus,1/20)
 
     def pre_leave(self,*args):
         if not self.interface.configs["teclado"]:
@@ -83,7 +88,18 @@ class Game(FloatLayout):
             Clock.unschedule_interval(self.keyboard_actions, 1/20)
         self.remove_widget(self.interface)
 
-        
+    def menus(self,*args):
+        if self.inventario_menu:
+            try:
+                self.add_widget(self.menu_player)
+            except:
+                pass
+        else:
+            try:
+                self.remove_widget(self.menu_player)
+            except:
+                pass
+    
 
     def joystick_movs(self,*args):
         self.player.speed_x=self.interface.joystick.x_value
@@ -122,9 +138,11 @@ class Game(FloatLayout):
             self.player.speed_x=0.9
         elif 97 in self.key_pressed:
             self.player.speed_x=-0.9
-            self.add_widget(Menu_player())
         else:
             self.player.speed_x=0
+        
+        if 105 in self.key_pressed:
+            self.inventario_menu= not self.inventario_menu
 
 class Menu_player(Popup):
     tipo=OptionProperty ("inventario",
@@ -133,61 +151,65 @@ class Menu_player(Popup):
         super().__init__(**kwargs)
         self.title=''
         self.separator_height=0
-        self.size_hint=(0.8,0.8)
+        self.size_hint=(0.9,0.9)
         self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
         self.layout=FloatLayout()
         self.add_widget(self.layout)
         self.inventario()
     
     def inventario(self, *args):
-        self.itens_layout = FloatLayout(
+        self.scroll_view = ScrollView(
             size_hint=(1, 0.8),
             pos_hint={'center_x': 0.5, 'center_y': 0.4}
         )
+
+        self.itens_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            spacing=15,
+            padding=10
+        )
+        self.itens_layout.bind(minimum_height=self.itens_layout.setter('height'))
+
         try:
             with open("saved/player.json", "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
-                inventario = player.get("inventario", [])
+                inventario = player.get("inventario", {})
             if inventario:
-                y = 0.8
-                for nome, quantidade in inventario.items():
-                    info=ITENS.get(nome,{})
-                    item=FloatLayout(
-                        size_hint=(0.8,0.2),
-                        pos_hint={"center_x": 0.5, "center_y": y}
-                    )
-                    item_image=Image(
-                        size_hint=(0.6,0.6),
-                        pos_hint={"center_x": 0.1, "center_y": 0.7},
-                        source=info["source"]
-                    )
-                    item_label = Label(
-                        text=f"- {nome} : {quantidade}\n {info["raridade"]}",
-                        font_size=20,
-                        size_hint=(None, None),
-                        pos_hint={"center_x": 0.1, "center_y": 0.2}
-                    )
+                for nome, quantidade in inventario.items(): 
+                    info=ITENS.get(nome,{}) 
+                    item = FloatLayout(
+                        size_hint_y=None, 
+                        height=120
+                        )
+                    item_image=Image( 
+                        size_hint=(0.6,0.6), 
+                        pos_hint={"center_x": 0.1, "center_y": 0.7}, 
+                        source=info["source"] ) 
+                    item_label = Label( 
+                        text=f"- {nome} : {quantidade}\n {info["raridade"]}", 
+                        font_size=20, 
+                        size_hint=(None, None), 
+                        pos_hint={"center_x": 0.1, "center_y": 0.2} 
+                        ) 
                     item_descricao=Label(
-                        text=f"- Descriçâo : {info["descrição"]}",
-                        font_size=20,
-                        size_hint=(None, None),
-                        pos_hint={"center_x": 0.6, "center_y": 0.5}
-                    )
-                    item.add_widget(item_descricao)
-                    item.add_widget(item_image)
-                    item.add_widget(item_label)
+                         text=f"- Descriçâo : {info["descrição"]}",
+                           font_size=20,
+                            size_hint=(None, None),
+                            pos_hint={"center_x": 0.6, "center_y": 0.5} 
+                            ) 
+                    item.add_widget(item_descricao) 
+                    item.add_widget(item_image) 
+                    item.add_widget(item_label) 
                     self.itens_layout.add_widget(item)
-                    y -= 0.1
             else:
-                sem_itens = Label(text="Sem itens", font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.5})
-                self.itens_layout.add_widget(sem_itens)
-        except FileNotFoundError:
-            sem_itens = Label(text="Sem arquivo de save", font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.5})
-            self.itens_layout.add_widget(sem_itens)
-        except json.JSONDecodeError:
-            sem_itens = Label(text="Erro ao ler o save", font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.5})
-            self.itens_layout.add_widget(sem_itens)
-        self.layout.add_widget(self.itens_layout)
+                self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
+        except Exception as e:
+            self.itens_layout.add_widget(Label(text=str(e), font_size=30))
+
+        self.scroll_view.add_widget(self.itens_layout)
+        self.layout.add_widget(self.scroll_view)
+
 
 
 class MenuScreen(Screen):
