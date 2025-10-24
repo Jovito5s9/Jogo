@@ -90,15 +90,9 @@ class Game(FloatLayout):
 
     def menus(self,*args):
         if self.inventario_menu:
-            try:
-                self.add_widget(self.menu_player)
-            except:
-                pass
+            self.menu_player.open()
         else:
-            try:
-                self.remove_widget(self.menu_player)
-            except:
-                pass
+            self.menu_player.dismiss()
     
 
     def joystick_movs(self,*args):
@@ -155,9 +149,14 @@ class Menu_player(Popup):
         self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
         self.layout=FloatLayout()
         self.add_widget(self.layout)
+
+    def on_open(self):
         self.inventario()
     
     def inventario(self, *args):
+
+        self.layout.clear_widgets()
+
         self.scroll_view = ScrollView(
             size_hint=(1, 0.8),
             pos_hint={'center_x': 0.5, 'center_y': 0.4}
