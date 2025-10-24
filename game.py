@@ -78,7 +78,7 @@ class Game(FloatLayout):
         else:
             self.keyboard_active()
             Clock.schedule_interval(self.keyboard_actions, 1/20)
-        Clock.schedule_interval(self.menus,1/20)
+        Clock.schedule_interval(self.menus,1/10)
 
     def pre_leave(self,*args):
         if not self.interface.configs["teclado"]:
@@ -120,6 +120,8 @@ class Game(FloatLayout):
     
     def on_key_down(self, window, key, *args):
         self.key_pressed.add(key)
+        if key == 105:
+            self.inventario_menu= not self.inventario_menu
     
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)
@@ -141,8 +143,6 @@ class Game(FloatLayout):
         else:
             self.player.speed_x=0
         
-        if 105 in self.key_pressed:
-            self.inventario_menu= not self.inventario_menu
 
 class Menu_player(Popup):
     tipo=OptionProperty ("inventario",
