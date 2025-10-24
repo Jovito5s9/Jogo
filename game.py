@@ -21,7 +21,6 @@ import json
 class Interface(FloatLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        self.size_hint = None, None
         self.configs=[]
         self.configuracoes()
 
@@ -31,19 +30,31 @@ class Interface(FloatLayout):
     def add_ui(self,*args):
         self.add_joytick()
         self.add_button_ataque()
+        self.add_button_quebrar()
+        self.add_button_inventario()
 
         Clock.schedule_once(self.bind_buttons,1)
     
     def add_joytick(self):
-        self.joystick = Joystick(size_hint=(None, None), size=(400, 400), pos_hint={'center_x': 2, 'center_y': 2})
+        self.joystick = Joystick(size_hint=(None, None), size=(400, 400), pos_hint={'center_x': 0.175, 'center_y': 0.175})
         self.add_widget(self.joystick)
     
     def add_button_ataque(self,*args):
-        self.button_ataque=Button(size=(200,200),pos_hint={'center_x' : 15,'center_y' : 7},text='ataque')
+        self.button_ataque=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.9,'center_y' : 0.7},text='ataque')
         self.add_widget(self.button_ataque)
+    
+    def add_button_quebrar(self,*args):
+        self.button_quebrar=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.85,'center_y' : 0.6},text='quebrar')
+        self.add_widget(self.button_quebrar)
+    
+    def add_button_inventario(self,*args):
+        self.button_inventario=Button(size_hint=(0.075,0.075),pos_hint={'center_x' : 0.5,'center_y' : 0.95},text='inventário')
+        self.add_widget(self.button_inventario)
     
     def bind_buttons(self,*args):
         self.button_ataque.bind(on_release=self.parent.ataque)
+        self.button_quebrar.bind(on_release=self.parent.quebrar)
+        self.button_inventario.bind(on_release=self.parent.inventario)
     
     def configuracoes(self):
         try:
@@ -78,7 +89,6 @@ class Game(FloatLayout):
         else:
             self.keyboard_active()
             Clock.schedule_interval(self.keyboard_actions, 1/20)
-        Clock.schedule_interval(self.menus,1/10)
 
     def pre_leave(self,*args):
         if not self.interface.configs["teclado"]:
@@ -87,12 +97,6 @@ class Game(FloatLayout):
             self.keyboard_desactive()
             Clock.unschedule_interval(self.keyboard_actions, 1/20)
         self.remove_widget(self.interface)
-
-    def menus(self,*args):
-        if self.inventario_menu:
-            self.menu_player.open()
-        else:
-            self.menu_player.dismiss()
     
 
     def joystick_movs(self,*args):
@@ -101,6 +105,15 @@ class Game(FloatLayout):
     
     def ataque(self,*args):
         self.player.acao="atacar"
+    
+    def quebrar(self,*args):
+        self.player.acao="quebrar"
+    
+    def inventario(self,*args):
+        if self.menu_player._window:
+            self.menu_player.dismiss()
+        else:
+            self.menu_player.open()
     
     def keyboard_active(self,*args):
         self.key_pressed=set()
@@ -115,7 +128,7 @@ class Game(FloatLayout):
     def on_key_down(self, window, key, *args):
         self.key_pressed.add(key)
         if key == 105:
-            self.inventario_menu= not self.inventario_menu
+            self.inventario()
     
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)
@@ -123,6 +136,8 @@ class Game(FloatLayout):
     def keyboard_actions(self,*args):
         if 32 in self.key_pressed:
             self.player.acao="atacar"
+        if 98 in self.key_pressed:
+            self.player.acao="quebrar"
         if 119 in self.key_pressed:
             self.player.speed_y=0.9
         elif 115 in self.key_pressed:
@@ -145,7 +160,7 @@ class Menu_player(Popup):
         super().__init__(**kwargs)
         self.title=''
         self.separator_height=0
-        self.size_hint=(0.9,0.9)
+        self.size_hint=(0.8,0.8)
         self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
         self.layout=FloatLayout()
         self.add_widget(self.layout)
@@ -153,13 +168,16 @@ class Menu_player(Popup):
     def on_open(self):
         self.inventario()
     
+    def on_dismiss(self):
+        self.parent.inventario_menu=False
+    
     def inventario(self, *args):
 
         self.layout.clear_widgets()
 
         self.scroll_view = ScrollView(
-            size_hint=(1, 0.8),
-            pos_hint={'center_x': 0.5, 'center_y': 0.4}
+            size_hint=(0.95, 0.95),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
         )
 
         self.itens_layout = BoxLayout(

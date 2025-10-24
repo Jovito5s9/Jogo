@@ -433,6 +433,9 @@ class Player(BasicEnt):
             self.estado = "idle"
     
     def quebrar(self,*args):
+        if self.atacando:
+            self.acao=""
+            return
         alvo_x,alvo_y=self.grid
         self.atacando=True
         self.ataque_name="soco"
@@ -443,7 +446,7 @@ class Player(BasicEnt):
         for obj in self.parent.obj_list:
             if obj.linha==alvo_y and obj.coluna==alvo_x:
                 obj.resistencia-=self.dano
-        Clock.schedule_once(self.remover_ataque,0.4)
+        Clock.schedule_once(self.remover_ataque,0.8)
     
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:
