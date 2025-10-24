@@ -198,11 +198,16 @@ class BasicEnt(FloatLayout):
         if not self.list_drops or self.droped:
             print("sem drops")
             return
-        for drop, quantidade in self.list_drops.items():
-            self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
-            self.save_data("inventario",{drop:self.parent.player.inventario[drop]})
+        self.recive_itens(self.list_drops)
         print("Inventário após drops:", self.parent.player.inventario)
         self.droped=True
+    
+    def recive_itens(self,list_drops):
+        for drop, quantidade in list_drops.items():
+            if quantidade==0:
+                pass
+            self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
+            self.save_data("inventario",{drop:self.parent.player.inventario[drop]})
 
     
     def morrer(self,*args):
@@ -395,7 +400,10 @@ class Player(BasicEnt):
         self.atualizar()
         self.repulsao=20
         self.alcance_fisico=90
-        self.acoes={"atacar":self.atacar}
+        self.acoes={
+            "atacar":self.atacar,
+            "quebrar":self.quebrar
+            }
         self.acao=""
         Clock.schedule_interval(self.verificar_acao,1/20)
 
@@ -423,6 +431,16 @@ class Player(BasicEnt):
             self.estado = "running"
         else:
             self.estado = "idle"
+    
+    def quebrar(self,*args):
+        alvo_x,alvo_y=self.grid
+        if self.facing_right:
+            alvo_x+=1
+        else:
+            alvo_x-=1
+        for obj in self.parent.obj_list:
+            if obj.linha==alvo_y and obj.coluna==alvo_x:
+                obj.quebrar()
     
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:

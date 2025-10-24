@@ -10,7 +10,6 @@ import random
 from core.player import Rato
 
 size=90
-obj_list=[ ]
 
 class Object(FloatLayout):
     linha = NumericProperty(0)
@@ -47,8 +46,8 @@ class Object(FloatLayout):
         if source=='pedra.png':
             self.hitbox=[self.x+(self.width*0.05),self.y+(self.height*0.2),self.width*0.6, self.height*0.6]
             self.quebravel=True
-            apatita=random.randint(0,6)-5
-            mica=random.randint(0,4)-3
+            apatita=random.randint(0,6)-4
+            mica=random.randint(0,5)-3
             if apatita>0:
                 self.drops["apatita"]= apatita
             if mica>0:
@@ -93,6 +92,7 @@ class Object(FloatLayout):
     def quebrar(self,*args):
         if self.quebravel:
             self.parent.player.recive_itens(self.drops)
+            self.parent.obj_list.remove(self)
             self.parent.remove_widget(self)  
 
     def on_center_changed(self, *args):
@@ -164,6 +164,7 @@ class World(FloatLayout):
         self.size = (Window.width, Window.height)
         self.limites=[]
         self.ents=[]
+        self.obj_list=[]
 
     def create(self, xm, ym):
         global size
@@ -211,7 +212,7 @@ class World(FloatLayout):
                                 max=(self.linhas, self.colunas),
                                 source="pedra.png"
                             )
-                        obj_list.append(obj)
+                        self.obj_list.append(obj)
                         self.add_widget(obj)
         
         self.add_widget(self.player)
@@ -228,7 +229,7 @@ class World(FloatLayout):
             source=type+".png"
         )
         self.add_widget(obj)
-        obj_list.append(obj)
+        self.obj_list.append(obj)
         for ent in self.ents:
             self.remove_widget(ent)
             self.add_widget(ent)
@@ -265,7 +266,7 @@ class World(FloatLayout):
         ent.move_x()
         ent.hitbox = ent.get_hitbox()
     
-        for obj in obj_list:
+        for obj in self.obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):
@@ -293,7 +294,7 @@ class World(FloatLayout):
         ent.move_y()
         ent.hitbox = ent.get_hitbox()
     
-        for obj in obj_list:
+        for obj in self.obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):
