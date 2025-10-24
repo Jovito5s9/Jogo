@@ -434,13 +434,16 @@ class Player(BasicEnt):
     
     def quebrar(self,*args):
         alvo_x,alvo_y=self.grid
+        self.atacando=True
+        self.ataque_name="soco"
         if self.facing_right:
             alvo_x+=1
         else:
             alvo_x-=1
         for obj in self.parent.obj_list:
             if obj.linha==alvo_y and obj.coluna==alvo_x:
-                obj.quebrar()
+                obj.resistencia-=self.dano
+        Clock.schedule_once(self.remover_ataque,0.4)
     
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:

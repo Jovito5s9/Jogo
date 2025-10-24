@@ -23,6 +23,8 @@ class Object(FloatLayout):
     linhas = NumericProperty(0)
     colunas = NumericProperty(0)
     max = ReferenceListProperty(linhas, colunas)
+    
+    resistencia=NumericProperty(0)
 
     def __init__(self,source, **kwargs):
         super().__init__(**kwargs)
@@ -46,6 +48,7 @@ class Object(FloatLayout):
         if source=='pedra.png':
             self.hitbox=[self.x+(self.width*0.05),self.y+(self.height*0.2),self.width*0.6, self.height*0.6]
             self.quebravel=True
+            self.resistencia=23
             apatita=random.randint(0,6)-4
             mica=random.randint(0,5)-3
             if apatita>0:
@@ -94,6 +97,10 @@ class Object(FloatLayout):
             self.parent.player.recive_itens(self.drops)
             self.parent.obj_list.remove(self)
             self.parent.remove_widget(self)  
+    
+    def on_resistencia(self,*args):
+        if self.resistencia<=0:
+            self.quebrar()
 
     def on_center_changed(self, *args):
         self.position()
