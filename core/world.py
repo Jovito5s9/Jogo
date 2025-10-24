@@ -34,6 +34,8 @@ class Object(FloatLayout):
         self.type=source
         self.source="assets/tiles/objects/"+f"{source}"
         self.size = (size, size*0.8)
+        self.quebravel=False
+        self.drops={}
 
         self.image = Image(
             source=self.source,
@@ -44,6 +46,13 @@ class Object(FloatLayout):
         )
         if source=='pedra.png':
             self.hitbox=[self.x+(self.width*0.05),self.y+(self.height*0.2),self.width*0.6, self.height*0.6]
+            self.quebravel=True
+            apatita=random.randint(0,6)-5
+            mica=random.randint(0,4)-3
+            if apatita>0:
+                self.drops["apatita"]= apatita
+            if mica>0:
+                self.drops["mica"]= mica
         
         if self.type=="entrada_esgoto.png":
             Clock.schedule_once(self.spawn,3)
@@ -80,7 +89,11 @@ class Object(FloatLayout):
             print(rato.pos)
             world.add_widget(rato)
             world.ents.append(rato)
-        
+    
+    def quebrar(self,*args):
+        if self.quebravel:
+            self.parent.player.recive_itens(self.drops)
+            self.parent.remove_widget(self)  
 
     def on_center_changed(self, *args):
         self.position()
