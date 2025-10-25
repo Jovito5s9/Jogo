@@ -36,6 +36,7 @@ class Object(FloatLayout):
         self.source="assets/tiles/objects/"+f"{source}"
         self.size = (size, size*0.8)
         self.quebravel=False
+        self.quebrando=False
         self.drops={}
 
         self.image = Image(
@@ -95,16 +96,18 @@ class Object(FloatLayout):
     
     def quebrar(self,*args):
         if self.quebravel:
+            self.remove_widget(self.image)
             self.parent.player.recive_itens(self.drops)
             self.parent.obj_list.remove(self)
             self.parent.remove_widget(self)  
     
     def on_resistencia(self,*args):
         if 100*self.resistencia/self.resistencia_max < 40:
-            self.image.source = self.image.source.replace(".png", "_quebrando.png")
+            if not self.quebrando:
+                self.image.source = self.image.source.replace(".png", "_quebrando.png")
+                self.quebrando=True
         if self.resistencia <= 0:
-            self.image.source = self.image.source.replace(".png", "_quebrando.png")
-            Clock.schedule_once(lambda dt: self.quebrar(), 0.2)
+            Clock.schedule_once(self.quebrar, 0.6)
 
 
     def on_center_changed(self, *args):
