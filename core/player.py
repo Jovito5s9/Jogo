@@ -46,7 +46,8 @@ class BasicEnt(FloatLayout):
         self.vivo=True
         self.ataque_name=""
         self.repulsao=10
-        self.dano = 5
+        self.power=5
+        self.dano = self.power
         self.atacando=False
         self.alcance_fisico=70
         self.velocidade = 3
@@ -393,6 +394,7 @@ class Player(BasicEnt):
         self.sources["running"]="assets/sprites/player/running.png"
         self.sources["morto"]="assets/sprites/player/morto.png"
         self.sources["soco"]="assets/sprites/player/soco.png"
+        self.sources["soco_forte"]="assets/sprites/player/soco_forte.png"
         self.idle_frames=2
         self.running_frames=4
         self.atacando_frames=3
@@ -401,19 +403,30 @@ class Player(BasicEnt):
         self.repulsao=20
         self.alcance_fisico=90
         self.acoes={
-            "atacar":self.atacar,
-            "quebrar":self.quebrar
+            "soco_normal":self.soco_normal,
+            "soco_forte":self.soco_forte
             }
         self.acao=""
         Clock.schedule_interval(self.verificar_acao,1/20)
+
+    def soco_normal(self,*args):
+        if self.atacando:
+            self.acao=""
+            return
+        self.ataque_name="soco"
+        print("ataque gerado")
+        self.atacar()
+        Clock.schedule_once(self.remover_ataque,0.4)
 
     def atacar(self,*args):
         if self.atacando:
             self.acao=""
             return
         self.atacando=True
-        self.ataque_name="soco"
-        print("ataque gerado")
+        repulsao=self.repulsao
+        if self.ataque_name == "soco_forte":
+            self.dano = self.power * 1.2
+            self.repulsao=1.5*self.repulsao
         for ent in self.parent.ents:
             if not ent==self:
                 if distancia(self,ent)<=self.alcance_fisico:
@@ -423,7 +436,8 @@ class Player(BasicEnt):
                     elif not self.facing_right and ent.image.x<=self.image.x:
                         atacar(self,ent)
                         print("player atacou")
-        Clock.schedule_once(self.remover_ataque,0.4)
+        self.dano=self.power
+        self.repulsao=repulsao
     
     def remover_ataque(self,*args):
         self.atacando=False
@@ -432,21 +446,22 @@ class Player(BasicEnt):
         else:
             self.estado = "idle"
     
-    def quebrar(self,*args):
+    def soco_forte(self, *args):
         if self.atacando:
-            self.acao=""
+            self.acao = ""
             return
-        alvo_x,alvo_y=self.grid
-        self.atacando=True
-        self.ataque_name="soco"
+        self.ataque_name = "soco_forte" 
+        self.atacar() 
+        alvo_x, alvo_y = self.grid
         if self.facing_right:
-            alvo_x+=1
+            alvo_x += 1
         else:
-            alvo_x-=1
+            alvo_x -= 1
         for obj in self.parent.obj_list:
-            if obj.linha==alvo_y and obj.coluna==alvo_x:
-                obj.resistencia-=self.dano
-        Clock.schedule_once(self.remover_ataque,0.8)
+            if obj.linha == alvo_y and obj.coluna == alvo_x and obj.quebravel:
+                obj.resistencia -= self.dano
+        Clock.schedule_once(self.remover_ataque, 0.8)
+
     
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:

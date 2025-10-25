@@ -40,11 +40,11 @@ class Interface(FloatLayout):
         self.add_widget(self.joystick)
     
     def add_button_ataque(self,*args):
-        self.button_ataque=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.9,'center_y' : 0.7},text='ataque')
+        self.button_ataque=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.9,'center_y' : 0.7},text='soco')
         self.add_widget(self.button_ataque)
     
     def add_button_quebrar(self,*args):
-        self.button_quebrar=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.85,'center_y' : 0.6},text='quebrar')
+        self.button_quebrar=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.85,'center_y' : 0.6},text='soco\nforte')
         self.add_widget(self.button_quebrar)
     
     def add_button_inventario(self,*args):
@@ -104,10 +104,10 @@ class Game(FloatLayout):
         self.player.speed_y=self.interface.joystick.y_value
     
     def ataque(self,*args):
-        self.player.acao="atacar"
+        self.player.acao="soco_normal"
     
     def quebrar(self,*args):
-        self.player.acao="quebrar"
+        self.player.acao="soco_forte"
     
     def inventario(self,*args):
         if self.menu_player._window:
@@ -134,10 +134,10 @@ class Game(FloatLayout):
         self.key_pressed.remove(key)
     
     def keyboard_actions(self,*args):
-        if 32 in self.key_pressed:
-            self.player.acao="atacar"
+        if 32 in self.key_pressed: 
+            self.ataque()
         if 98 in self.key_pressed:
-            self.player.acao="quebrar"
+            self.quebrar()
         if 119 in self.key_pressed:
             self.player.speed_y=0.9
         elif 115 in self.key_pressed:
