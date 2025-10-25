@@ -5,6 +5,10 @@ from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty,BooleanProperty, NumericProperty
 
+import random
+import json
+import os
+
 class Barra(Widget):
     modificador=NumericProperty(100)
     def __init__(self, **kwargs):
@@ -42,7 +46,8 @@ class BasicEnt(FloatLayout):
         self.vivo=True
         self.ataque_name=""
         self.repulsao=10
-        self.dano = 5
+        self.power=5
+        self.dano = self.power
         self.atacando=False
         self.alcance_fisico=70
         self.velocidade = 3
@@ -58,6 +63,10 @@ class BasicEnt(FloatLayout):
         self.center_hitbox_x=0
         self.center_hitbox_y=0
         self.sources={}
+        self.list_drops={}
+        self.droped=False
+        self.inventario={}
+        self.grid=[]
 
         
         
@@ -185,12 +194,30 @@ class BasicEnt(FloatLayout):
     def on_i_frames(self,*args):
         if self.i_frames:
             Clock.schedule_once(self.perder_i_frames,self.i_frames_time)
+        
+    def drop(self, *args):
+        if not self.list_drops or self.droped:
+            print("sem drops")
+            return
+        self.recive_itens(self.list_drops)
+        print("Inventário após drops:", self.parent.player.inventario)
+        self.droped=True
+    
+    def recive_itens(self,list_drops):
+        for drop, quantidade in list_drops.items():
+            if quantidade==0:
+                pass
+            self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
+            self.save_data("inventario",{drop:self.parent.player.inventario[drop]})
+
     
     def morrer(self,*args):
         self.vivo=False
         self.estado="morto"
         self.speed_x=0
         self.speed_y=0
+        if not self.parent.player==self:
+            self.drop()
 
     def on_vida(self,*args):
         self.i_frames=True
@@ -204,6 +231,44 @@ class BasicEnt(FloatLayout):
         if self.vida<=0:
             self.morrer()
     
+
+    def save_data(self, item, key):
+        path = "saved/player.json"
+        if not os.path.exists(path):
+            data = {}
+        else:
+            with open(path, "r", encoding="utf-8") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
+        encontrado = False
+        if item in data:
+            if isinstance(data[item], list):
+                if key not in data[item]:
+                    data[item].append(key)
+            elif isinstance(data[item], dict):
+                data[item].update(key)
+            else:
+                data[item] = key
+            encontrado = True
+        else:
+            for k, v in data.items():
+                if isinstance(v, dict):
+                    if item in v:
+                        v[item] = key
+                        encontrado = True
+                        break
+                elif isinstance(v, list):
+                    if item in v:
+                        v.append(key)
+                        encontrado = True
+                        break
+        if not encontrado:
+            data[item] = key
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
 
 
 
@@ -295,6 +360,7 @@ class Rato(BasicEnt):
         self.vida=30
         self.dano=5
         self.velocidade=1.5
+        self.list_drops["carne"]=random.randint(0,2)
     
     def add_player(self,*args):
         self.player=self.parent.player
@@ -328,6 +394,7 @@ class Player(BasicEnt):
         self.sources["running"]="assets/sprites/player/running.png"
         self.sources["morto"]="assets/sprites/player/morto.png"
         self.sources["soco"]="assets/sprites/player/soco.png"
+        self.sources["soco_forte"]="assets/sprites/player/soco_forte.png"
         self.idle_frames=2
         self.running_frames=4
         self.atacando_frames=3
@@ -335,17 +402,31 @@ class Player(BasicEnt):
         self.atualizar()
         self.repulsao=20
         self.alcance_fisico=90
-        self.acoes={"atacar":self.atacar}
+        self.acoes={
+            "soco_normal":self.soco_normal,
+            "soco_forte":self.soco_forte
+            }
         self.acao=""
         Clock.schedule_interval(self.verificar_acao,1/20)
+
+    def soco_normal(self,*args):
+        if self.atacando:
+            self.acao=""
+            return
+        self.ataque_name="soco"
+        print("ataque gerado")
+        self.atacar()
+        Clock.schedule_once(self.remover_ataque,0.4)
 
     def atacar(self,*args):
         if self.atacando:
             self.acao=""
             return
         self.atacando=True
-        self.ataque_name="soco"
-        print("ataque gerado")
+        repulsao=self.repulsao
+        if self.ataque_name == "soco_forte":
+            self.dano = self.power * 1.2
+            self.repulsao=1.5*self.repulsao
         for ent in self.parent.ents:
             if not ent==self:
                 if distancia(self,ent)<=self.alcance_fisico:
@@ -355,7 +436,8 @@ class Player(BasicEnt):
                     elif not self.facing_right and ent.image.x<=self.image.x:
                         atacar(self,ent)
                         print("player atacou")
-        Clock.schedule_once(self.remover_ataque,0.4)
+        self.dano=self.power
+        self.repulsao=repulsao
     
     def remover_ataque(self,*args):
         self.atacando=False
@@ -363,6 +445,23 @@ class Player(BasicEnt):
             self.estado = "running"
         else:
             self.estado = "idle"
+    
+    def soco_forte(self, *args):            
+        if self.atacando:
+            self.acao = ""
+            return
+        alvo_x, alvo_y = self.grid
+        if self.facing_right: 
+            alvo_x+=1 
+        else: 
+            alvo_x-=1 
+        for obj in self.parent.obj_list: 
+            if obj.linha==alvo_y and obj.coluna==alvo_x and obj.quebravel: 
+                obj.resistencia-=self.power 
+
+        self.ataque_name = "soco_forte" 
+        self.atacar() 
+        Clock.schedule_once(self.remover_ataque,0.8)
     
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:

@@ -10,7 +10,6 @@ import random
 from core.player import Rato
 
 size=90
-obj_list=[ ]
 
 class Object(FloatLayout):
     linha = NumericProperty(0)
@@ -24,6 +23,8 @@ class Object(FloatLayout):
     linhas = NumericProperty(0)
     colunas = NumericProperty(0)
     max = ReferenceListProperty(linhas, colunas)
+    
+    resistencia=NumericProperty(0)
 
     def __init__(self,source, **kwargs):
         super().__init__(**kwargs)
@@ -34,6 +35,9 @@ class Object(FloatLayout):
         self.type=source
         self.source="assets/tiles/objects/"+f"{source}"
         self.size = (size, size*0.8)
+        self.quebravel=False
+        self.quebrando=False
+        self.drops={}
 
         self.image = Image(
             source=self.source,
@@ -44,6 +48,15 @@ class Object(FloatLayout):
         )
         if source=='pedra.png':
             self.hitbox=[self.x+(self.width*0.05),self.y+(self.height*0.2),self.width*0.6, self.height*0.6]
+            self.quebravel=True
+            self.resistencia_max=23
+            self.resistencia=self.resistencia_max
+            apatita=random.randint(0,6)-4
+            mica=random.randint(0,5)-3
+            if apatita>0:
+                self.drops["apatita"]= apatita
+            if mica>0:
+                self.drops["mica"]= mica
         
         if self.type=="entrada_esgoto.png":
             Clock.schedule_once(self.spawn,3)
@@ -80,7 +93,22 @@ class Object(FloatLayout):
             print(rato.pos)
             world.add_widget(rato)
             world.ents.append(rato)
-        
+    
+    def quebrar(self,*args):
+        if self.quebravel:
+            self.remove_widget(self.image)
+            self.parent.player.recive_itens(self.drops)
+            self.parent.obj_list.remove(self)
+            self.parent.remove_widget(self)  
+    
+    def on_resistencia(self,*args):
+        if 100*self.resistencia/self.resistencia_max < 40:
+            if not self.quebrando:
+                self.image.source = self.image.source.replace(".png", "_quebrando.png")
+                self.quebrando=True
+        if self.resistencia <= 0:
+            Clock.schedule_once(self.quebrar, 0.2)
+
 
     def on_center_changed(self, *args):
         self.position()
@@ -151,6 +179,7 @@ class World(FloatLayout):
         self.size = (Window.width, Window.height)
         self.limites=[]
         self.ents=[]
+        self.obj_list=[]
 
     def create(self, xm, ym):
         global size
@@ -161,21 +190,21 @@ class World(FloatLayout):
         self.size=(size*xm,size*ym*0.8)
 
         # Posição inicial (superior esquerdo) para começar a desenhar centralizado
-        offset_x = (Window.width/2)-(self.width/2)
-        offset_y = (Window.height/2)-(self.height/2)
-        self.pos=(offset_x,offset_y)
+        self.offset_x = (Window.width/2)-(self.width/2)
+        self.offset_y = (Window.height/2)-(self.height/2)
+        self.pos=(self.offset_x,self.offset_y)
         self.limites=(self.x,self.y,self.x+self.width,self.y+self.height)
 
         for y in range(self.linhas):
             for x in range(self.colunas):
                 grid = Grid(
                     posicao=(x, y),
-                    patern_center=(offset_x, offset_y),
+                    patern_center=(self.offset_x, self.offset_y),
                     max=(self.linhas, self.colunas),
                     source="terra.png"
                 )
                 self.add_widget(grid)
-        self.player.image.pos=(offset_x,offset_y )
+        self.player.image.pos=(self.offset_x,self.offset_y )
         self.ents.append(self.player)
         
         for y in range(self.linhas):
@@ -187,23 +216,38 @@ class World(FloatLayout):
                         if m < 30  :
                             obj = Object(
                             posicao=(x, y),
-                            patern_center=(offset_x, offset_y),
+                            patern_center=(self.offset_x, self.offset_y),
                             max=(self.linhas, self.colunas),
                             source="entrada_esgoto.png"
                         )
                         else:
                             obj = Object(
                                 posicao=(x, y),
-                                patern_center=(offset_x, offset_y),
+                                patern_center=(self.offset_x, self.offset_y),
                                 max=(self.linhas, self.colunas),
                                 source="pedra.png"
                             )
-                        obj_list.append(obj)
+                        self.obj_list.append(obj)
                         self.add_widget(obj)
         
         self.add_widget(self.player)
         self.atualizar()
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
+    
+
+    def add_objects(self,type,grid):
+        grid_x,grid_y=grid
+        obj=Object(
+            posicao=(grid_y,grid_x),
+            patern_center=(self.offset_x,self.offset_y),
+            max=(self.linhas,self.colunas),
+            source=type+".png"
+        )
+        self.add_widget(obj)
+        self.obj_list.append(obj)
+        for ent in self.ents:
+            self.remove_widget(ent)
+            self.add_widget(ent)
     
     
     def collision_verify(self, *args):        
@@ -211,8 +255,19 @@ class World(FloatLayout):
             self.verificar_colisao_horizontal(ent) 
             self.verificar_colisao_vertical(ent)
             self.map_collision(ent)
+            self.grid_verify(ent)
         
-            
+    def grid_verify(self, ent):
+        tile_width = size
+        tile_height = size * 0.8 
+        grid_x = int((ent.center_hitbox_x - self.x) / tile_width)
+        grid_y = int((ent.center_hitbox_y - self.y) / tile_height)
+        grid_x = max(0, min(self.colunas - 1, grid_x))
+        grid_y = max(0, min(self.linhas - 1, grid_y))
+        ent.grid = (grid_x, grid_y)
+        if ent==self.player:
+            print(self.player.grid)
+
 
     def map_collision(self,ent):
         ent.hitbox = ent.get_hitbox()
@@ -230,7 +285,7 @@ class World(FloatLayout):
         ent.move_x()
         ent.hitbox = ent.get_hitbox()
     
-        for obj in obj_list:
+        for obj in self.obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):
@@ -258,7 +313,7 @@ class World(FloatLayout):
         ent.move_y()
         ent.hitbox = ent.get_hitbox()
     
-        for obj in obj_list:
+        for obj in self.obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):

@@ -9,3 +9,5 @@ dist/
 .venv
 .git
 .kivy
+saved/player.json
+saved/configuracoes.json
