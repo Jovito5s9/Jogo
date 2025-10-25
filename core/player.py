@@ -446,22 +446,22 @@ class Player(BasicEnt):
         else:
             self.estado = "idle"
     
-    def soco_forte(self, *args):
+    def soco_forte(self, *args):            
         if self.atacando:
             self.acao = ""
             return
+        alvo_x, alvo_y = self.grid
+        if self.facing_right: 
+            alvo_x+=1 
+        else: 
+            alvo_x-=1 
+        for obj in self.parent.obj_list: 
+            if obj.linha==alvo_y and obj.coluna==alvo_x and obj.quebravel: 
+                obj.resistencia-=self.power 
+
         self.ataque_name = "soco_forte" 
         self.atacar() 
-        alvo_x, alvo_y = self.grid
-        if self.facing_right:
-            alvo_x += 1
-        else:
-            alvo_x -= 1
-        for obj in self.parent.obj_list:
-            if obj.linha == alvo_y and obj.coluna == alvo_x and obj.quebravel:
-                obj.resistencia -= self.dano
-        Clock.schedule_once(self.remover_ataque, 0.8)
-
+        Clock.schedule_once(self.remover_ataque,0.8)
     
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:

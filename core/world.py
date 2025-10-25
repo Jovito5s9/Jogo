@@ -107,7 +107,7 @@ class Object(FloatLayout):
                 self.image.source = self.image.source.replace(".png", "_quebrando.png")
                 self.quebrando=True
         if self.resistencia <= 0:
-            Clock.schedule_once(self.quebrar, 0.6)
+            Clock.schedule_once(self.quebrar, 0.2)
 
 
     def on_center_changed(self, *args):
@@ -257,12 +257,16 @@ class World(FloatLayout):
             self.map_collision(ent)
             self.grid_verify(ent)
         
-    def grid_verify(self,ent):
-        grid_x=(ent.center_hitbox_x-self.x)/(self.width/self.colunas)
-        grid_y=(ent.center_hitbox_y-self.y)/(self.height/self.linhas)
-        grid_x=int(grid_x)
-        grid_y=int(grid_y)
-        ent.grid=grid_x,grid_y
+    def grid_verify(self, ent):
+        tile_width = size
+        tile_height = size * 0.8 
+        grid_x = int((ent.center_hitbox_x - self.x) / tile_width)
+        grid_y = int((ent.center_hitbox_y - self.y) / tile_height)
+        grid_x = max(0, min(self.colunas - 1, grid_x))
+        grid_y = max(0, min(self.linhas - 1, grid_y))
+        ent.grid = (grid_x, grid_y)
+        if ent==self.player:
+            print(self.player.grid)
 
 
     def map_collision(self,ent):
