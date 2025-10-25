@@ -76,7 +76,7 @@ class Game(FloatLayout):
         self.player=Player()
         self.world.player=self.player
         
-        self.world.create(12,12)
+        self.world.create(20,15)
         self.inventario_menu=False
         self.menu_player=Menu_player()
         
