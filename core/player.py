@@ -458,6 +458,8 @@ class Player(BasicEnt):
         for obj in self.parent.obj_list: 
             if obj.linha==alvo_y and obj.coluna==alvo_x and obj.quebravel: 
                 obj.resistencia-=self.power 
+            if (obj.coluna,obj.linha)==self.grid and obj.quebravel: 
+                obj.resistencia-=self.power 
 
         self.ataque_name = "soco_forte" 
         self.atacar() 

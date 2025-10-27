@@ -113,6 +113,11 @@ class Object(FloatLayout):
     
     def colisao(self,*args):
         if self.type=='descer_esgoto.png':
+            for ent in self.parent.ents:
+                if not ent.vivo:
+                    continue
+                if not ent==self.parent.player:
+                    return
             self.parent.re_map(type="esgoto")
 
 
