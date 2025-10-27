@@ -110,6 +110,10 @@ class Object(FloatLayout):
                 self.quebrando=True
         if self.resistencia <= 0:
             Clock.schedule_once(self.quebrar, 0.2)
+    
+    def colisao(self,*args):
+        if self.type=='descer_esgoto.png':
+            self.parent.re_map()
 
 
     def on_center_changed(self, *args):
@@ -182,6 +186,7 @@ class World(FloatLayout):
         self.limites=[]
         self.ents=[]
         self.obj_list=[]
+        self.tiles_list=[]
         self.descida_dungeon=[]
 
     def create(self, xm, ym, type=None):
@@ -211,6 +216,7 @@ class World(FloatLayout):
                     source="terra.png"
                 )
                 self.add_widget(grid)
+                self.tiles_list.append(grid)
         self.player.image.pos=(self.offset_x,self.offset_y )
         self.ents.append(self.player)
         
@@ -250,6 +256,19 @@ class World(FloatLayout):
         self.add_widget(self.player)
         self.atualizar()
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
+    
+
+    def re_map(self,*args):
+        for obj in self.obj_list[:]:
+            self.obj_list.remove(obj)
+            self.remove_widget(obj)
+        for tile in self.tiles_list[:]:
+            self.tiles_list.remove(tile)
+            self.remove_widget(tile)
+        for ent in self.ents[:]:
+            self.remove_widget(ent)
+            self.ents.remove(ent)
+        self.create(self.linhas,self.colunas)
     
 
     def add_objects(self,type,grid):
