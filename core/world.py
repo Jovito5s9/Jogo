@@ -81,6 +81,8 @@ class Object(FloatLayout):
     def get_hitbox (self,*args):
         if self.s=='pedra.png':
             self.hitbox=[self.x+(self.width*0.15),self.y+(self.height*0.5),self.width*0.7, self.height*0.6]
+        elif self.s=='entrada_esgoto.png' or self.s=='descer_esgoto.png':
+            self.hitbox=[self.x+(self.width*0.2),self.y+(self.height*0.7),self.width*0.6, self.height*0.4]
         
     def spawn(self,*args):
         world = self.parent
@@ -180,10 +182,15 @@ class World(FloatLayout):
         self.limites=[]
         self.ents=[]
         self.obj_list=[]
+        self.descida_dungeon=[]
 
-    def create(self, xm, ym):
+    def create(self, xm, ym, type=None):
         global size
-        
+        type="esgoto"
+        if type=="esgoto":
+            x=random.randint(0,xm)
+            y=random.randint(0,ym)
+            self.descida_dungeon=(x,y)
         self.linhas = xm
         self.colunas = ym
 
@@ -209,6 +216,16 @@ class World(FloatLayout):
         
         for y in range(self.linhas):
             for x in range(self.colunas):
+                if self.descida_dungeon==(x,y):
+                    obj = Object(
+                            posicao=(x, y),
+                            patern_center=(self.offset_x, self.offset_y),
+                            max=(self.linhas, self.colunas),
+                            source="descer_esgoto.png"
+                        )
+                    self.obj_list.append(obj)
+                    self.add_widget(obj)
+                    continue
                 r=random.randint(0,10)
                 if r==0:
                     if not((x==0 or x==1) and (y==0 or y==1)):
