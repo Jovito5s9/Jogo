@@ -113,7 +113,7 @@ class Object(FloatLayout):
     
     def colisao(self,*args):
         if self.type=='descer_esgoto.png':
-            self.parent.re_map()
+            self.parent.re_map(type="esgoto")
 
 
     def on_center_changed(self, *args):
@@ -193,9 +193,10 @@ class World(FloatLayout):
         global size
         type="esgoto"
         if type=="esgoto":
-            x=random.randint(0,xm)
-            y=random.randint(0,ym)
-            self.descida_dungeon=(x,y)
+            y = random.randint(0, xm - 1)
+            x = random.randint(0, ym - 1)
+            self.descida_dungeon = (x, y)
+            print(x,y)
         self.linhas = xm
         self.colunas = ym
 
@@ -258,7 +259,7 @@ class World(FloatLayout):
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
     
 
-    def re_map(self,*args):
+    def re_map(self,type):
         for obj in self.obj_list[:]:
             self.obj_list.remove(obj)
             self.remove_widget(obj)
@@ -268,7 +269,7 @@ class World(FloatLayout):
         for ent in self.ents[:]:
             self.remove_widget(ent)
             self.ents.remove(ent)
-        self.create(self.linhas,self.colunas)
+        self.create(self.linhas,self.colunas,type)
     
 
     def add_objects(self,type,grid):
@@ -302,7 +303,8 @@ class World(FloatLayout):
         grid_y = max(0, min(self.linhas - 1, grid_y))
         ent.grid = (grid_x, grid_y)
         if ent==self.player:
-            print(self.player.grid)
+            #print(self.player.grid)
+            pass
 
 
     def map_collision(self,ent):
@@ -326,6 +328,7 @@ class World(FloatLayout):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):
                 # Reverte X e zera velocidade no eixo X
+                obj.colisao()
                 ent.image.x = original_x
                 ent.speed_x = 0
                 ent.hitbox = ent.get_hitbox()
@@ -354,6 +357,7 @@ class World(FloatLayout):
                 continue
             if self.collision(ent.hitbox, obj.hitbox):
                 # Reverte Y e zera velocidade no eixo Y
+                obj.colisao()
                 ent.image.y = original_y
                 ent.speed_y = 0
                 ent.hitbox = ent.get_hitbox()
@@ -378,8 +382,10 @@ class World(FloatLayout):
         
     
     def atualizar(self,*args):
-        Clock.schedule_interval(self.collision_verify,1/60)
-        Clock.schedule_interval(self.atualizar_sprites,1/30)
+        Clock.unschedule(self.collision_verify)
+        Clock.unschedule(self.atualizar_sprites)
+        Clock.schedule_interval(self.collision_verify, 1/60)
+        Clock.schedule_interval(self.atualizar_sprites, 1/30)
     
     def collision(self,hitbox1, hitbox2):
         x1, y1, w1, h1 = hitbox1
