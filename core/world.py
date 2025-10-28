@@ -35,8 +35,10 @@ class Object(FloatLayout):
         self.type=source
         self.source="assets/tiles/objects/"+f"{source}"
         self.size = (size, size*0.8)
+        self.colisivel=True
         self.quebravel=False
         self.quebrando=False
+        self.dano_colisao=0
         self.drops={}
 
         self.image = Image(
@@ -57,8 +59,12 @@ class Object(FloatLayout):
                 self.drops["apatita"]= apatita
             if mica>0:
                 self.drops["mica"]= mica
-        
-        if self.type=="entrada_esgoto.png":
+
+        elif source=='veneno.png':
+            self.colisivel=False
+            self.dano_colisao=0.075
+
+        elif self.type=="entrada_esgoto.png":
             Clock.schedule_once(self.spawn,3)
         
         self.add_widget(self.image)
@@ -81,7 +87,7 @@ class Object(FloatLayout):
     def get_hitbox (self,*args):
         if self.s=='pedra.png':
             self.hitbox=[self.x+(self.width*0.15),self.y+(self.height*0.5),self.width*0.7, self.height*0.6]
-        elif self.s=='entrada_esgoto.png' or self.s=='descer_esgoto.png':
+        elif self.s=='entrada_esgoto.png' or self.s=='descer_esgoto.png' or self.type=='veneno.png':
             self.hitbox=[self.x+(self.width*0.2),self.y+(self.height*0.7),self.width*0.6, self.height*0.4]
         
     def spawn(self,*args):
@@ -119,6 +125,10 @@ class Object(FloatLayout):
                 if not ent==self.parent.player:
                     return
             self.parent.re_map(type="esgoto")
+        if self.type=='veneno.png':
+            for ent in self.parent.ents:
+                if ent.grid==(self.coluna,self.linha):
+                    ent.vida-=self.dano_colisao
 
 
     def on_center_changed(self, *args):
@@ -254,7 +264,7 @@ class World(FloatLayout):
                                 posicao=(x, y),
                                 patern_center=(self.offset_x, self.offset_y),
                                 max=(self.linhas, self.colunas),
-                                source="pedra.png"
+                                source="veneno.png"
                             )
                         self.obj_list.append(obj)
                         self.add_widget(obj)
@@ -334,14 +344,15 @@ class World(FloatLayout):
             if self.collision(ent.hitbox, obj.hitbox):
                 # Reverte X e zera velocidade no eixo X
                 obj.colisao()
-                ent.image.x = original_x
-                ent.speed_x = 0
-                ent.hitbox = ent.get_hitbox()
-                if self.collision(ent.hitbox, obj.hitbox):
-                    #segundo teste
-                    ent.image.x = obj.image.x+obj.image.width
+                if obj.colisivel:
+                    ent.image.x = original_x
                     ent.speed_x = 0
                     ent.hitbox = ent.get_hitbox()
+                    if self.collision(ent.hitbox, obj.hitbox):
+                        #segundo teste
+                        ent.image.x = obj.image.x+obj.image.width
+                        ent.speed_x = 0
+                        ent.hitbox = ent.get_hitbox()
         for entit in self.ents:
             if ent==entit:
                 continue
@@ -363,14 +374,15 @@ class World(FloatLayout):
             if self.collision(ent.hitbox, obj.hitbox):
                 # Reverte Y e zera velocidade no eixo Y
                 obj.colisao()
-                ent.image.y = original_y
-                ent.speed_y = 0
-                ent.hitbox = ent.get_hitbox()
-                if self.collision(ent.hitbox, obj.hitbox):
-                    #segundo teste
-                    ent.image.y = obj.image.y
+                if obj.colisivel:
+                    ent.image.y = original_y
                     ent.speed_y = 0
                     ent.hitbox = ent.get_hitbox()
+                    if self.collision(ent.hitbox, obj.hitbox):
+                        #segundo teste
+                        ent.image.y = obj.image.y
+                        ent.speed_y = 0
+                        ent.hitbox = ent.get_hitbox()
 
         for entit in self.ents:
             if ent==entit:
