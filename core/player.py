@@ -41,6 +41,7 @@ class BasicEnt(FloatLayout):
         self.pos = (100, 100)
         self.recompensa = 0
         self.i_frames_time=0.8
+        self.tamanho=1
         self.vida_maxima=100
         self.vida = self.vida_maxima
         self.vivo=True
@@ -80,7 +81,7 @@ class BasicEnt(FloatLayout):
 
         # Cria o widget de imagem animada
         self.image = Image(
-            size=(self.frame_width*5, self.frame_height*5),
+            size=(self.frame_width*self.tamanho, self.frame_height*self.tamanho),
             size_hint=(None, None),
             pos=(0, 0)  # fixa dentro do BasicEnt
         )
@@ -346,6 +347,7 @@ class Rato(BasicEnt):
         self.idle_frames=2
         self.running_frames=2
         self.atacando_frames=2
+        self.tamanho=2.8
         
         self.atualizar()
         self.acoes=ia_base()
@@ -355,7 +357,6 @@ class Rato(BasicEnt):
     
     def atributos(self,*args):
         self.raio_visao=300
-        self.image.size=(90,90)
         self.vida_maxima=30
         self.vida=30
         self.dano=5
@@ -398,6 +399,7 @@ class Player(BasicEnt):
         self.idle_frames=2
         self.running_frames=4
         self.atacando_frames=3
+        self.tamanho=4
 
         self.atualizar()
         self.repulsao=20

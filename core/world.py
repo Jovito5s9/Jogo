@@ -9,7 +9,7 @@ import random
 
 from core.player import Rato
 
-size=90
+size=70
 
 class Object(FloatLayout):
     linha = NumericProperty(0)
@@ -203,11 +203,20 @@ class World(FloatLayout):
         self.obj_list=[]
         self.tiles_list=[]
         self.descida_dungeon=[]
+        self.grid_padrao="terra.png"
+        self.obj_padrao="pedra.png"
+        self.grid_esgoto="ladrilhos_esgoto.png"
+        self.obj_esgoto="veneno.png"
+
 
     def create(self, xm, ym, type=None):
         global size
-        type="esgoto"
+        if type==None:
+            objeto_padrao=self.obj_padrao
+            grid_padrao=self.grid_padrao
         if type=="esgoto":
+            objeto_padrao=self.obj_esgoto
+            grid_padrao=self.grid_esgoto
             y = random.randint(0, xm - 1)
             x = random.randint(0, ym - 1)
             self.descida_dungeon = (x, y)
@@ -229,7 +238,7 @@ class World(FloatLayout):
                     posicao=(x, y),
                     patern_center=(self.offset_x, self.offset_y),
                     max=(self.linhas, self.colunas),
-                    source="terra.png"
+                    source=grid_padrao
                 )
                 self.add_widget(grid)
                 self.tiles_list.append(grid)
@@ -264,7 +273,7 @@ class World(FloatLayout):
                                 posicao=(x, y),
                                 patern_center=(self.offset_x, self.offset_y),
                                 max=(self.linhas, self.colunas),
-                                source="veneno.png"
+                                source=objeto_padrao
                             )
                         self.obj_list.append(obj)
                         self.add_widget(obj)
