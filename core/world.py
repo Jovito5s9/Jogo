@@ -9,7 +9,7 @@ import random
 
 from core.player import Rato
 
-size=70
+size=75
 
 class Object(FloatLayout):
     linha = NumericProperty(0)
@@ -207,14 +207,23 @@ class World(FloatLayout):
         self.obj_padrao="pedra.png"
         self.grid_esgoto="ladrilhos_esgoto.png"
         self.obj_esgoto="veneno.png"
+        self.nivel=0
+        self.lista_modificadores=["coleta","combate"]
+        self.mapa_modificador="coleta"
 
 
     def create(self, xm, ym, type=None):
         global size
+        self.type=type
+        combate_nivel=1
+        if self.mapa_modificador=="combate":
+            combate_nivel=2.5
+        elif self.mapa_modificador=="coleta":
+            combate_nivel=1
         if type==None:
             objeto_padrao=self.obj_padrao
             grid_padrao=self.grid_padrao
-        if type=="esgoto":
+        if type=="esgoto" or True:
             objeto_padrao=self.obj_esgoto
             grid_padrao=self.grid_esgoto
             y = random.randint(0, xm - 1)
@@ -261,7 +270,7 @@ class World(FloatLayout):
                 if r==0:
                     if not((x==0 or x==1) and (y==0 or y==1)):
                         m = random.randint(0,100)
-                        if m < 30  :
+                        if m < (10 +self.nivel)*combate_nivel :
                             obj = Object(
                             posicao=(x, y),
                             patern_center=(self.offset_x, self.offset_y),
@@ -283,7 +292,9 @@ class World(FloatLayout):
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
     
 
-    def re_map(self,type):
+    def re_map(self,type,nivel=1):
+        if type==self.type:
+            self.nivel+=nivel
         for obj in self.obj_list[:]:
             self.obj_list.remove(obj)
             self.remove_widget(obj)
@@ -293,6 +304,7 @@ class World(FloatLayout):
         for ent in self.ents[:]:
             self.remove_widget(ent)
             self.ents.remove(ent)
+        self.mapa_modificador=random.choice(self.lista_modificadores)
         self.create(self.linhas,self.colunas,type)
     
 
