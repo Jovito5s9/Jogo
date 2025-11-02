@@ -87,7 +87,7 @@ class Object(FloatLayout):
     def get_hitbox (self,*args):
         if self.s=='pedra.png':
             self.hitbox=[self.x+(self.width*0.15),self.y+(self.height*0.5),self.width*0.7, self.height*0.6]
-        elif self.s=='entrada_esgoto.png' or self.s=='descer_esgoto.png' or self.type=='veneno.png':
+        elif self.s in ('entrada_esgoto.png', 'descer_esgoto.png', 'veneno.png',  'subir_esgoto.png'):
             self.hitbox=[self.x+(self.width*0.2),self.y+(self.height*0.7),self.width*0.6, self.height*0.4]
         
     def spawn(self,*args):
@@ -118,13 +118,16 @@ class Object(FloatLayout):
             Clock.schedule_once(self.quebrar, 0.2)
     
     def colisao(self,*args):
-        if self.type=='descer_esgoto.png':
+        if self.type in ('descer_esgoto.png' , 'subir_esgoto.png'):
             for ent in self.parent.ents:
                 if not ent.vivo:
                     continue
                 if not ent==self.parent.player:
                     return
-            self.parent.re_map(type="esgoto")
+            if self.type=='descer_esgoto.png':
+                self.parent.re_map(type="esgoto")
+            elif self.type == 'subir_esgoto.png':
+                self.parent.re_map(type="esgoto",nivel=-1)
         if self.type=='veneno.png':
             for ent in self.parent.ents:
                 if ent.grid==(self.coluna,self.linha):
@@ -203,6 +206,7 @@ class World(FloatLayout):
         self.obj_list=[]
         self.tiles_list=[]
         self.descida_dungeon=[]
+        self.subida_dungeon=[]
         self.grid_padrao="terra.png"
         self.obj_padrao="pedra.png"
         self.grid_esgoto="ladrilhos_esgoto.png"
@@ -214,6 +218,7 @@ class World(FloatLayout):
 
     def create(self, xm, ym, type=None):
         global size
+        type='esgoto'
         self.type=type
         combate_nivel=1
         if self.mapa_modificador=="combate":
@@ -223,12 +228,18 @@ class World(FloatLayout):
         if type==None:
             objeto_padrao=self.obj_padrao
             grid_padrao=self.grid_padrao
-        if type=="esgoto" or True:
+        if type=="esgoto":
             objeto_padrao=self.obj_esgoto
             grid_padrao=self.grid_esgoto
+            if self.nivel>0:
+                self.subida_dungeon = self.descida_dungeon 
             y = random.randint(0, xm - 1)
             x = random.randint(0, ym - 1)
             self.descida_dungeon = (x, y)
+            if self.descida_dungeon == self.subida_dungeon :
+                y = random.randint(0, xm - 1)
+                x = random.randint(0, ym - 1)
+                self.descida_dungeon = (x, y)
             print(x,y)
         self.linhas = xm
         self.colunas = ym
@@ -262,6 +273,16 @@ class World(FloatLayout):
                             patern_center=(self.offset_x, self.offset_y),
                             max=(self.linhas, self.colunas),
                             source="descer_esgoto.png"
+                        )
+                    self.obj_list.append(obj)
+                    self.add_widget(obj)
+                    continue
+                if self.subida_dungeon==(x,y):
+                    obj = Object(
+                            posicao=(x, y),
+                            patern_center=(self.offset_x, self.offset_y),
+                            max=(self.linhas, self.colunas),
+                            source="subir_esgoto.png"
                         )
                     self.obj_list.append(obj)
                     self.add_widget(obj)
@@ -305,6 +326,8 @@ class World(FloatLayout):
             self.remove_widget(ent)
             self.ents.remove(ent)
         self.mapa_modificador=random.choice(self.lista_modificadores)
+        if self.nivel<=0:
+            type=None
         self.create(self.linhas,self.colunas,type)
     
 
