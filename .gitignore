@@ -11,3 +11,4 @@ dist/
 .kivy
 saved/player.json
 saved/configuracoes.json
+/venv
