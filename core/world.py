@@ -207,6 +207,7 @@ class World(FloatLayout):
         self.tiles_list=[]
         self.descida_dungeon=[]
         self.subida_dungeon=[]
+        self.masmorra={}
         self.grid_padrao="terra.png"
         self.obj_padrao="pedra.png"
         self.grid_esgoto="ladrilhos_esgoto.png"
@@ -219,6 +220,7 @@ class World(FloatLayout):
     def create(self, xm, ym, type=None):
         global size
         type='esgoto'
+        self.masmorra[self.nivel]={}
         self.type=type
         combate_nivel=1
         if self.mapa_modificador=="combate":
@@ -307,10 +309,42 @@ class World(FloatLayout):
                             )
                         self.obj_list.append(obj)
                         self.add_widget(obj)
-        
+        self.masmorra[self.nivel] = {
+            "tiles": [(t.coluna, t.linha, t.type) for t in self.tiles_list],
+            "objs": [(o.coluna, o.linha, o.type, o.resistencia) for o in self.obj_list]
+        }
         self.add_widget(self.player)
         self.atualizar()
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
+    
+
+    def carregar_mapa(self, sala):
+        if not sala:
+            return
+        self.tiles_list.clear()
+        self.obj_list.clear()
+        for coluna, linha, tipo in sala["tiles"]:
+            tile = Grid(
+                posicao=(linha, coluna),
+                patern_center=(self.offset_x, self.offset_y),
+                max=(self.linhas, self.colunas),
+                source=tipo
+            )
+            self.tiles_list.append(tile)
+            self.add_widget(tile)
+
+        for coluna, linha, tipo, resistencia in sala["objs"]:
+            obj = Object(
+                posicao=(linha, coluna),
+                patern_center=(self.offset_x, self.offset_y),
+                max=(self.linhas, self.colunas),
+                source=tipo
+            )
+            obj.resistencia = resistencia
+            self.obj_list.append(obj)
+            self.add_widget(obj)
+        self.add_widget(self.player)
+        self.ents.append(self.player)
     
 
     def re_map(self,type,nivel=1):
@@ -328,6 +362,10 @@ class World(FloatLayout):
         self.mapa_modificador=random.choice(self.lista_modificadores)
         if self.nivel<=0:
             type=None
+            self.nivel=0
+        if nivel==-1 or self.nivel in self.masmorra:
+            self.carregar_mapa(self.masmorra[self.nivel])
+            return
         self.create(self.linhas,self.colunas,type)
     
 
