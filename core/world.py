@@ -26,7 +26,7 @@ class Object(FloatLayout):
     
     resistencia=NumericProperty(0)
 
-    def __init__(self,source, **kwargs):
+    def __init__(self,source,ativado=False, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
         
@@ -38,6 +38,7 @@ class Object(FloatLayout):
         self.colisivel=True
         self.quebravel=False
         self.quebrando=False
+        self.ativado=ativado
         self.dano_colisao=0
         self.drops={}
 
@@ -65,7 +66,8 @@ class Object(FloatLayout):
             self.dano_colisao=0.075
 
         elif self.type=="entrada_esgoto.png":
-            Clock.schedule_once(self.spawn,3)
+            if not self.ativado:
+                Clock.schedule_once(self.spawn,3)
         
         self.add_widget(self.image)
 
@@ -91,6 +93,8 @@ class Object(FloatLayout):
             self.hitbox=[self.x+(self.width*0.2),self.y+(self.height*0.7),self.width*0.6, self.height*0.4]
         
     def spawn(self,*args):
+        if self.ativado:
+            return
         world = self.parent
         if not world:
             return
@@ -101,6 +105,7 @@ class Object(FloatLayout):
             print(rato.pos)
             world.add_widget(rato)
             world.ents.append(rato)
+            self.ativado=True
     
     def quebrar(self,*args):
         if self.quebravel:
@@ -124,10 +129,11 @@ class Object(FloatLayout):
                     continue
                 if not ent==self.parent.player:
                     return
-            if self.type=='descer_esgoto.png':
-                self.parent.re_map(type="esgoto")
-            elif self.type == 'subir_esgoto.png':
-                self.parent.re_map(type="esgoto",nivel=-1)
+            if not self.parent.trocando_mapa:
+                if self.type=='descer_esgoto.png':
+                    self.parent.re_map(type="esgoto")
+                elif self.type == 'subir_esgoto.png':
+                    self.parent.re_map(type="esgoto",nivel=-1)
         if self.type=='veneno.png':
             for ent in self.parent.ents:
                 if ent.grid==(self.coluna,self.linha):
@@ -199,6 +205,9 @@ class World(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
+        self.ev_colisao = None
+        self.ev_sprite = None
+        self.trocando_mapa = False
         self.player=None
         self.size = (Window.width, Window.height)
         self.limites=[]
@@ -215,22 +224,21 @@ class World(FloatLayout):
         self.nivel=0
         self.lista_modificadores=["coleta","combate"]
         self.mapa_modificador="coleta"
+        self.atualizar()
 
 
     def create(self, xm, ym, type=None):
         global size
         type='esgoto'
-        self.masmorra[self.nivel]={}
         self.type=type
         combate_nivel=1
         if self.mapa_modificador=="combate":
             combate_nivel=2.5
         elif self.mapa_modificador=="coleta":
             combate_nivel=1
-        if type==None:
-            objeto_padrao=self.obj_padrao
-            grid_padrao=self.grid_padrao
         if type=="esgoto":
+            if not self.nivel in self.masmorra:
+                self.masmorra[self.nivel]={}
             objeto_padrao=self.obj_esgoto
             grid_padrao=self.grid_esgoto
             if self.nivel>0:
@@ -243,6 +251,10 @@ class World(FloatLayout):
                 x = random.randint(0, ym - 1)
                 self.descida_dungeon = (x, y)
             print(x,y)
+        if type==None:
+            objeto_padrao=self.obj_padrao
+            grid_padrao=self.grid_padrao
+            self.nivel=0
         self.linhas = xm
         self.colunas = ym
 
@@ -265,7 +277,7 @@ class World(FloatLayout):
                 self.add_widget(grid)
                 self.tiles_list.append(grid)
         self.player.image.pos=(self.offset_x,self.offset_y )
-        self.ents.append(self.player)
+        self.ents=[self.player]
         
         for y in range(self.linhas):
             for x in range(self.colunas):
@@ -311,10 +323,13 @@ class World(FloatLayout):
                         self.add_widget(obj)
         self.masmorra[self.nivel] = {
             "tiles": [(t.coluna, t.linha, t.type) for t in self.tiles_list],
-            "objs": [(o.coluna, o.linha, o.type, o.resistencia) for o in self.obj_list]
+            "objs": [(o.coluna, o.linha, o.type, o.resistencia, True) for o in self.obj_list]
         }
+        try:
+            self.remove_widget(self.player)
+        except Exception as e:
+            print(e)
         self.add_widget(self.player)
-        self.atualizar()
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
     
 
@@ -333,21 +348,28 @@ class World(FloatLayout):
             self.tiles_list.append(tile)
             self.add_widget(tile)
 
-        for coluna, linha, tipo, resistencia in sala["objs"]:
+        for coluna, linha, tipo, resistencia, ativado in sala["objs"]:
             obj = Object(
                 posicao=(linha, coluna),
                 patern_center=(self.offset_x, self.offset_y),
                 max=(self.linhas, self.colunas),
-                source=tipo
+                source=tipo,
+                ativado=ativado
             )
             obj.resistencia = resistencia
             self.obj_list.append(obj)
             self.add_widget(obj)
+        try:
+            self.remove_widget(self.player)
+        except Exception as e:
+            print(e)
         self.add_widget(self.player)
-        self.ents.append(self.player)
     
 
     def re_map(self,type,nivel=1):
+        if self.trocando_mapa:
+            return
+        self.trocando_mapa=True
         if type==self.type:
             self.nivel+=nivel
         for obj in self.obj_list[:]:
@@ -357,16 +379,20 @@ class World(FloatLayout):
             self.tiles_list.remove(tile)
             self.remove_widget(tile)
         for ent in self.ents[:]:
-            self.remove_widget(ent)
-            self.ents.remove(ent)
+            if ent is not self.player:
+                self.ents.remove(ent)
+                self.remove_widget(ent)
         self.mapa_modificador=random.choice(self.lista_modificadores)
-        if self.nivel<=0:
-            type=None
+        if self.nivel<0:
+            self.type=None
             self.nivel=0
-        if nivel==-1 or self.nivel in self.masmorra:
+        if self.nivel in self.masmorra:
             self.carregar_mapa(self.masmorra[self.nivel])
+            self.trocando_mapa=False
             return
-        self.create(self.linhas,self.colunas,type)
+        else:
+            self.create(self.linhas,self.colunas,type)
+            self.trocando_mapa=False
     
 
     def add_objects(self,type,grid):
@@ -480,11 +506,13 @@ class World(FloatLayout):
             ent.atualizar_pos()
         
     
-    def atualizar(self,*args):
-        Clock.unschedule(self.collision_verify)
-        Clock.unschedule(self.atualizar_sprites)
-        Clock.schedule_interval(self.collision_verify, 1/60)
-        Clock.schedule_interval(self.atualizar_sprites, 1/30)
+    def atualizar(self, *args):
+        if self.ev_colisao:
+            self.ev_colisao.cancel()
+        if self.ev_sprite:
+            self.ev_sprite.cancel()
+        self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
+        self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
     
     def collision(self,hitbox1, hitbox2):
         x1, y1, w1, h1 = hitbox1
