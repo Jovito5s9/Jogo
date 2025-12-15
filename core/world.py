@@ -66,8 +66,7 @@ class Object(FloatLayout):
             self.dano_colisao=0.075
 
         elif self.type=="entrada_esgoto.png":
-            if not self.ativado:
-                Clock.schedule_once(self.spawn,3)
+            Clock.schedule_once(self.spawn,3)
         
         self.add_widget(self.image)
 
@@ -93,7 +92,7 @@ class Object(FloatLayout):
             self.hitbox=[self.x+(self.width*0.2),self.y+(self.height*0.7),self.width*0.6, self.height*0.4]
         
     def spawn(self,*args):
-        if self.ativado:
+        if self.ativado and random.randint(1,10)<=5:
             return
         world = self.parent
         if not world:
@@ -217,10 +216,24 @@ class World(FloatLayout):
         self.descida_dungeon=[]
         self.subida_dungeon=[]
         self.masmorra={}
-        self.grid_padrao="terra.png"
-        self.obj_padrao="pedra.png"
-        self.grid_esgoto="ladrilhos_esgoto.png"
-        self.obj_esgoto="veneno.png"
+
+#mais facil de editar o mapa 
+        self.padrao={
+            "spawner":{
+                'esgoto':"entrada_esgoto.png",
+                None:"entrada_esgoto.png"
+            },
+            "obj":{
+                'esgoto':"veneno.png",
+                None:"pedra.png"
+                },
+            "grid":{
+                'esgoto':"ladrilhos_esgoto.png",
+                None:"terra.png"
+            }
+        }
+
+
         self.nivel=0
         self.lista_modificadores=["coleta","combate"]
         self.mapa_modificador="coleta"
@@ -239,8 +252,6 @@ class World(FloatLayout):
         if type=="esgoto":
             if not self.nivel in self.masmorra:
                 self.masmorra[self.nivel]={}
-            objeto_padrao=self.obj_esgoto
-            grid_padrao=self.grid_esgoto
             if self.nivel>0:
                 self.subida_dungeon = self.descida_dungeon 
             y = random.randint(0, xm - 1)
@@ -252,9 +263,11 @@ class World(FloatLayout):
                 self.descida_dungeon = (x, y)
             print(x,y)
         if type==None:
-            objeto_padrao=self.obj_padrao
-            grid_padrao=self.grid_padrao
             self.nivel=0
+        
+        grid_padrao=self.padrao["grid"][type]
+        objeto_padrao=self.padrao["obj"][type]
+        spawner_padrao=self.padrao["spawner"][type]
         self.linhas = xm
         self.colunas = ym
 
@@ -310,7 +323,7 @@ class World(FloatLayout):
                             posicao=(x, y),
                             patern_center=(self.offset_x, self.offset_y),
                             max=(self.linhas, self.colunas),
-                            source="entrada_esgoto.png"
+                            source=spawner_padrao
                         )
                         else:
                             obj = Object(
