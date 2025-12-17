@@ -39,6 +39,8 @@ class BasicEnt(FloatLayout):
         super().__init__(**kwargs)
         self.size = (32, 32)
         self.pos = (100, 100)
+        self.frame_width = 32
+        self.frame_height = 32
         self.recompensa = 0
         self.i_frames_time=0.8
         self.tamanho=1
@@ -73,9 +75,10 @@ class BasicEnt(FloatLayout):
         
     def atualizar(self,*args):
         # Carrega o sprite sheet
-        self.sprite_sheet = Image(source=self.sources.get("idle")).texture
-        self.frame_width = 32
-        self.frame_height = 32
+        self.sprite_sheet = self.carregar_sprite("idle")
+        if not self.sprite_sheet:
+            return
+
         self.total_frames = self.idle_frames
         self.current_frame = 0
 
@@ -126,31 +129,37 @@ class BasicEnt(FloatLayout):
         self.barra_vida.pos=(self.image.center_x,self.image.center_y)
         self.hitbox = self.get_hitbox()
 
-    def on_estado(self,*args):
+    def on_estado(self, *args):
         if not self.vivo:
-            self.sprite_sheet = Image(source=self.sources.get("morto")).texture
+            self.sprite_sheet = self.carregar_sprite("morto")
             self.total_frames = 1
             return
-        if self.estado=="atacando":
-            self.sprite_sheet = Image(source=self.sources.get(f"{self.ataque_name}")).texture
-            self.frame_width = 32
-            self.frame_height = 32
+        if self.estado == "atacando":
+            self.sprite_sheet = self.carregar_sprite(self.ataque_name)
             self.total_frames = self.atacando_frames
-            self.current_frame = 0
-        elif self.estado=="idle":
-            self.sprite_sheet = Image(source=self.sources.get("idle")).texture
-            self.frame_width = 32
-            self.frame_height = 32
+        elif self.estado == "idle":
+            self.sprite_sheet = self.carregar_sprite("idle")
             self.total_frames = self.idle_frames
-            self.current_frame = 0
-        elif self.estado=="running":
-            self.sprite_sheet = Image(source=self.sources.get("running")).texture
-            self.frame_width = 32
-            self.frame_height = 32
+        elif self.estado == "running":
+            self.sprite_sheet = self.carregar_sprite("running")
             self.total_frames = self.running_frames
-            self.current_frame = 0
+        if not self.sprite_sheet:
+            return
+        self.current_frame = 0
+
+    
+    def carregar_sprite(self, key):
+        source = self.sources.get(key)
+        if not source or not os.path.exists(source):
+            print(f"[ERRO SPRITE] '{key}' não encontrado para {self}")
+            return None
+        img = Image(source=source)
+        return img.texture
+
 
     def update_texture(self):
+        if not self.sprite_sheet:
+            return
         x = self.frame_width * self.current_frame
         y = 0
 
@@ -393,7 +402,7 @@ class Rata_mae(BasicEnt):
         super().__init__(**kwargs)
         self.sources["idle"]="assets/sprites/rata_mae/idle.png"
         self.sources["preparing"]="assets/sprites/rata_mae/preparing.png"
-        self.sources["roll"]="assets/sprites/rata_mae/rolling.png"
+        self.sources["rolling"]="assets/sprites/rata_mae/rolling.png"
         self.sources["morto"]="assets/sprites/rata_mae/dead.png"
         self.idle_frames=3
         self.running_frames=3
@@ -407,9 +416,12 @@ class Rata_mae(BasicEnt):
         "rastrear":rastrear,
         "atacar":self.preparar_rolar
         }
+        self.investida = None
         Clock.schedule_interval(self.ia,1/10)
         Clock.schedule_once(self.add_player,1)
         self.atributos()
+        self.frame_width = 96
+        self.frame_height = 64
     
     def atributos(self,*args):
         self.raio_visao=600
@@ -417,8 +429,12 @@ class Rata_mae(BasicEnt):
         self.vida=300
         self.dano=50
         self.velocidade=1.3
+        self.alcance_fisico=450
         self.list_drops["carne"]=random.randint(3,7)
     
+    def add_player(self,*args):
+        self.player=self.parent.player
+
     def ia(self,*args):
         if not self.vivo:
             return
@@ -430,7 +446,7 @@ class Rata_mae(BasicEnt):
         else:
             self.acoes["rastrear"](self)
         
-    def preparar_rolar(self):
+    def preparar_rolar(self,*args):
         if self.atacando:
             return
         self.alvo_pos=self.player.image.pos
@@ -439,20 +455,26 @@ class Rata_mae(BasicEnt):
         self.atacando=True
         Clock.schedule_once(self.rolar,1)
     
-    def rolar(self):
+    def rolar(self,*args):
         self.ataque_name="rolling"
-        self.velocidade*=3
+        self.velocidade*=2
         self.investida=Clock.schedule_once(self.acelerar,0.05)
         Clock.schedule_once(self.parar_rolar,1.5)
     
-    def parar_rolar(self):
-        self.atacando=False
+    def parar_rolar(self, *args):
+        self.atacando = False
         self.estado = "idle"
-        self.velocidade=self.velocidade/3
-        self.investida.cancel()
+        self.velocidade /= 2
 
-    def acelerar(self):
+        if self.investida:
+            self.investida.cancel()
+            self.investida = None
+
+    def acelerar(self,*args):
         x,y=self.alvo_pos
+        velocidade=5
+        if x==0:x=1
+        if y==0:y=1
         self.image.x+=self.velocidade*x/abs(x)
         self.image.y+=self.velocidade*y/abs(y)
 
@@ -496,7 +518,7 @@ class Player(BasicEnt):
         self.atacando=True
         repulsao=self.repulsao
         if self.ataque_name == "soco_forte":
-            self.dano = self.power * 1.2
+            self.dano = self.power * 10.2
             self.repulsao=1.5*self.repulsao
         for ent in self.parent.ents:
             if not ent==self:

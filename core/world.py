@@ -7,7 +7,7 @@ from kivy.clock import Clock
 
 import random
 
-from core.player import Rato
+from core.player import Rato, Rata_mae
 
 size=75
 
@@ -344,6 +344,10 @@ class World(FloatLayout):
             print(e)
         self.add_widget(self.player)
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
+        boss=Rata_mae()
+        self.add_widget(boss)
+        self.ents.append(boss)
+        boss.image.pos=self.offset_x,self.offset_y
     
 
     def carregar_mapa(self, sala):
