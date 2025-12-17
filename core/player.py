@@ -388,6 +388,75 @@ class Rato(BasicEnt):
         else:
             self.estado = "idle"
 
+class Rata_mae(BasicEnt):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sources["idle"]="assets/sprites/rata_mae/idle.png"
+        self.sources["preparing"]="assets/sprites/rata_mae/preparing.png"
+        self.sources["roll"]="assets/sprites/rata_mae/rolling.png"
+        self.sources["morto"]="assets/sprites/rata_mae/dead.png"
+        self.idle_frames=3
+        self.running_frames=3
+        self.atacando_frames=3
+        self.tamanho=3.5
+        self.alvo_pos=[]
+
+        self.atualizar()
+        self.acoes={
+        "perseguir":perseguir,
+        "rastrear":rastrear,
+        "atacar":self.preparar_rolar
+        }
+        Clock.schedule_interval(self.ia,1/10)
+        Clock.schedule_once(self.add_player,1)
+        self.atributos()
+    
+    def atributos(self,*args):
+        self.raio_visao=600
+        self.vida_maxima=300
+        self.vida=300
+        self.dano=50
+        self.velocidade=1.3
+        self.list_drops["carne"]=random.randint(3,7)
+    
+    def ia(self,*args):
+        if not self.vivo:
+            return
+        if self.alvo:
+            if distancia(self)<=self.alcance_fisico and not self.atacando:
+                self.acoes["atacar"]()
+            else:
+                self.acoes["perseguir"](self)
+        else:
+            self.acoes["rastrear"](self)
+        
+    def preparar_rolar(self):
+        if self.atacando:
+            return
+        self.alvo_pos=self.player.image.pos
+        self.estado="atacando"
+        self.ataque_name="preparing"
+        self.atacando=True
+        Clock.schedule_once(self.rolar,1)
+    
+    def rolar(self):
+        self.ataque_name="rolling"
+        self.velocidade*=3
+        self.investida=Clock.schedule_once(self.acelerar,0.05)
+        Clock.schedule_once(self.parar_rolar,1.5)
+    
+    def parar_rolar(self):
+        self.atacando=False
+        self.estado = "idle"
+        self.velocidade=self.velocidade/3
+        self.investida.cancel()
+
+    def acelerar(self):
+        x,y=self.alvo_pos
+        self.image.x+=self.velocidade*x/abs(x)
+        self.image.y+=self.velocidade*y/abs(y)
+
+
 class Player(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
