@@ -53,6 +53,7 @@ class BasicEnt(FloatLayout):
         self.dano = self.power
         self.atacando=False
         self.alcance_fisico=70
+        self.dano_contato=0
         self.velocidade = 3
         self.speed_x=0
         self.speed_y=0
@@ -425,12 +426,20 @@ class Rata_mae(BasicEnt):
     
     def atributos(self,*args):
         self.raio_visao=600
-        self.vida_maxima=300
-        self.vida=300
-        self.dano=50
-        self.velocidade=1.3
+        self.vida_maxima=450
+        self.vida=450
+        self.dano_contato=5
+        self.velocidade=1.5
         self.alcance_fisico=450
         self.list_drops["carne"]=random.randint(3,7)
+    
+    def get_hitbox(self,*args):
+        x=self.image.x + (self.image.width *0.16)
+        y = self.image.y + (self.image.height *0.1)
+        width = self.image.width * 0.68
+        height = self.image.height * 0.6
+        self.get_center_hitbox(x,y,width,height)
+        return [x, y, width, height]
     
     def add_player(self,*args):
         self.player=self.parent.player

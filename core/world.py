@@ -344,11 +344,7 @@ class World(FloatLayout):
             print(e)
         self.add_widget(self.player)
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
-        boss=Rata_mae()
-        self.add_widget(boss)
-        self.ents.append(boss)
-        boss.image.pos=self.offset_x,self.offset_y
-    
+        self.gerar_boss()
 
     def carregar_mapa(self, sala):
         if not sala:
@@ -483,6 +479,10 @@ class World(FloatLayout):
                 continue
             if self.collision(ent.hitbox, entit.hitbox):
                 # Reverte X e zera velocidade no eixo Y
+                if not ent.i_frames:
+                    ent.vida-=entit.dano_contato
+                if not entit.i_frames:
+                    entit.vida-=ent.dano_contato
                 ent.image.x = original_x
                 ent.speed_x = 0
                 ent.hitbox = ent.get_hitbox()
@@ -540,15 +540,9 @@ class World(FloatLayout):
             y1 < y2 + h2 and
             y1 + h1 > y2
         )
- 
+    def gerar_boss(self,*args):
+        boss=Rata_mae()
+        self.add_widget(boss)
+        self.ents.append(boss)
+        boss.image.pos=self.offset_x+self.linhas*size*0.5,self.offset_y+self.colunas*size*0.5*0.8
 
-
-class TestApp(App):
-    def build(self):
-        world = World()
-        world.create(10, 10)  # Altere aqui o tamanho do mapa
-        return world
-
-
-if __name__ == '__main__':
-    TestApp().run()
