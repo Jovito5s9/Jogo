@@ -503,7 +503,7 @@ class Player(BasicEnt):
 
         self.atualizar()
         self.repulsao=20
-        self.alcance_fisico=90
+        self.alcance_fisico=900
         self.acoes={
             "soco_normal":self.soco_normal,
             "soco_forte":self.soco_forte

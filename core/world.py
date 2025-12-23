@@ -216,7 +216,7 @@ class World(FloatLayout):
         self.descida_dungeon=[]
         self.subida_dungeon=[]
         self.masmorra={}
-
+        self.boss=None
 #mais facil de editar o mapa 
         self.padrao={
             "spawner":{
@@ -262,6 +262,8 @@ class World(FloatLayout):
                 x = random.randint(0, ym - 1)
                 self.descida_dungeon = (x, y)
             print(x,y)
+            if self.nivel==10:
+                combate_nivel=10
         if type==None:
             self.nivel=0
         
@@ -344,7 +346,9 @@ class World(FloatLayout):
             print(e)
         self.add_widget(self.player)
         print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
-        self.gerar_boss()
+        if self.nivel==10:
+            self.gerar_boss()
+
 
     def carregar_mapa(self, sala):
         if not sala:
@@ -396,7 +400,7 @@ class World(FloatLayout):
                 self.ents.remove(ent)
                 self.remove_widget(ent)
         self.mapa_modificador=random.choice(self.lista_modificadores)
-        if self.nivel<0:
+        if self.nivel<0 or self.nivel>10:
             self.type=None
             self.nivel=0
         if self.nivel in self.masmorra:
@@ -545,4 +549,7 @@ class World(FloatLayout):
         self.add_widget(boss)
         self.ents.append(boss)
         boss.image.pos=self.offset_x+self.linhas*size*0.5,self.offset_y+self.colunas*size*0.5*0.8
+        self.boss=boss
+        for obj in self.obj_list:
+            obj.quebrar()
 
