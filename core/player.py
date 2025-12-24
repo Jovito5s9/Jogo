@@ -152,7 +152,6 @@ class BasicEnt(FloatLayout):
     def carregar_sprite(self, key):
         source = self.sources.get(key)
         if not source or not os.path.exists(source):
-            print(f"[ERRO SPRITE] '{key}' não encontrado para {self}")
             return None
         img = Image(source=source)
         return img.texture
@@ -208,10 +207,8 @@ class BasicEnt(FloatLayout):
         
     def drop(self, *args):
         if not self.list_drops or self.droped:
-            print("sem drops")
             return
         self.recive_itens(self.list_drops)
-        print("Inventário após drops:", self.parent.player.inventario)
         self.droped=True
     
     def recive_itens(self,list_drops):
@@ -323,7 +320,6 @@ def atacar(atacante,alvo=None):
         atacante.speed_x=0
         atacante.speed_y=0
         alvo.vida-=atacante.dano
-        print(atacante.estado)
     return
 
 def distancia(ent1,ent2=None):
@@ -425,7 +421,7 @@ class Rata_mae(BasicEnt):
         self.frame_height = 64
     
     def atributos(self,*args):
-        self.raio_visao=600
+        self.raio_visao=700
         self.vida_maxima=450
         self.vida=450
         self.dano_contato=5
@@ -448,10 +444,8 @@ class Rata_mae(BasicEnt):
         if not self.vivo:
             return
         if self.alvo:
-            if distancia(self)<=self.alcance_fisico and not self.atacando:
+            if not self.atacando:
                 self.acoes["atacar"]()
-            else:
-                self.acoes["perseguir"](self)
         else:
             self.acoes["rastrear"](self)
         
@@ -462,13 +456,13 @@ class Rata_mae(BasicEnt):
         self.estado="atacando"
         self.ataque_name="preparing"
         self.atacando=True
-        Clock.schedule_once(self.rolar,1)
+        Clock.schedule_once(self.rolar,0.3)
     
     def rolar(self,*args):
         self.ataque_name="rolling"
         self.velocidade*=2
-        self.investida=Clock.schedule_once(self.acelerar,0.05)
-        Clock.schedule_once(self.parar_rolar,1.5)
+        self.investida=Clock.schedule_interval(self.acelerar,0.05)
+        Clock.schedule_once(self.parar_rolar,1)
     
     def parar_rolar(self, *args):
         self.atacando = False
@@ -480,6 +474,7 @@ class Rata_mae(BasicEnt):
             self.investida = None
 
     def acelerar(self,*args):
+        perseguir(self)
         x,y=self.alvo_pos
         velocidade=5
         if x==0:x=1
@@ -503,7 +498,7 @@ class Player(BasicEnt):
 
         self.atualizar()
         self.repulsao=20
-        self.alcance_fisico=900
+        self.alcance_fisico=100
         self.acoes={
             "soco_normal":self.soco_normal,
             "soco_forte":self.soco_forte
@@ -516,7 +511,6 @@ class Player(BasicEnt):
             self.acao=""
             return
         self.ataque_name="soco"
-        print("ataque gerado")
         self.atacar()
         Clock.schedule_once(self.remover_ataque,0.4)
 
@@ -527,17 +521,15 @@ class Player(BasicEnt):
         self.atacando=True
         repulsao=self.repulsao
         if self.ataque_name == "soco_forte":
-            self.dano = self.power * 10.2
+            self.dano = self.power * 1.2
             self.repulsao=1.5*self.repulsao
         for ent in self.parent.ents:
             if not ent==self:
                 if distancia(self,ent)<=self.alcance_fisico:
                     if self.facing_right and ent.image.x>=self.image.x:
                         atacar(self,ent)
-                        print("player atacou")
                     elif not self.facing_right and ent.image.x<=self.image.x:
                         atacar(self,ent)
-                        print("player atacou")
         self.dano=self.power
         self.repulsao=repulsao
     
