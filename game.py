@@ -18,11 +18,22 @@ from saved.itens_db import ITENS
 
 import json 
 
+def configuracoes():
+        try:
+            with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+                configs=json.load(config)
+        except:
+            with open("saved/configuracoes.json","w",encoding="utf-8") as config:
+                newconfig={"teclado": False}
+                configs=newconfig
+                json.dump(newconfig, config)
+        
+        return configs
+
 class Interface(FloatLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        self.configs=[]
-        self.configuracoes()
+        self.configs = configuracoes()
 
         if not self.configs["teclado"]:
             self.add_ui()
@@ -55,17 +66,6 @@ class Interface(FloatLayout):
         self.button_ataque.bind(on_release=self.parent.ataque)
         self.button_quebrar.bind(on_release=self.parent.quebrar)
         self.button_inventario.bind(on_release=self.parent.inventario)
-    
-    def configuracoes(self):
-        try:
-            with open("saved/configuracoes.json","r",encoding="utf-8") as config:
-                self.configs=json.load(config)
-        except:
-            with open("saved/configuracoes.json","w",encoding="utf-8") as config:
-                newconfig={"teclado": False}
-                self.configs=newconfig
-                json.dump(newconfig, config)
-
 
 class Game(FloatLayout):
     def __init__(self,**kwargs):
@@ -92,10 +92,10 @@ class Game(FloatLayout):
 
     def pre_leave(self,*args):
         if not self.interface.configs["teclado"]:
-            Clock.unschedule_interval(self.joystick_movs, 1/20)
+            Clock.unschedule(self.joystick_movs, 1/20)
         else:
             self.keyboard_desactive()
-            Clock.unschedule_interval(self.keyboard_actions, 1/20)
+            Clock.unschedule(self.keyboard_actions, 1/20)
         self.remove_widget(self.interface)
     
 
@@ -280,8 +280,7 @@ class MenuScreen(Screen):
 class ConfiguracoesScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
-                self.configs=json.load(config)
+        self.configs=configuracoes()
         self.teclado=self.configs["teclado"]
         if self.teclado:
             self.input='Modo teclado'

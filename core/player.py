@@ -39,8 +39,11 @@ class BasicEnt(FloatLayout):
         super().__init__(**kwargs)
         self.size = (32, 32)
         self.pos = (100, 100)
+        self.frame_width = 32
+        self.frame_height = 32
         self.recompensa = 0
         self.i_frames_time=0.8
+        self.tamanho=1
         self.vida_maxima=100
         self.vida = self.vida_maxima
         self.vivo=True
@@ -50,6 +53,7 @@ class BasicEnt(FloatLayout):
         self.dano = self.power
         self.atacando=False
         self.alcance_fisico=70
+        self.dano_contato=0
         self.velocidade = 3
         self.speed_x=0
         self.speed_y=0
@@ -72,15 +76,16 @@ class BasicEnt(FloatLayout):
         
     def atualizar(self,*args):
         # Carrega o sprite sheet
-        self.sprite_sheet = Image(source=self.sources.get("idle")).texture
-        self.frame_width = 32
-        self.frame_height = 32
+        self.sprite_sheet = self.carregar_sprite("idle")
+        if not self.sprite_sheet:
+            return
+
         self.total_frames = self.idle_frames
         self.current_frame = 0
 
         # Cria o widget de imagem animada
         self.image = Image(
-            size=(self.frame_width*5, self.frame_height*5),
+            size=(self.frame_width*self.tamanho, self.frame_height*self.tamanho),
             size_hint=(None, None),
             pos=(0, 0)  # fixa dentro do BasicEnt
         )
@@ -125,31 +130,36 @@ class BasicEnt(FloatLayout):
         self.barra_vida.pos=(self.image.center_x,self.image.center_y)
         self.hitbox = self.get_hitbox()
 
-    def on_estado(self,*args):
+    def on_estado(self, *args):
         if not self.vivo:
-            self.sprite_sheet = Image(source=self.sources.get("morto")).texture
+            self.sprite_sheet = self.carregar_sprite("morto")
             self.total_frames = 1
             return
-        if self.estado=="atacando":
-            self.sprite_sheet = Image(source=self.sources.get(f"{self.ataque_name}")).texture
-            self.frame_width = 32
-            self.frame_height = 32
+        if self.estado == "atacando":
+            self.sprite_sheet = self.carregar_sprite(self.ataque_name)
             self.total_frames = self.atacando_frames
-            self.current_frame = 0
-        elif self.estado=="idle":
-            self.sprite_sheet = Image(source=self.sources.get("idle")).texture
-            self.frame_width = 32
-            self.frame_height = 32
+        elif self.estado == "idle":
+            self.sprite_sheet = self.carregar_sprite("idle")
             self.total_frames = self.idle_frames
-            self.current_frame = 0
-        elif self.estado=="running":
-            self.sprite_sheet = Image(source=self.sources.get("running")).texture
-            self.frame_width = 32
-            self.frame_height = 32
+        elif self.estado == "running":
+            self.sprite_sheet = self.carregar_sprite("running")
             self.total_frames = self.running_frames
-            self.current_frame = 0
+        if not self.sprite_sheet:
+            return
+        self.current_frame = 0
+
+    
+    def carregar_sprite(self, key):
+        source = self.sources.get(key)
+        if not source or not os.path.exists(source):
+            return None
+        img = Image(source=source)
+        return img.texture
+
 
     def update_texture(self):
+        if not self.sprite_sheet:
+            return
         x = self.frame_width * self.current_frame
         y = 0
 
@@ -197,10 +207,8 @@ class BasicEnt(FloatLayout):
         
     def drop(self, *args):
         if not self.list_drops or self.droped:
-            print("sem drops")
             return
         self.recive_itens(self.list_drops)
-        print("Inventário após drops:", self.parent.player.inventario)
         self.droped=True
     
     def recive_itens(self,list_drops):
@@ -227,7 +235,7 @@ class BasicEnt(FloatLayout):
         try:
             self.barra_vida.modificador=vida_mod
         except:
-            print("sem barra_vida")
+            pass
         if self.vida<=0:
             self.morrer()
     
@@ -312,7 +320,6 @@ def atacar(atacante,alvo=None):
         atacante.speed_x=0
         atacante.speed_y=0
         alvo.vida-=atacante.dano
-        print(atacante.estado)
     return
 
 def distancia(ent1,ent2=None):
@@ -346,6 +353,7 @@ class Rato(BasicEnt):
         self.idle_frames=2
         self.running_frames=2
         self.atacando_frames=2
+        self.tamanho=2.8
         
         self.atualizar()
         self.acoes=ia_base()
@@ -355,7 +363,6 @@ class Rato(BasicEnt):
     
     def atributos(self,*args):
         self.raio_visao=300
-        self.image.size=(90,90)
         self.vida_maxima=30
         self.vida=30
         self.dano=5
@@ -387,6 +394,95 @@ class Rato(BasicEnt):
         else:
             self.estado = "idle"
 
+class Rata_mae(BasicEnt):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sources["idle"]="assets/sprites/rata_mae/idle.png"
+        self.sources["preparing"]="assets/sprites/rata_mae/preparing.png"
+        self.sources["rolling"]="assets/sprites/rata_mae/rolling.png"
+        self.sources["morto"]="assets/sprites/rata_mae/dead.png"
+        self.idle_frames=3
+        self.running_frames=3
+        self.atacando_frames=3
+        self.tamanho=3.5
+        self.alvo_pos=[]
+
+        self.atualizar()
+        self.acoes={
+        "perseguir":perseguir,
+        "rastrear":rastrear,
+        "atacar":self.preparar_rolar
+        }
+        self.investida = None
+        Clock.schedule_interval(self.ia,1/10)
+        Clock.schedule_once(self.add_player,1)
+        self.atributos()
+        self.frame_width = 96
+        self.frame_height = 64
+    
+    def atributos(self,*args):
+        self.raio_visao=700
+        self.vida_maxima=450
+        self.vida=450
+        self.dano_contato=5
+        self.velocidade=1.5
+        self.alcance_fisico=450
+        self.list_drops["carne"]=random.randint(3,7)
+    
+    def get_hitbox(self,*args):
+        x=self.image.x + (self.image.width *0.16)
+        y = self.image.y + (self.image.height *0.1)
+        width = self.image.width * 0.68
+        height = self.image.height * 0.6
+        self.get_center_hitbox(x,y,width,height)
+        return [x, y, width, height]
+    
+    def add_player(self,*args):
+        self.player=self.parent.player
+
+    def ia(self,*args):
+        if not self.vivo:
+            return
+        if self.alvo:
+            if not self.atacando:
+                self.acoes["atacar"]()
+        else:
+            self.acoes["rastrear"](self)
+        
+    def preparar_rolar(self,*args):
+        if self.atacando:
+            return
+        self.alvo_pos=self.player.image.pos
+        self.estado="atacando"
+        self.ataque_name="preparing"
+        self.atacando=True
+        Clock.schedule_once(self.rolar,0.3)
+    
+    def rolar(self,*args):
+        self.ataque_name="rolling"
+        self.velocidade*=2
+        self.investida=Clock.schedule_interval(self.acelerar,0.05)
+        Clock.schedule_once(self.parar_rolar,1)
+    
+    def parar_rolar(self, *args):
+        self.atacando = False
+        self.estado = "idle"
+        self.velocidade /= 2
+
+        if self.investida:
+            self.investida.cancel()
+            self.investida = None
+
+    def acelerar(self,*args):
+        perseguir(self)
+        x,y=self.alvo_pos
+        velocidade=5
+        if x==0:x=1
+        if y==0:y=1
+        self.image.x+=self.velocidade*x/abs(x)
+        self.image.y+=self.velocidade*y/abs(y)
+
+
 class Player(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -398,10 +494,11 @@ class Player(BasicEnt):
         self.idle_frames=2
         self.running_frames=4
         self.atacando_frames=3
+        self.tamanho=4
 
         self.atualizar()
         self.repulsao=20
-        self.alcance_fisico=90
+        self.alcance_fisico=100
         self.acoes={
             "soco_normal":self.soco_normal,
             "soco_forte":self.soco_forte
@@ -414,7 +511,6 @@ class Player(BasicEnt):
             self.acao=""
             return
         self.ataque_name="soco"
-        print("ataque gerado")
         self.atacar()
         Clock.schedule_once(self.remover_ataque,0.4)
 
@@ -432,10 +528,8 @@ class Player(BasicEnt):
                 if distancia(self,ent)<=self.alcance_fisico:
                     if self.facing_right and ent.image.x>=self.image.x:
                         atacar(self,ent)
-                        print("player atacou")
                     elif not self.facing_right and ent.image.x<=self.image.x:
                         atacar(self,ent)
-                        print("player atacou")
         self.dano=self.power
         self.repulsao=repulsao
     
@@ -457,6 +551,8 @@ class Player(BasicEnt):
             alvo_x-=1 
         for obj in self.parent.obj_list: 
             if obj.linha==alvo_y and obj.coluna==alvo_x and obj.quebravel: 
+                obj.resistencia-=self.power 
+            if (obj.coluna,obj.linha)==self.grid and obj.quebravel: 
                 obj.resistencia-=self.power 
 
         self.ataque_name = "soco_forte" 
