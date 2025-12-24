@@ -66,7 +66,7 @@ class Object(FloatLayout):
             self.dano_colisao=0.075
 
         elif self.type=="entrada_esgoto.png":
-            Clock.schedule_once(self.spawn,3)
+            Clock.schedule_once(self.spawn,0.5)
         
         self.add_widget(self.image)
 
@@ -250,6 +250,8 @@ class World(FloatLayout):
         elif self.mapa_modificador=="coleta":
             combate_nivel=1
         if type=="esgoto":
+            if self.nivel<=0:
+                self.nivel=1
             if not self.nivel in self.masmorra:
                 self.masmorra[self.nivel]={}
             if self.nivel>0:
@@ -263,7 +265,7 @@ class World(FloatLayout):
                 self.descida_dungeon = (x, y)
             print(x,y)
             if self.nivel==10:
-                combate_nivel=10
+                combate_nivel=7
         if type==None:
             self.nivel=0
         
@@ -550,6 +552,11 @@ class World(FloatLayout):
         self.ents.append(boss)
         boss.image.pos=self.offset_x+self.linhas*size*0.5,self.offset_y+self.colunas*size*0.5*0.8
         self.boss=boss
-        for obj in self.obj_list:
-            obj.quebrar()
+        Clock.schedule_once(self.remover_spawners,0.5)
 
+    def remover_spawners(self,*args):
+        for obj in self.obj_list[:]:
+            if obj.type!=self.padrao["spawner"][self.type]:
+                continue
+            self.remove_widget(obj)
+            self.obj_list.remove(obj)
