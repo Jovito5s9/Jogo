@@ -101,7 +101,6 @@ class Object(FloatLayout):
             
             rato=Rato()
             rato.image.pos = (self.image.x,self.image.y)
-            print(rato.pos)
             world.add_widget(rato)
             world.ents.append(rato)
             self.ativado=True
@@ -263,7 +262,6 @@ class World(FloatLayout):
                 y = random.randint(0, xm - 1)
                 x = random.randint(0, ym - 1)
                 self.descida_dungeon = (x, y)
-            print(x,y)
             if self.nivel==10:
                 combate_nivel=7
         if type==None:
@@ -347,7 +345,6 @@ class World(FloatLayout):
         except Exception as e:
             print(e)
         self.add_widget(self.player)
-        print(f"player: {self.player.hitbox}, mapa: {self.limites}, tilessize: {self.colunas*size,self.linhas*0.8*size}")
         if self.nivel==10:
             self.gerar_boss()
 

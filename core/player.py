@@ -235,7 +235,7 @@ class BasicEnt(FloatLayout):
         try:
             self.barra_vida.modificador=vida_mod
         except:
-            print("sem barra_vida")
+            pass
         if self.vida<=0:
             self.morrer()
     
