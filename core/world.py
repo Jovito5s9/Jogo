@@ -8,6 +8,7 @@ from kivy.clock import Clock
 import random
 
 from core.player import Rato, Rata_mae
+from utils.resourcesPath import resource_path
 
 size=75
 
@@ -33,7 +34,7 @@ class Object(FloatLayout):
         global size
         self.s=source
         self.type=source
-        self.source="assets/tiles/objects/"+f"{source}"
+        self.source=resource_path("assets/tiles/objects/"+f"{source}")
         self.size = (size, size*0.8)
         self.colisivel=True
         self.quebravel=False
@@ -163,7 +164,7 @@ class Grid(FloatLayout):
         self.type=source
         global size
         global obj_list
-        self.source="assets/tiles/ground/"+f"{source}"
+        self.source=resource_path("assets/tiles/ground/"+f"{source}")
         self.size = (size, size*0.8)
 
         self.image = Image(

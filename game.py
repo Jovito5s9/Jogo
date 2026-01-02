@@ -15,15 +15,16 @@ from core.player import Player
 from core.world import World
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
+from utils.resourcesPath import resource_path
 
 import json 
 
 def configuracoes():
         try:
-            with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+            with open(resource_path("saved/configuracoes.json"),"r",encoding="utf-8") as config:
                 configs=json.load(config)
         except:
-            with open("saved/configuracoes.json","w",encoding="utf-8") as config:
+            with open(resource_path("saved/configuracoes.json"),"w",encoding="utf-8") as config:
                 newconfig={"teclado": False}
                 configs=newconfig
                 json.dump(newconfig, config)
@@ -189,12 +190,13 @@ class Menu_player(Popup):
         self.itens_layout.bind(minimum_height=self.itens_layout.setter('height'))
 
         try:
-            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
+            with open(resource_path("saved/player.json"), "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
                 inventario = player.get("inventario", {})
             if inventario:
                 for nome, quantidade in inventario.items(): 
                     info=ITENS.get(nome,{}) 
+                    source=resource_path(info["source"])
                     item = FloatLayout(
                         size_hint_y=None, 
                         height=120
@@ -202,7 +204,7 @@ class Menu_player(Popup):
                     item_image=Image( 
                         size_hint=(0.6,0.6), 
                         pos_hint={"center_x": 0.1, "center_y": 0.7}, 
-                        source=info["source"] ) 
+                        source=source) 
                     item_label = Label( 
                         text=f"- {nome} : {quantidade}\n {info["raridade"]}", 
                         font_size=20, 
@@ -235,7 +237,7 @@ class MenuScreen(Screen):
         self.layout = FloatLayout()
         self.add_widget(self.layout)
         self.logo = Image(
-            source='assets/geral/logo_RadioRoots.png',
+            source=resource_path('assets/geral/logo_RadioRoots.png'),
             allow_stretch=True,
             keep_ratio=True,
             size_hint=(0.4, 0.4),   
@@ -314,10 +316,10 @@ class ConfiguracoesScreen(Screen):
         Window.bind(on_keyboard=self.ir_para_menu)
     
     def trocar_input(self,*args):
-        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+        with open(resource_path("saved/configuracoes.json"),"r",encoding="utf-8") as config:
             self.configs=json.load(config)
         self.configs["teclado"]=not self.configs["teclado"]
-        with open("saved/configuracoes.json","w",encoding="utf-8") as old_config:
+        with open(resource_path("saved/configuracoes.json"),"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         if self.configs["teclado"]:
             self.input='Modo teclado'

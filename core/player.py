@@ -8,6 +8,7 @@ from kivy.properties import OptionProperty,BooleanProperty, NumericProperty
 import random
 import json
 import os
+from utils.resourcesPath import resource_path
 
 class Barra(Widget):
     modificador=NumericProperty(100)
@@ -241,7 +242,7 @@ class BasicEnt(FloatLayout):
     
 
     def save_data(self, item, key):
-        path = "saved/player.json"
+        path = resource_path("saved/player.json")
         if not os.path.exists(path):
             data = {}
         else:
@@ -346,10 +347,10 @@ def ia_base():
 class Rato(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.sources["idle"]="assets/sprites/rato/idle.png"
-        self.sources["running"]="assets/sprites/rato/running.png"
-        self.sources["morto"]="assets/sprites/rato/morto.png"
-        self.sources["garras"]="assets/sprites/rato/garras.png"
+        self.sources["idle"]=resource_path("assets/sprites/rato/idle.png")
+        self.sources["running"]=resource_path("assets/sprites/rato/running.png")
+        self.sources["morto"]=resource_path("assets/sprites/rato/morto.png")
+        self.sources["garras"]=resource_path("assets/sprites/rato/garras.png")
         self.idle_frames=2
         self.running_frames=2
         self.atacando_frames=2
@@ -397,10 +398,10 @@ class Rato(BasicEnt):
 class Rata_mae(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.sources["idle"]="assets/sprites/rata_mae/idle.png"
-        self.sources["preparing"]="assets/sprites/rata_mae/preparing.png"
-        self.sources["rolling"]="assets/sprites/rata_mae/rolling.png"
-        self.sources["morto"]="assets/sprites/rata_mae/dead.png"
+        self.sources["idle"]=resource_path("assets/sprites/rata_mae/idle.png")
+        self.sources["preparing"]=resource_path("assets/sprites/rata_mae/preparing.png")
+        self.sources["rolling"]=resource_path("assets/sprites/rata_mae/rolling.png")
+        self.sources["morto"]=resource_path("assets/sprites/rata_mae/dead.png")
         self.idle_frames=3
         self.running_frames=3
         self.atacando_frames=3
@@ -486,11 +487,11 @@ class Rata_mae(BasicEnt):
 class Player(BasicEnt):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.sources["idle"]="assets/sprites/player/idle.png"
-        self.sources["running"]="assets/sprites/player/running.png"
-        self.sources["morto"]="assets/sprites/player/morto.png"
-        self.sources["soco"]="assets/sprites/player/soco.png"
-        self.sources["soco_forte"]="assets/sprites/player/soco_forte.png"
+        self.sources["idle"]=resource_path("assets/sprites/player/idle.png")
+        self.sources["running"]=resource_path("assets/sprites/player/running.png")
+        self.sources["morto"]=resource_path("assets/sprites/player/morto.png")
+        self.sources["soco"]=resource_path("assets/sprites/player/soco.png")
+        self.sources["soco_forte"]=resource_path("assets/sprites/player/soco_forte.png")
         self.idle_frames=2
         self.running_frames=4
         self.atacando_frames=3
