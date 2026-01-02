@@ -12,3 +12,7 @@ dist/
 saved/player.json
 saved/configuracoes.json
 /venv
+build/
+dist/
+JOGO.spec
+build.sh
