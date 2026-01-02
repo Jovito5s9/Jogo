@@ -48,6 +48,12 @@ eles se levantam para tentar comer batata, causa dano
 A ratona é o primeiro boss adicionado ao jogo e pode ser encontrado no esgoto e possue a aparência de um rato mais robusto e vigoroso, ele se locomove rolando em alta velocidade, causa dano no contato
 <img src="assets/geral/readme/ratona_preparing.gif">
 
+## Detalhes técnicos
+
+Esse jogo está sendo desenvolvido com uso das seguintes tecnologias:
+* [Python](https://www.python.org/) - linguagem de programação escolhida para desenvolver as lógicas e estruturas.
+* [Kivy](https://www.kivy.org/) - famework gráfico cross-plataform usado para as Interfaces do jogo.
+
 ---
 
 ### O jogo sege em desenvolvimento, por isso se tiver interesse considere estrelar esse repositório
