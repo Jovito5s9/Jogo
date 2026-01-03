@@ -48,6 +48,22 @@ eles se levantam para tentar comer batata, causa dano
 A ratona é o primeiro boss adicionado ao jogo e pode ser encontrado no esgoto e possue a aparência de um rato mais robusto e vigoroso, ele se locomove rolando em alta velocidade, causa dano no contato
 <img src="assets/geral/readme/ratona_preparing.gif">
 
+---
+
+# ▶ Como jogar 
+
+## Linux
+
+Baixe a versão mais recente em:
+➡ [Última versão para LINUX](https://github.com/Jovito5s9/Jogo/releases/tag/1.0.0)
+
+Após baixar:
+1. Extraia o arquivo
+2. Execute `install.sh`
+3. Abra o jogo pelo menu do sistema
+
+---
+
 ## Detalhes técnicos
 
 Esse jogo está sendo desenvolvido com uso das seguintes tecnologias:
