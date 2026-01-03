@@ -14,8 +14,4 @@ saved/configuracoes.json
 /venv
 build/
 dist/
-JOGO.spec
-build.sh
-appimagetool-x86_64.AppImage
-JOGO-x86_64.AppImage
-JOGO.AppDir
+RadioRoots.spec
