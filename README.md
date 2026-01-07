@@ -52,15 +52,16 @@ A ratona é o primeiro boss adicionado ao jogo e pode ser encontrado no esgoto e
 
 # ▶ Como jogar 
 
-## Linux
+#### Sistemas operacionais suportados:
+- Android
+- Linux
+- Windows
 
-Baixe a versão mais recente em:
-➡ [Última versão para LINUX](https://github.com/Jovito5s9/Jogo/releases/tag/1.0.0)
+#### Baixe a versão mais recente em:
+➡ [Última versão](https://github.com/Jovito5s9/Jogo/releases/tag/1.0.0)
 
 Após baixar:
-1. Extraia o arquivo
-2. Execute `install.sh`
-3. Abra o jogo pelo menu do sistema
+Siga os passos listados na aba `Release` que contem a versão baixada.
 
 ---
 
@@ -69,6 +70,32 @@ Após baixar:
 Esse jogo está sendo desenvolvido com uso das seguintes tecnologias:
 * [Python](https://www.python.org/) - linguagem de programação escolhida para desenvolver as lógicas e estruturas.
 * [Kivy](https://www.kivy.org/) - famework gráfico cross-plataform usado para as Interfaces do jogo.
+
+---
+
+## Reporte de Erros e Problemas
+
+Encontrou algum erro ou comportamento inesperado? Sua contribuição é muito bem-vinda e ajuda a melhorar o projeto.
+
+#### Abra uma Issue no GitHub
+
+A forma preferencial de reportar problemas é por meio das Issues do GitHub.
+Ao criar uma issue, por favor inclua:
+- Descrição clara e objetiva do problema
+- Passos para reproduzir o erro
+- Comportamento esperado vs. comportamento atual
+- Logs, mensagens de erro ou screenshots (se aplicável)
+- Informações do ambiente (sistema operacional, versão do projeto, etc.)
+
+#### Reporte por Email
+Caso não seja possivel abrir uma issue, você pode entrar em contato por email:
+sjovito70@gmail.com
+
+---
+
+- Isso ajuda a entender e resolver o problema mais rapidamente.
+
+##### Agradeço desde já seu apoio e colaboração!
 
 ---
 
