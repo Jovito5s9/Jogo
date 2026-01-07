@@ -101,6 +101,8 @@ class Game(FloatLayout):
     
 
     def joystick_movs(self,*args):
+        if self.interface.configs["teclado"]: #soluçao temporaria pra nao ter quebra na troca de input
+            return
         self.player.speed_x=self.interface.joystick.x_value
         self.player.speed_y=self.interface.joystick.y_value
     
@@ -197,6 +199,8 @@ class Menu_player(Popup):
                 for nome, quantidade in inventario.items(): 
                     info=ITENS.get(nome,{}) 
                     source=resource_path(info["source"])
+                    raridade=info["raridade"]
+                    descricao=info["descrição"]
                     item = FloatLayout(
                         size_hint_y=None, 
                         height=120
@@ -206,13 +210,13 @@ class Menu_player(Popup):
                         pos_hint={"center_x": 0.1, "center_y": 0.7}, 
                         source=source) 
                     item_label = Label( 
-                        text=f"- {nome} : {quantidade}\n {info["raridade"]}", 
+                        text=f"- {nome} : {quantidade}\n {raridade}", 
                         font_size=20, 
                         size_hint=(None, None), 
                         pos_hint={"center_x": 0.1, "center_y": 0.2} 
                         ) 
                     item_descricao=Label(
-                         text=f"- Descriçâo : {info["descrição"]}",
+                         text=f"- Descriçâo : {descricao}",
                            font_size=20,
                             size_hint=(None, None),
                             pos_hint={"center_x": 0.6, "center_y": 0.5} 
@@ -224,7 +228,7 @@ class Menu_player(Popup):
             else:
                 self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
         except Exception as e:
-            self.itens_layout.add_widget(Label(text=str(e), font_size=30))
+            self.itens_layout.add_widget(Label(text='inventário vazio', font_size=30))
 
         self.scroll_view.add_widget(self.itens_layout)
         self.layout.add_widget(self.scroll_view)

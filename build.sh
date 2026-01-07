@@ -5,7 +5,7 @@ APP_NAME="RadioRoots"
 ENTRY_POINT="main.py"
 
 echo "🧹 Limpando builds antigos..."
-rm -rf build dist *.spec
+rm -rf build dist "$APP_NAME.spec"
 
 echo "🐍 Ativando ambiente virtual..."
 source venv/bin/activate

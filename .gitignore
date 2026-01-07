@@ -15,3 +15,5 @@ saved/configuracoes.json
 build/
 dist/
 RadioRoots.spec
+buildozer.spec
+/bin
