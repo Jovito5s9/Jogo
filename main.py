@@ -1,5 +1,9 @@
 from kivy.app import App 
 from game import GameScreenManager 
+from kivy.config import Config
+
+Config.set('kivy', 'window_icon', 'assets/geral/logo_RadioRoots.png')
+
 
 class RadioRoots(App):
     def build(self):
