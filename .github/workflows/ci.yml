@@ -16,5 +16,10 @@ jobs:
         with:
           python-version: "3.12"
       
+      - name: instalar dependências do projeto
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Testar a execuçao
         run: python main.py
