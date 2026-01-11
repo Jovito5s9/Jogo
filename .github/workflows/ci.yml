@@ -15,6 +15,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: instalar dependências do sistema
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libgl1-mesa-dev
       
       - name: instalar dependências do projeto
         run: |
