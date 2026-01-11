@@ -311,11 +311,12 @@ def perseguir(rastreador):
 
 
 def rastrear(rastreador):
-    try:
-        if (distancia(rastreador) <= rastreador.raio_visao):
-            rastreador.alvo = True
-    except Exception:
-        pass
+    if not rastreador.player:
+        return
+
+    d = distancia(rastreador)
+    if d > 0 and d <= rastreador.raio_visao:
+        rastreador.alvo = True
 
 
 def atacar(atacante, alvo=None):
