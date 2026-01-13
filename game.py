@@ -11,13 +11,22 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager,Screen
 from kivy.uix.scrollview import ScrollView
 
-from core.player import Player
+from core.logic.player import PlayerLogica
+from core.view.player_view import PlayerView
+
 from core.world import World
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
 from utils.resourcesPath import resource_path
 
 import json 
+
+player_logic = PlayerLogica()
+player_view = PlayerView(player_logic)
+
+def update(dt):
+    player_logic.mover(dt)
+    player_view.sync()
 
 def configuracoes():
         try:
@@ -74,7 +83,7 @@ class Game(FloatLayout):
         self.world=World()
         self.add_widget(self.world)
         
-        self.player=Player()
+        self.player=player_view
         self.world.player=self.player
         
         self.world.create(20,15)

@@ -5,16 +5,21 @@ class EntidadeLogica:
     x: float = 0
     y: float = 0
 
-    vida_maxima: int = 100
-    vida: int = 100
+    vida_maxima: float = 100
+    vida: float = 100
     vivo: bool = True
 
     velocidade: float = 1.0
     speed_x: int = 0
     speed_y: int = 0
 
-    facing_right: bool = True
     estado: str = "idle"
+    facing_right: bool = True
+
+    power: float = 5
+    dano: float = 5
+    repulsao: float = 10
+    alcance_fisico: float = 70
 
     i_frames: bool = False
     i_frames_time: float = 0.8
@@ -25,6 +30,7 @@ class EntidadeLogica:
     def mover(self, dt: float):
         if not self.vivo:
             return
+
         self.x += self.speed_x * self.velocidade * dt
         self.y += self.speed_y * self.velocidade * dt
 
@@ -39,8 +45,9 @@ class EntidadeLogica:
             self.estado = "idle"
 
     def receber_dano(self, dano: float):
-        if self.i_frames or not self.vivo:
+        if not self.vivo or self.i_frames:
             return
+
         self.vida -= dano
         self.i_frames = True
 
@@ -50,10 +57,12 @@ class EntidadeLogica:
     def morrer(self):
         self.vivo = False
         self.estado = "morto"
+        self.speed_x = 0
+        self.speed_y = 0
 
     def hitbox(self):
-        x = self.x + self.largura * 0.25
-        y = self.y + self.altura * 0.1
+        x = self.x + (self.largura * 0.25)
+        y = self.y + (self.altura * 0.1)
         w = self.largura * 0.5
         h = self.altura * 0.35
         return (x, y, w, h)
