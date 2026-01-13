@@ -13,20 +13,13 @@ from kivy.uix.scrollview import ScrollView
 
 from core.logic.player import PlayerLogica
 from core.view.player_view import PlayerView
-
-from core.world import World
+from core.game import WorldAdapter
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
 from utils.resourcesPath import resource_path
 
 import json 
 
-player_logic = PlayerLogica()
-player_view = PlayerView(player_logic)
-
-def update(dt):
-    player_logic.mover(dt)
-    player_view.sync()
 
 def configuracoes():
         try:
@@ -78,48 +71,68 @@ class Interface(FloatLayout):
         self.button_inventario.bind(on_release=self.parent.inventario)
 
 class Game(FloatLayout):
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.world=World()
-        self.add_widget(self.world)
-        
-        self.player=player_view
-        self.world.player=self.player
-        
-        self.world.create(20,15)
-        self.inventario_menu=False
-        self.menu_player=Menu_player()
-        
 
-    def pre_enter(self,*args):
-        self.interface=Interface()
+        self.world_adapter = WorldAdapter()
+        self.add_widget(self.world_adapter.world_view)
+
+        self.player_logic = PlayerLogica()
+        self.player_view = PlayerView(self.player_logic)
+
+        self.world_adapter.world_logic.add_entity(self.player_logic)
+
+        self.world_adapter.world_view.add_entity_view(self.player_view)
+
+        self.inventario_menu = False
+        self.menu_player = Menu_player()
+
+
+    def pre_enter(self, *args):
+        self.interface = Interface()
         self.add_widget(self.interface)
+
+        Clock.schedule_interval(self.update, 1 / 60)
+
         if not self.interface.configs["teclado"]:
-            Clock.schedule_interval(self.joystick_movs, 1/20)
+            Clock.schedule_interval(self.joystick_movs, 1 / 20)
         else:
             self.keyboard_active()
-            Clock.schedule_interval(self.keyboard_actions, 1/20)
+            Clock.schedule_interval(self.keyboard_actions, 1 / 20)
 
-    def pre_leave(self,*args):
+
+    def pre_leave(self, *args):
+        Clock.unschedule(self.update)
+
         if not self.interface.configs["teclado"]:
-            Clock.unschedule(self.joystick_movs, 1/20)
+            Clock.unschedule(self.joystick_movs)
         else:
             self.keyboard_desactive()
-            Clock.unschedule(self.keyboard_actions, 1/20)
+            Clock.unschedule(self.keyboard_actions)
+
         self.remove_widget(self.interface)
     
 
-    def joystick_movs(self,*args):
-        if self.interface.configs["teclado"]: #soluçao temporaria pra nao ter quebra na troca de input
+    def update(self, dt):
+        self.world_adapter.update(dt)
+    
+
+    def joystick_movs(self, *args):
+        if self.interface.configs["teclado"]:
             return
-        self.player.speed_x=self.interface.joystick.x_value
-        self.player.speed_y=self.interface.joystick.y_value
+
+        self.player_logic.set_move(
+            self.interface.joystick.x_value,
+            self.interface.joystick.y_value
+    )
+
     
-    def ataque(self,*args):
-        self.player.acao="soco_normal"
-    
-    def quebrar(self,*args):
-        self.player.acao="soco_forte"
+    def ataque(self, *args):
+        self.player_logic.attack("normal")
+
+    def quebrar(self, *args):
+        self.player_logic.attack("forte")
+
     
     def inventario(self,*args):
         if self.menu_player._window:
@@ -145,24 +158,26 @@ class Game(FloatLayout):
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)
     
-    def keyboard_actions(self,*args):
-        if 32 in self.key_pressed: 
-            self.ataque()
-        if 98 in self.key_pressed:
-            self.quebrar()
+    def keyboard_actions(self, *args):
+        dx = dy = 0
+
         if 119 in self.key_pressed:
-            self.player.speed_y=0.9
+            dy = 1
         elif 115 in self.key_pressed:
-            self.player.speed_y=-0.9
-        else:
-            self.player.speed_y=0
+            dy = -1
 
         if 100 in self.key_pressed:
-            self.player.speed_x=0.9
+            dx = 1
         elif 97 in self.key_pressed:
-            self.player.speed_x=-0.9
-        else:
-            self.player.speed_x=0
+            dx = -1
+
+        self.player_logic.set_move(dx, dy)
+
+        if 32 in self.key_pressed:
+            self.player_logic.attack("normal")
+
+        if 98 in self.key_pressed:
+            self.player_logic.attack("forte")
         
 
 class Menu_player(Popup):
