@@ -13,7 +13,7 @@ from kivy.uix.scrollview import ScrollView
 
 from core.logic.player import PlayerLogica
 from core.view.player_view import PlayerView
-from core.game import WorldAdapter
+from core.world_game import WorldAdapter
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
 from utils.resourcesPath import resource_path
@@ -75,14 +75,14 @@ class Game(FloatLayout):
         super().__init__(**kwargs)
 
         self.world_adapter = WorldAdapter()
-        self.add_widget(self.world_adapter.world_view)
+        self.add_widget(self.world_adapter.view)
 
         self.player_logic = PlayerLogica()
         self.player_view = PlayerView(self.player_logic)
 
-        self.world_adapter.world_logic.add_entity(self.player_logic)
+        self.world_adapter.add_entity(self.player_logic)
 
-        self.world_adapter.world_view.add_entity_view(self.player_view)
+        self.world_adapter.view.add_widget(self.player_view)
 
         self.inventario_menu = False
         self.menu_player = Menu_player()

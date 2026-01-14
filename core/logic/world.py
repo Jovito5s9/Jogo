@@ -400,3 +400,12 @@ class WorldLogico:
         if ref not in self.entidades:
             self.entidades.insert(0, ref)
         return ref
+    
+    def add_entity(self, ent):
+        ref = EntityRef(ent=ent)
+
+        if any(r.ent is ent for r in self.entidades):
+            return ref
+
+        self.entidades.append(ref)
+        return ref

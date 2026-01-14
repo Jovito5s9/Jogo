@@ -5,10 +5,42 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 
 from core.logic.world import WorldLogico, ObjData
-from core.player import Rato, Rata_mae 
 from utils.resourcesPath import resource_path
+from core.view.rato_view import RatoView as Rato
+from core.view.rata_mae_view import RataMaeView as Rata_mae
 
 size = 75
+
+class EntityViewFactory:
+
+    @staticmethod
+    def create(entity_logic):
+        if entity_logic is None:
+            raise ValueError("Entity logic é None")
+
+        from core.logic.player import PlayerLogica
+        from core.logic.rato import RatoLogica
+        from core.logic.rata_mae import RataMaeLogica
+
+        from core.view.player_view import PlayerView
+        from core.view.rato_view import RatoView
+        from core.view.rata_mae_view import RataMaeView
+
+        if isinstance(entity_logic, PlayerLogica):
+            view = PlayerView(entity_logic)
+        elif isinstance(entity_logic, RatoLogica):
+            view = RatoView(entity_logic)
+        elif isinstance(entity_logic, RataMaeLogica):
+            view = RataMaeView(entity_logic)
+        else:
+            raise ValueError(
+                f"View não definida para lógica {entity_logic.__class__.__name__}"
+            )
+
+        entity_logic._view_widget = view
+        view._logic_entity = entity_logic
+        return view
+
 
 class ObjectView(FloatLayout):
     linha = NumericProperty(0)
@@ -169,9 +201,15 @@ class WorldView(FloatLayout):
         self.tiles_list = []
         self.obj_list = []
         self.ents = []
+        self.entities_view = []
         self.player = None
 
         self.ev_update = Clock.schedule_interval(self._tick, 1/60)
+    
+    def add_entity(self, entity_logic):
+        view = EntityViewFactory.create(entity_logic)
+        self.entities_view.append(view)
+        self.add_widget(view)
 
     def render_full_map(self):
         for t in list(self.tiles_list):

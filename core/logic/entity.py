@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class EntidadeLogica:
+    entity_type: str = "base"
     x: float = 0
     y: float = 0
 
@@ -15,6 +16,7 @@ class EntidadeLogica:
 
     estado: str = "idle"
     facing_right: bool = True
+    source: str = ""
 
     power: float = 5
     dano: float = 5
@@ -26,6 +28,16 @@ class EntidadeLogica:
 
     largura: float = 32
     altura: float = 32
+
+    def set_move(self, dx: int, dy: int):
+        if not self.vivo:
+            self.speed_x = 0
+            self.speed_y = 0
+            return
+
+        self.speed_x = dx
+        self.speed_y = dy
+
 
     def mover(self, dt: float):
         if not self.vivo:
@@ -43,6 +55,7 @@ class EntidadeLogica:
             self.estado = "running"
         else:
             self.estado = "idle"
+        self.source=""
 
     def receber_dano(self, dano: float):
         if not self.vivo or self.i_frames:
@@ -60,7 +73,7 @@ class EntidadeLogica:
         self.speed_x = 0
         self.speed_y = 0
 
-    def hitbox(self):
+    def get_hitbox(self):
         x = self.x + (self.largura * 0.25)
         y = self.y + (self.altura * 0.1)
         w = self.largura * 0.5
@@ -68,5 +81,5 @@ class EntidadeLogica:
         return (x, y, w, h)
 
     def centro_hitbox(self):
-        x, y, w, h = self.hitbox()
+        x, y, w, h = self.get_hitbox()
         return (x + w / 2, y + h / 2)

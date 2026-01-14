@@ -3,7 +3,7 @@ from kivy.core.window import Window
 
 from core.logic.world import WorldLogico
 from core.view.world_view import WorldView, ObjectView, GridView
-from core.logic import entityfactory
+from core.logic.entityfactory import EntityFactory
 
 class ViewFactory:
     @staticmethod
@@ -57,12 +57,15 @@ class WorldAdapter:
         self.player = None
         self.trocando_mapa = False
 
-        self.factory = entityfactory()
+        self.factory = EntityFactory()
 
         self._process_ev = Clock.schedule_interval(self._process_pending, 1/60)
 
 
-
+    def add_entity(self, entity_logic):
+        self.logic.add_entity(entity_logic)
+        self.view.add_entity(entity_logic)
+    
     def create(self, xm, ym, type=None):
         self.logic.create(xm, ym, type)
         self._sync_offsets()
@@ -158,5 +161,8 @@ class WorldAdapter:
         if events:
             self.view._apply_events(events)
 
-    def atualizar(self, *args):
-        return
+    def update(self, dt):
+        events = self.logic.update(dt)
+        if events:
+            self.view._apply_events(events)
+
