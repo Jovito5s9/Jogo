@@ -18,6 +18,8 @@ from saved.itens_db import ITENS
 
 import json 
 
+ITENS_GERAL = ITENS["geral"]
+
 def configuracoes():
         try:
             with open("saved/configuracoes.json","r",encoding="utf-8") as config:
@@ -194,7 +196,7 @@ class Menu_player(Popup):
                 inventario = player.get("inventario", {})
             if inventario:
                 for nome, quantidade in inventario.items(): 
-                    info=ITENS.get(nome,{}) 
+                    info=ITENS_GERAL.get(nome,{}) 
                     item = FloatLayout(
                         size_hint_y=None, 
                         height=120
