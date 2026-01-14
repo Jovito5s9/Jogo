@@ -157,7 +157,7 @@ class Game(FloatLayout):
 
 class Menu_player(Popup):
     tipo=OptionProperty ("inventario",
-    options=("inventario"," "))
+    options=("inventario","equipaveis"))
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.title=''
@@ -166,9 +166,12 @@ class Menu_player(Popup):
         self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
         self.layout=FloatLayout()
         self.add_widget(self.layout)
+        self.menu={
+            "inventario":self.inventario
+        }
 
     def on_open(self):
-        self.inventario()
+        self.menu[self.tipo]()
     
     def on_dismiss(self):
         self.parent.inventario_menu=False
