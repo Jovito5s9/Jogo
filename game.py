@@ -111,7 +111,8 @@ class Game(FloatLayout):
     def quebrar(self,*args):
         self.player.acao="soco_forte"
     
-    def inventario(self,*args):
+    def inventario(self,tipo="inventario"):
+        self.menu_player.tipo=tipo
         if self.menu_player._window:
             self.menu_player.dismiss()
         else:
@@ -131,6 +132,8 @@ class Game(FloatLayout):
         self.key_pressed.add(key)
         if key == 105:
             self.inventario()
+        if key == 101:
+            self.inventario(tipo="equipaveis")
     
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)
@@ -167,7 +170,8 @@ class Menu_player(Popup):
         self.layout=FloatLayout()
         self.add_widget(self.layout)
         self.menu={
-            "inventario":self.inventario
+            "inventario":self.inventario,
+            "equipaveis":self.equipaveis
         }
 
     def on_open(self):
@@ -175,9 +179,8 @@ class Menu_player(Popup):
     
     def on_dismiss(self):
         self.parent.inventario_menu=False
-    
-    def inventario(self, *args):
 
+    def preparar_menu(self,*args):
         self.layout.clear_widgets()
 
         self.scroll_view = ScrollView(
@@ -192,6 +195,26 @@ class Menu_player(Popup):
             padding=10
         )
         self.itens_layout.bind(minimum_height=self.itens_layout.setter('height'))
+
+    
+    def equipaveis(self,*args):
+
+        self.preparar_menu()
+
+        try:
+            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
+                player = json.load(arquivo)
+                player=player["equipaveis"]
+        except:
+            self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
+
+        self.scroll_view.add_widget(self.itens_layout)
+        self.layout.add_widget(self.scroll_view)
+
+
+    def inventario(self, *args):
+
+        self.preparar_menu()
 
         try:
             with open("saved/player.json", "r", encoding="utf-8") as arquivo:
@@ -226,8 +249,8 @@ class Menu_player(Popup):
                     self.itens_layout.add_widget(item)
             else:
                 self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
-        except Exception as e:
-            self.itens_layout.add_widget(Label(text=str(e), font_size=30))
+        except:
+            self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
 
         self.scroll_view.add_widget(self.itens_layout)
         self.layout.add_widget(self.scroll_view)
