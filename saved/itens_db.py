@@ -1,6 +1,6 @@
 ITENS = {
 
-    "geral":
+    "inventario":
     {
         "carne" : {
             "raridade" : "comum",

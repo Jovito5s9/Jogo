@@ -18,8 +18,6 @@ from saved.itens_db import ITENS
 
 import json 
 
-ITENS_GERAL = ITENS["geral"]
-
 def configuracoes():
         try:
             with open("saved/configuracoes.json","r",encoding="utf-8") as config:
@@ -203,15 +201,46 @@ class Menu_player(Popup):
         )
         self.itens_layout.bind(minimum_height=self.itens_layout.setter('height'))
 
+    def adicionar_itens(self,inventario):
+        if inventario:
+            itens=ITENS[self.tipo]
+            for nome, quantidade in inventario.items(): 
+                info=itens.get(nome,{}) 
+                item = FloatLayout(
+                    size_hint_y=None, 
+                     height=120
+                    )
+                item_image=Image( 
+                    size_hint=(0.6,0.6), 
+                    pos_hint={"center_x": 0.1, "center_y": 0.7}, 
+                    source=info["source"] ) 
+                item_label = Label( 
+                    text=f"- {nome} : {quantidade}\n {info["raridade"]}", 
+                    font_size=20,                         size_hint=(None, None), 
+                    pos_hint={"center_x": 0.1, "center_y": 0.2} 
+                    ) 
+                item_descricao=Label(
+                     text=f"- Descriçâo : {info["descrição"]}",
+                       font_size=20,
+                        size_hint=(None, None),
+                        pos_hint={"center_x": 0.6, "center_y": 0.5} 
+                        ) 
+                item.add_widget(item_descricao) 
+                item.add_widget(item_image) 
+                item.add_widget(item_label) 
+                self.itens_layout.add_widget(item)
+        else:
+            self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
     
-    def equipaveis(self,*args):
 
+    def equipaveis(self,*args):
         self.preparar_menu()
 
         try:
             with open("saved/player.json", "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
-                player=player["equipaveis"]
+                inventario = player.get("equipaveis", {})
+            self.adicionar_itens(inventario)
         except:
             self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
 
@@ -220,42 +249,15 @@ class Menu_player(Popup):
 
 
     def inventario(self, *args):
-
         self.preparar_menu()
 
         try:
             with open("saved/player.json", "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
                 inventario = player.get("inventario", {})
-            if inventario:
-                for nome, quantidade in inventario.items(): 
-                    info=ITENS_GERAL.get(nome,{}) 
-                    item = FloatLayout(
-                        size_hint_y=None, 
-                        height=120
-                        )
-                    item_image=Image( 
-                        size_hint=(0.6,0.6), 
-                        pos_hint={"center_x": 0.1, "center_y": 0.7}, 
-                        source=info["source"] ) 
-                    item_label = Label( 
-                        text=f"- {nome} : {quantidade}\n {info["raridade"]}", 
-                        font_size=20, 
-                        size_hint=(None, None), 
-                        pos_hint={"center_x": 0.1, "center_y": 0.2} 
-                        ) 
-                    item_descricao=Label(
-                         text=f"- Descriçâo : {info["descrição"]}",
-                           font_size=20,
-                            size_hint=(None, None),
-                            pos_hint={"center_x": 0.6, "center_y": 0.5} 
-                            ) 
-                    item.add_widget(item_descricao) 
-                    item.add_widget(item_image) 
-                    item.add_widget(item_label) 
-                    self.itens_layout.add_widget(item)
-            else:
-                self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
+
+            self.adicionar_itens(inventario)
+
         except:
             self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
 
