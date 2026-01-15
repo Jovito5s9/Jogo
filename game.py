@@ -112,10 +112,15 @@ class Game(FloatLayout):
         self.player.acao="soco_forte"
     
     def inventario(self,tipo="inventario"):
-        self.menu_player.tipo=tipo
         if self.menu_player._window:
-            self.menu_player.dismiss()
+            if self.menu_player.tipo==tipo:
+                self.menu_player.dismiss()
+                return
+            self.menu_player.tipo=tipo
+            self.menu_player.on_open()
+
         else:
+            self.menu_player.tipo=tipo
             self.menu_player.open()
     
     def keyboard_active(self,*args):
@@ -167,7 +172,7 @@ class Menu_player(Popup):
         self.separator_height=0
         self.size_hint=(0.8,0.8)
         self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
-        self.layout=FloatLayout()
+        self.layout=BoxLayout(orientation='vertical')
         self.add_widget(self.layout)
         self.menu={
             "inventario":self.inventario,
@@ -182,6 +187,8 @@ class Menu_player(Popup):
 
     def preparar_menu(self,*args):
         self.layout.clear_widgets()
+
+        self.layout.add_widget(Label(text=self.tipo, font_size=30, size_hint=(0.5,0.075)))
 
         self.scroll_view = ScrollView(
             size_hint=(0.95, 0.95),
@@ -206,7 +213,7 @@ class Menu_player(Popup):
                 player = json.load(arquivo)
                 player=player["equipaveis"]
         except:
-            self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
+            self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
 
         self.scroll_view.add_widget(self.itens_layout)
         self.layout.add_widget(self.scroll_view)
@@ -248,9 +255,9 @@ class Menu_player(Popup):
                     item.add_widget(item_label) 
                     self.itens_layout.add_widget(item)
             else:
-                self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
+                self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
         except:
-            self.itens_layout.add_widget(Label(text="Sem itens", font_size=30))
+            self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
 
         self.scroll_view.add_widget(self.itens_layout)
         self.layout.add_widget(self.scroll_view)
