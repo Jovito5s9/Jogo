@@ -9,6 +9,7 @@ import random
 import json
 import os
 from utils.resourcesPath import resource_path
+from core.BitCoreSkills import SKILLS
 
 class Barra(Widget):
     modificador = NumericProperty(100)
@@ -77,6 +78,8 @@ class BasicEnt(Image):
         self.droped = False
         self.inventario = {}
         self.grid = []
+        self.skills={}
+        self.dano_causado=0
 
         # atributos de animação (inicialmente vazios)
         self.sprite_sheet = None
@@ -249,6 +252,19 @@ class BasicEnt(Image):
             pass
         if self.vida <= 0:
             self.morrer()
+    
+    def carregar_skill(self,skill):
+        class_skill=SKILLS[skill["nome"]](self)
+        if class_skill.schedule_interval:
+            Clock.schedule_interval(class_skill.skill,class_skill.schedule_interval)
+
+    def rodar_skills(self,*args):
+        if not self.skills:
+            return
+        for key, valor in self.skills.itens():#como vai ter slots entao no dict vai ficar tipo: {"1":"nome da skill"}
+            self.carregar_skill(skill=valor)
+
+            
 
     def save_data(self, item, key):
         path = resource_path("saved/player.json")
