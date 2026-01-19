@@ -78,7 +78,8 @@ class BasicEnt(Image):
         self.droped = False
         self.inventario = {}
         self.grid = []
-        self.skills={}
+        self.skills_slots = {}
+        self.skills_ativas = {}
         self.dano_causado=0
 
         # atributos de animação (inicialmente vazios)
@@ -252,17 +253,26 @@ class BasicEnt(Image):
             pass
         if self.vida <= 0:
             self.morrer()
-    
-    def carregar_skill(self,skill):
-        class_skill=SKILLS[skill["nome"]](self)
-        if class_skill.schedule_interval:
-            Clock.schedule_interval(class_skill.skill,class_skill.schedule_interval)
+        
+    def carregar_skill(self, skill):
+        cls = SKILLS[skill]
+        passiva = cls(self)
 
-    def rodar_skills(self,*args):
-        if not self.skills:
-            return
-        for key, valor in self.skills.itens():#como vai ter slots entao no dict vai ficar tipo: {"1":"nome da skill"}
-            self.carregar_skill(skill=valor)
+        passiva.on_add()
+
+        if passiva.schedule_interval:
+            passiva._clock = Clock.schedule_interval(
+                passiva.skill,
+                passiva.schedule_interval
+            )
+        self.skills_ativas[skill] = passiva
+
+        
+
+    def rodar_skills(self):
+        for slot, skill_name in self.skills_slots.items():
+            if skill_name not in self.skills_ativas:
+                self.carregar_skill(skill_name)
 
             
 
@@ -545,12 +555,18 @@ class Player(BasicEnt):
         self.atualizar()
         self.repulsao = 20
         self.alcance_fisico = 100
+        self.skills_slots={
+            "1": "vampirismo",
+            #"2": "panico",
+            #"3": "esguio"
+            }
         self.acoes = {
             "soco_normal": self.soco_normal,
             "soco_forte": self.soco_forte
         }
         self.acao = ""
         Clock.schedule_interval(self.verificar_acao, 1 / 20)
+        self.rodar_skills()
 
     def soco_normal(self, *args):
         if self.atacando:
@@ -581,6 +597,7 @@ class Player(BasicEnt):
                         atacar(self, ent)
                     elif not self.facing_right and ent.x <= self.x:
                         atacar(self, ent)
+        self.dano_causado=self.dano
         self.dano = self.power
         self.repulsao = repulsao
 
