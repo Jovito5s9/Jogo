@@ -10,6 +10,7 @@ import json
 import os
 from utils.resourcesPath import resource_path
 from core.BitCoreSkills import SKILLS
+from saved.itens_db import ITENS
 
 class Barra(Widget):
     modificador = NumericProperty(100)
@@ -312,6 +313,46 @@ class BasicEnt(Image):
             data[item] = key
         with open(path, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
+    
+
+    def load_data(self, *args):
+        path = resource_path("saved/player.json")
+
+        if not os.path.exists(path):
+            return
+
+        try:
+            with open(path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except (json.JSONDecodeError, OSError):
+            return
+
+        #o inventario
+        inventario = data.get("inventario")
+        if isinstance(inventario, dict):
+            for item, quantidade in inventario.items():
+                if isinstance(quantidade, int) and quantidade > 0:
+                    self.inventario[item] = quantidade
+
+        #equipaveis
+        equipaveis = data.get("equipaveis")
+        if isinstance(equipaveis, dict):
+            for slot, nome_item in equipaveis.items():
+
+                # item precisa existir na base de itens
+                print(slot)
+                item_data = ITENS.get("equipaveis", {}).get(nome_item)
+                if not item_data:
+                    continue
+
+                skill_id = item_data.get("skill")
+
+                # skill precisa existir
+                if skill_id in SKILLS:
+                    self.skills_slots[slot] = skill_id
+
+        # ativar as passivas
+        self.rodar_skills()
 
 
 def mover(ent, dx, dy):
@@ -556,7 +597,7 @@ class Player(BasicEnt):
         self.repulsao = 20
         self.alcance_fisico = 100
         self.skills_slots={
-            "1": "vampirismo",
+            #"1": "vampirismo",
             #"2": "panico",
             #"3": "esguio"
             }
@@ -566,7 +607,7 @@ class Player(BasicEnt):
         }
         self.acao = ""
         Clock.schedule_interval(self.verificar_acao, 1 / 20)
-        self.rodar_skills()
+        self.load_data()
 
     def soco_normal(self, *args):
         if self.atacando:
