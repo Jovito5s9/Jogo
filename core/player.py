@@ -257,6 +257,8 @@ class BasicEnt(Image):
             self.morrer()
         
     def carregar_skill(self, skill):
+        if len(self.skills_ativas)+1>self.max_skills:
+            return
         cls = SKILLS[skill]
         passiva = cls(self)
 
@@ -272,6 +274,17 @@ class BasicEnt(Image):
 
         passiva.on_remove()
         del self.skills_ativas[skill_id]
+
+        length=str(len(self.skills_slots)+1)
+
+        for key, skill in self.skills_slots.items():
+            if skill==skill_id:
+                wanted_key=key
+                break
+
+        del self.skills_slots[wanted_key]
+        self.skills_slots[length]=skill_id
+        self.save_data("equipaveis", None)
         
 
     def rodar_skills(self):
@@ -283,41 +296,103 @@ class BasicEnt(Image):
 
     def save_data(self, item, key):
         path = resource_path("saved/player.json")
+
         if not os.path.exists(path):
             data = {}
         else:
-            with open(path, "r", encoding="utf-8") as file:
-                try:
+            try:
+                with open(path, "r", encoding="utf-8") as file:
                     data = json.load(file)
-                except json.JSONDecodeError:
-                    data = {}
-        encontrado = False
-        if item in data:
-            if isinstance(data[item], list):
-                if key not in data[item]:
-                    data[item].append(key)
-            elif isinstance(data[item], dict):
-                data[item].update(key)
-            else:
-                data[item] = key
-            encontrado = True
+            except (json.JSONDecodeError, OSError):
+                data = {}
+
+        if item == "equipaveis":
+            equip_map = {}
+            skills_slots = getattr(self, "skills_slots", {}) or {}
+            itens_equip = ITENS.get("equipaveis", {})
+
+            for slot, skill_id in skills_slots.items():
+                if not skill_id:
+                    continue
+                found_name = None
+                for item_name, item_data in itens_equip.items():
+                    if item_data.get("skill") == skill_id:
+                        found_name = item_name
+                        break
+                if found_name:
+                    equip_map[str(slot)] = found_name
+
+            data["equipaveis"] = equip_map
+
         else:
-            for k, v in data.items():
-                if isinstance(v, dict):
-                    if item in v:
-                        v[item] = key
-                        encontrado = True
-                        break
-                elif isinstance(v, list):
-                    if item in v:
-                        v.append(key)
-                        encontrado = True
-                        break
-        if not encontrado:
-            data[item] = key
+            encontrado = False
+            if item in data:
+                if isinstance(data[item], list):
+                    if key not in data[item]:
+                        data[item].append(key)
+                elif isinstance(data[item], dict):
+                    if isinstance(key, dict):
+                        data[item].update(key)
+                    else:
+                        data[item] = key
+                else:
+                    data[item] = key
+                encontrado = True
+            else:
+                for k, v in data.items():
+                    if isinstance(v, dict):
+                        if item in v:
+                            v[item] = key
+                            encontrado = True
+                            break
+                    elif isinstance(v, list):
+                        if item in v:
+                            v.append(key)
+                            encontrado = True
+                            break
+            if not encontrado:
+                data[item] = key
+
         with open(path, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
-    
+
+            path = resource_path("saved/player.json")
+            if not os.path.exists(path):
+                data = {}
+            else:
+                with open(path, "r", encoding="utf-8") as file:
+                    try:
+                        data = json.load(file)
+                    except json.JSONDecodeError:
+                        data = {}
+            encontrado = False
+            if item in data:
+                if isinstance(data[item], list):
+                    if key not in data[item]:
+                        data[item].append(key)
+                elif isinstance(data[item], dict):
+                    data[item].update(key)
+                else:
+                    data[item] = key
+                encontrado = True
+            else:
+                for k, v in data.items():
+                    if isinstance(v, dict):
+                        if item in v:
+                            v[item] = key
+                            encontrado = True
+                            break
+                    elif isinstance(v, list):
+                        if item in v:
+                            v.append(key)
+                            encontrado = True
+                            break
+            if not encontrado:
+                data[item] = key
+            with open(path, "w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
+
+
 
     def load_data(self, *args):
         path = resource_path("saved/player.json")
@@ -339,7 +414,6 @@ class BasicEnt(Image):
                     self.inventario[item] = quantidade
 
         #equipaveis
-        skills_useds=0
         equipaveis = data.get("equipaveis")
         if isinstance(equipaveis, dict):
             for slot, nome_item in equipaveis.items():
@@ -353,9 +427,8 @@ class BasicEnt(Image):
                 skill_id = item_data.get("skill")
 
                 # skill precisa existir
-                if skill_id in SKILLS and skills_useds<self.max_skills:
+                if skill_id in SKILLS:
                     self.skills_slots[slot] = skill_id
-                    skills_useds+=1
 
         # ativar as passivas
         self.rodar_skills()
