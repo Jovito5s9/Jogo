@@ -10,6 +10,8 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager,Screen
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.behaviors import ButtonBehavior
 
 from core.player import Player
 from core.world import World
@@ -160,93 +162,132 @@ class Game(FloatLayout):
         else:
             self.player.speed_x=0
         
+class ItemImage(ButtonBehavior, Image):
+    pass
+
 
 class Menu_player(Popup):
-    tipo=OptionProperty ("inventario",
-    options=("inventario","equipaveis"))
+    tipo = OptionProperty("inventario", options=("inventario", "equipaveis"))
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.title=''
-        self.separator_height=0
-        self.size_hint=(0.8,0.8)
-        self.pos_hint={'center_x': 0.5, 'center_y': 0.5}
-        self.layout=BoxLayout(orientation='vertical')
+        self.title = ''
+        self.separator_height = 0
+        self.size_hint = (0.8, 0.8)
+        self.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+
+        self.layout = BoxLayout(orientation='vertical')
         self.add_widget(self.layout)
-        self.menu={
-            "inventario":self.inventario,
-            "equipaveis":self.equipaveis
+
+        self.selection_panel = None
+        self.scroll_view = None
+        self.grid = None
+
+        self.menu = {
+            "inventario": self.inventario,
+            "equipaveis": self.equipaveis
         }
 
     def on_open(self):
         self.menu[self.tipo]()
-    
-    def on_dismiss(self):
-        self.parent.inventario_menu=False
 
-    def preparar_menu(self,*args):
+    def on_dismiss(self):
+        self.parent.inventario_menu = False
+
+    def preparar_menu(self, *args):
         self.layout.clear_widgets()
 
-        self.layout.add_widget(Label(text=self.tipo, font_size=30, size_hint=(0.5,0.075)))
+        tipo_label = Label(text=self.tipo, font_size=30, size_hint=(1, 0.2))
+        self.layout.add_widget(tipo_label)
 
-        self.scroll_view = ScrollView(
-            size_hint=(0.95, 0.95),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5}
-        )
+        self.selection_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.2), padding=8, spacing=8)
+        self.selection_panel.clear_widgets()
+        self.selection_panel.add_widget(Label(text="Nenhum item selecionado", font_size=18))
+        self.layout.add_widget(self.selection_panel)
 
-        self.itens_layout = BoxLayout(
-            orientation='vertical',
-            size_hint_y=None,
-            spacing=15,
-            padding=10
-        )
-        self.itens_layout.bind(minimum_height=self.itens_layout.setter('height'))
+        self.scroll_view = ScrollView(size_hint=(1, 0.6), do_scroll_x=False, do_scroll_y=True)
+        grid_padding=self.scroll_view.width*2
+        grid_spacing=self.scroll_view.width*2
+        self.grid = GridLayout(cols=4, spacing=grid_spacing, padding=grid_padding, size_hint_y=None)
+        self.grid.bind(minimum_height=self.grid.setter('height'))
+        self.scroll_view.add_widget(self.grid)
 
-    def adicionar_itens(self,inventario):
-        if inventario:
-            itens=ITENS[self.tipo]
-            for nome, quantidade in inventario.items(): 
-                info=itens.get(nome,{}) 
-                item = FloatLayout(
-                    size_hint_y=None, 
-                     height=120
-                    )
-                item_image=Image( 
-                    size_hint=(0.6,0.6), 
-                    pos_hint={"center_x": 0.1, "center_y": 0.7}, 
-                    source=info["source"] ) 
-                item_label = Label( 
-                    text=f"- {nome} : {quantidade}\n {info["raridade"]}", 
-                    font_size=20,                         size_hint=(None, None), 
-                    pos_hint={"center_x": 0.1, "center_y": 0.2} 
-                    ) 
-                item_descricao=Label(
-                     text=f"- Descriçâo : {info["descrição"]}",
-                       font_size=20,
-                        size_hint=(None, None),
-                        pos_hint={"center_x": 0.6, "center_y": 0.5} 
-                        ) 
-                item.add_widget(item_descricao) 
-                item.add_widget(item_image) 
-                item.add_widget(item_label) 
-                self.itens_layout.add_widget(item)
-        else:
-            self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
-    
 
-    def equipaveis(self,*args):
+    def adicionar_itens(self, inventario):
+        if self.grid:
+            self.grid.clear_widgets()
+
+        itens = ITENS.get(self.tipo, {})
+
+        if not inventario:
+            self.grid.add_widget(Label(text="Sem itens", font_size=25, size_hint_y=None, height=40))
+            if self.scroll_view.parent is None:
+                self.layout.add_widget(self.scroll_view)
+            return
+
+        for nome, quantidade in inventario.items():
+            if self.tipo == "equipaveis":
+                nome, quantidade = quantidade, nome
+
+            info = itens.get(nome, {})
+            img_source = info.get("source", "")
+            size_px = self.grid.width/6
+
+            btn = ItemImage(
+                source=img_source,
+                size_hint=(None, None),
+                allow_stretch=True,
+                keep_ratio=False
+            )
+            btn.item_nome = nome
+            btn.item_info = info
+            btn.item_quantidade = quantidade
+            btn.bind(on_press=self.on_item_selected)
+
+            self.grid.add_widget(btn)
+
+        if self.scroll_view.parent is None:
+            self.layout.add_widget(self.scroll_view)
+
+    def on_item_selected(self, widget):
+        nome = getattr(widget, "item_nome", "Desconhecido")
+        info = getattr(widget, "item_info", {}) or {}
+        quantidade = getattr(widget, "item_quantidade", "")
+
+        self.selection_panel.clear_widgets()
+
+        img = Image(source=info.get("source", ""), size_hint=(0.3, 1), allow_stretch=True, keep_ratio=True)
+        self.selection_panel.add_widget(img)
+
+        # bloco de texto com nome, quantidade, raridade e descrição
+        text_layout = BoxLayout(orientation='vertical', padding=6, spacing=4)
+
+        nome_label = Label(text=f"{nome}  x{quantidade}", font_size=20, size_hint=(1, None), height=30)
+        raridade = info.get("raridade", "N/A")
+        raridade_label = Label(text=f"Raridade: {raridade}", font_size=16, size_hint=(1, None), height=24)
+        descricao = info.get("descrição", "Sem descrição")
+        descricao_label = Label(text=f"Descrição: {descricao}", font_size=14)
+
+        text_layout.add_widget(nome_label)
+        text_layout.add_widget(raridade_label)
+        text_layout.add_widget(descricao_label)
+
+        self.selection_panel.add_widget(text_layout)
+
+    def equipaveis(self, *args):
         self.preparar_menu()
 
         try:
             with open("saved/player.json", "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
                 inventario = player.get("equipaveis", {})
+
             self.adicionar_itens(inventario)
-        except:
-            self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
-
-        self.scroll_view.add_widget(self.itens_layout)
-        self.layout.add_widget(self.scroll_view)
-
+        except Exception:
+            self.grid.clear_widgets()
+            self.grid.add_widget(Label(text="Sem itens", font_size=25, size_hint_y=None, height=40))
+            if self.scroll_view.parent is None:
+                self.layout.add_widget(self.scroll_view)
 
     def inventario(self, *args):
         self.preparar_menu()
@@ -258,12 +299,11 @@ class Menu_player(Popup):
 
             self.adicionar_itens(inventario)
 
-        except:
-            self.itens_layout.add_widget(Label(text="Sem itens", font_size=25))
-
-        self.scroll_view.add_widget(self.itens_layout)
-        self.layout.add_widget(self.scroll_view)
-
+        except Exception:
+            self.grid.clear_widgets()
+            self.grid.add_widget(Label(text="Sem itens", font_size=25, size_hint_y=None, height=40))
+            if self.scroll_view.parent is None:
+                self.layout.add_widget(self.scroll_view)
 
 
 class MenuScreen(Screen):
