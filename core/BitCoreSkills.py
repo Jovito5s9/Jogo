@@ -46,13 +46,26 @@ class passiva:#classe padrao para as passivas
 class panico(passiva):#basicamente tu fica mais rapido ao apanhar
     def __init__(self, ent):
         super().__init__(ent)
-        self.id="panico"
-        self.event="vida"
+        self.id = "panico"
+        self.event = "vida"
+        self._aplicado = False
 
     def skill(self, *args):
-        if self.ent.i_frames:
-            self.ent.speed_x*=1.5
-            self.ent.speed_y*=1.5
+        if self.ent.i_frames and not self._aplicado:
+            self.ent.velocidade *= 1.5
+            self._aplicado = True
+            Clock.schedule_once(self.remove_speed,0.7)
+    
+    def remove_speed(self,*args):
+        if self._aplicado:
+            self.ent.velocidade /= 1.5
+            self._aplicado = False
+
+    def on_remove(self, *args):
+        if self._aplicado:
+            self.ent.velocidade /= 1.5
+        super().on_remove()
+
 
 
 class vampirismo(passiva):#basicamente tu fica mais rapido ao apanhar
@@ -76,10 +89,10 @@ class esguio(passiva):#basicamente tu fica mais rapido ao apanhar
     def skill(self, *args):#pra desviar ocasionamente de ataques// vou ajeitar dps pra depender da sorte(novo atributo)
         if self.ent.i_frames:
             return
-        new_i_frames=random.randint(0,200)
-        if new_i_frames<=1:
-            self._aplicado=True
-            self.ent.i_frames=True
+
+        if random.randint(0, 200) <= 1:
+            self.ent.i_frames = True
+
 
 
 SKILLS = {
