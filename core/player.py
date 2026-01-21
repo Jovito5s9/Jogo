@@ -261,13 +261,16 @@ class BasicEnt(Image):
 
         passiva.on_add()
 
-        if passiva.schedule_interval:
-            passiva._clock = Clock.schedule_interval(
-                passiva.skill,
-                passiva.schedule_interval
-            )
         self.skills_ativas[skill] = passiva
+    
 
+    def desable_skill(self, skill_id):
+        passiva = self.skills_ativas.get(skill_id)
+        if not passiva:
+            return
+
+        passiva.on_remove()
+        del self.skills_ativas[skill_id]
         
 
     def rodar_skills(self):
