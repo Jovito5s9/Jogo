@@ -79,9 +79,10 @@ class BasicEnt(Image):
         self.droped = False
         self.inventario = {}
         self.grid = []
-        self.max_skills=2
+        self.bitcores = {}
         self.skills_slots = {}
         self.skills_ativas = {}
+        self.max_skills = 2
         self.dano_causado=0
 
         # atributos de animação (inicialmente vazios)
@@ -256,18 +257,62 @@ class BasicEnt(Image):
         if self.vida <= 0:
             self.morrer()
         
-    def carregar_skill(self, skill):
-        if len(self.skills_ativas)+1>self.max_skills:
-            return
-        cls = SKILLS[skill]
-        passiva = cls(self)
-
-        passiva.on_add()
-
-        self.skills_ativas[skill] = passiva
+    def receber_bitcore(self, bitcore_id, qtd=1):
+        self.bitcores[bitcore_id] = self.bitcores.get(bitcore_id, 0) + qtd
+        self.save_data("bitcores", {bitcore_id: self.bitcores[bitcore_id]})
     
+    def equipar_bitcore(self, slot, skill_id):
+        slot = str(slot)
 
-    def desable_skill(self, skill_id):
+        if skill_id not in self.bitcores:
+            return
+
+        if slot not in [str(i) for i in range(1, self.max_skills + 1)]:
+            return
+
+        self.skills_slots[slot] = skill_id
+        self.save_data("equipaveis", None)
+        self.rodar_skills()
+
+
+    def desequipar_slot(self, slot):
+        slot = str(slot)
+
+        if slot in self.skills_slots:
+            del self.skills_slots[slot]
+
+        self.save_data("equipaveis", None)
+        self.rodar_skills()
+
+
+    def rodar_skills(self):
+        valid_equipped = {}
+        for slot, skill_id in list(self.skills_slots.items()):
+            try:
+                idx = int(slot)
+            except Exception:
+                continue
+            if 1 <= idx <= self.max_skills:
+                valid_equipped[slot] = skill_id
+                if skill_id not in self.skills_ativas:
+                    self._ativar_skill(skill_id)
+
+        equipped_set = set(valid_equipped.values())
+        for skill_id in list(self.skills_ativas.keys()):
+            if skill_id not in equipped_set:
+                self._desativar_skill(skill_id)
+
+            
+    def _ativar_skill(self, skill_id):
+        cls = SKILLS.get(skill_id)
+        if not cls:
+            return
+
+        passiva = cls(self)
+        passiva.on_add()
+        self.skills_ativas[skill_id] = passiva
+    
+    def _desativar_skill(self, skill_id):
         passiva = self.skills_ativas.get(skill_id)
         if not passiva:
             return
@@ -275,44 +320,24 @@ class BasicEnt(Image):
         passiva.on_remove()
         del self.skills_ativas[skill_id]
 
-        length=str(len(self.skills_slots)+1)
 
-        for key, skill in self.skills_slots.items():
-            if skill==skill_id:
-                wanted_key=key
-                break
-
-        del self.skills_slots[wanted_key]
-        self.skills_slots[length]=skill_id
-        self.save_data("equipaveis", None)
-        
-
-    def rodar_skills(self):
-        for slot, skill_name in self.skills_slots.items():
-            if skill_name not in self.skills_ativas:
-                self.carregar_skill(skill_name)
-
-            
-
-    def save_data(self, item, key):
+    def save_data(self, item, key=None):
         path = resource_path("saved/player.json")
-
-        if not os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except Exception:
             data = {}
-        else:
-            try:
-                with open(path, "r", encoding="utf-8") as file:
-                    data = json.load(file)
-            except (json.JSONDecodeError, OSError):
-                data = {}
 
         if item == "equipaveis":
             equip_map = {}
-            skills_slots = getattr(self, "skills_slots", {}) or {}
             itens_equip = ITENS.get("equipaveis", {})
-
-            for slot, skill_id in skills_slots.items():
-                if not skill_id:
+            for slot, skill_id in list(getattr(self, "skills_slots", {}).items()):
+                try:
+                    idx = int(slot)
+                except Exception:
+                    continue
+                if not (1 <= idx <= self.max_skills):
                     continue
                 found_name = None
                 for item_name, item_data in itens_equip.items():
@@ -320,118 +345,68 @@ class BasicEnt(Image):
                         found_name = item_name
                         break
                 if found_name:
-                    equip_map[str(slot)] = found_name
-
+                    equip_map[str(idx)] = found_name
             data["equipaveis"] = equip_map
 
-        else:
-            encontrado = False
-            if item in data:
-                if isinstance(data[item], list):
-                    if key not in data[item]:
-                        data[item].append(key)
-                elif isinstance(data[item], dict):
-                    if isinstance(key, dict):
-                        data[item].update(key)
-                    else:
-                        data[item] = key
-                else:
-                    data[item] = key
-                encontrado = True
+        elif item == "bitcores":
+            if isinstance(key, dict):
+                data.setdefault("bitcores", {})
+                for k, v in key.items():
+                    data["bitcores"][k] = v
             else:
-                for k, v in data.items():
-                    if isinstance(v, dict):
-                        if item in v:
-                            v[item] = key
-                            encontrado = True
-                            break
-                    elif isinstance(v, list):
-                        if item in v:
-                            v.append(key)
-                            encontrado = True
-                            break
-            if not encontrado:
-                data[item] = key
+                data["bitcores"] = key
+
+        else:
+            data[item] = key
 
         with open(path, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
 
-            path = resource_path("saved/player.json")
-            if not os.path.exists(path):
-                data = {}
-            else:
-                with open(path, "r", encoding="utf-8") as file:
-                    try:
-                        data = json.load(file)
-                    except json.JSONDecodeError:
-                        data = {}
-            encontrado = False
-            if item in data:
-                if isinstance(data[item], list):
-                    if key not in data[item]:
-                        data[item].append(key)
-                elif isinstance(data[item], dict):
-                    data[item].update(key)
-                else:
-                    data[item] = key
-                encontrado = True
-            else:
-                for k, v in data.items():
-                    if isinstance(v, dict):
-                        if item in v:
-                            v[item] = key
-                            encontrado = True
-                            break
-                    elif isinstance(v, list):
-                        if item in v:
-                            v.append(key)
-                            encontrado = True
-                            break
-            if not encontrado:
-                data[item] = key
-            with open(path, "w", encoding="utf-8") as file:
-                json.dump(data, file, ensure_ascii=False, indent=4)
-
 
 
     def load_data(self, *args):
-        path = resource_path("saved/player.json")
+            path = resource_path("saved/player.json")
 
-        if not os.path.exists(path):
-            return
+            if not os.path.exists(path):
+                return
 
-        try:
-            with open(path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-        except (json.JSONDecodeError, OSError):
-            return
+            try:
+                with open(path, "r", encoding="utf-8") as file:
+                    data = json.load(file)
+            except (json.JSONDecodeError, OSError):
+                return
 
-        #o inventario
-        inventario = data.get("inventario")
-        if isinstance(inventario, dict):
-            for item, quantidade in inventario.items():
-                if isinstance(quantidade, int) and quantidade > 0:
-                    self.inventario[item] = quantidade
+            inventario = data.get("inventario")
+            if isinstance(inventario, dict):
+                for item, quantidade in inventario.items():
+                    if isinstance(quantidade, int) and quantidade > 0:
+                        self.inventario[item] = quantidade
 
-        #equipaveis
-        equipaveis = data.get("equipaveis")
-        if isinstance(equipaveis, dict):
-            for slot, nome_item in equipaveis.items():
+            bitcores = data.get("bitcores")
+            if isinstance(bitcores, dict):
+                for bc, qtd in bitcores.items():
+                    if isinstance(qtd, int) and qtd > 0:
+                        self.bitcores[bc] = qtd
 
-                # item precisa existir na base de itens
-                print(slot)
-                item_data = ITENS.get("equipaveis", {}).get(nome_item)
-                if not item_data:
-                    continue
+            equipaveis = data.get("equipaveis")
+            if isinstance(equipaveis, dict):
+                for slot, nome_item in equipaveis.items():
+                    try:
+                        idx = int(slot)
+                    except Exception:
+                        continue
+                    if not (1 <= idx <= self.max_skills):
+                        continue
 
-                skill_id = item_data.get("skill")
+                    item_data = ITENS.get("equipaveis", {}).get(nome_item)
+                    if not item_data:
+                        continue
 
-                # skill precisa existir
-                if skill_id in SKILLS:
-                    self.skills_slots[slot] = skill_id
+                    skill_id = item_data.get("skill")
+                    if skill_id in SKILLS:
+                        self.skills_slots[str(idx)] = skill_id
 
-        # ativar as passivas
-        self.rodar_skills()
+            self.rodar_skills()
 
 
 def mover(ent, dx, dy):
