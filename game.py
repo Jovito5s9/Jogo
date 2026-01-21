@@ -20,6 +20,7 @@ from saved.itens_db import ITENS
 from utils.resourcesPath import resource_path
 
 import json
+import os
 
 def configuracoes():
         try:
@@ -298,6 +299,13 @@ class Menu_player(Popup):
         self.selected_item_panel.add_widget(img)
         self.selected_item_panel.add_widget(text_layout)
 
+    def safe_image(self, path, fallback="assets/ui/slot_vazio.png"):
+        path = resource_path(path)
+        if path and os.path.exists(path):
+            return path
+        return resource_path(fallback)
+
+
     def atualizar_equipados(self):
 
         player = getattr(self, "player", None)
@@ -332,10 +340,11 @@ class Menu_player(Popup):
             src = "assets/ui/slot_vazio.png"
 
             if skill_id:
-                for nome_item, item_data in ITENS.get("equipaveis", {}).items():
+                for _, item_data in ITENS.get("equipaveis", {}).items():
                     if item_data.get("skill") == skill_id:
-                        src = item_data.get("source", src)
+                        src = self.safe_image(item_data.get("source"))
                         break
+
 
             img = Image(
                 source=src,
@@ -366,7 +375,7 @@ class Menu_player(Popup):
 
             info = itens.get(nome, {})
 
-            img_source = resource_path(info.get("source", ""))
+            img_source = self.safe_image(info.get("source"))
 
             btn = ItemImage(
                 source=img_source,
