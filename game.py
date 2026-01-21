@@ -17,6 +17,7 @@ from core.player import Player
 from core.world import World
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
+from utils.resourcesPath import resource_path
 
 import json
 
@@ -362,11 +363,10 @@ class Menu_player(Popup):
             return
 
         for nome, quantidade in inventario.items():
-            if self.tipo == "equipaveis":
-                nome, quantidade = quantidade, nome
 
             info = itens.get(nome, {})
-            img_source = info.get("source", "")
+
+            img_source = resource_path(info.get("source", ""))
 
             btn = ItemImage(
                 source=img_source,
@@ -387,16 +387,13 @@ class Menu_player(Popup):
     def equipaveis(self, *args):
         self.preparar_menu()
 
-        try:
-            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
-                player = json.load(arquivo)
-                inventario = player.get("equipaveis", {})
-            self.adicionar_itens(inventario)
-        except Exception:
-            self.grid.clear_widgets()
-            self.grid.add_widget(Label(text="Sem itens", font_size=25, size_hint_y=None, height=40))
-            if self.scroll_view.parent is None:
-                self.layout.add_widget(self.scroll_view)
+        if not self.player:
+            return
+
+        inventario = self.player.bitcores
+
+        self.adicionar_itens(inventario)
+
 
     def inventario(self, *args):
         self.preparar_menu()
