@@ -18,7 +18,7 @@ from core.world import World
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
 
-import json # colocar referencia pro player para o menu no game dps do menu 
+import json
 
 def configuracoes():
         try:
@@ -81,6 +81,7 @@ class Game(FloatLayout):
         self.world.create(20,15)
         self.inventario_menu=False
         self.menu_player=Menu_player()
+        self.menu_player.player=self.player
         
 
     def pre_enter(self,*args):
@@ -184,6 +185,8 @@ class Menu_player(Popup):
         self.equipped_grid = None
         self.scroll_view = None
         self.grid = None
+
+        self.player = None
 
         self.menu = {
             "inventario": self.inventario,
@@ -295,65 +298,56 @@ class Menu_player(Popup):
         self.selected_item_panel.add_widget(text_layout)
 
     def atualizar_equipados(self):
-        player = None
-        skills = []
-        max_slots = 0
-        try:
-            if hasattr(self, 'parent') and self.parent:
-                player = getattr(self.parent, 'player', None)
-        except Exception:
-            player = None
 
-        if player is None:
-            try:
-                with open("saved/player.json", "r", encoding="utf-8") as f:
-                    pdata = json.load(f)
-                    skills = pdata.get("skills_slots", pdata.get("skills", pdata.get("skills_slots", [])))
-                    max_slots = pdata.get("max_skills", pdata.get("max_slots", 0))
-            except Exception:
-                skills = []
-                max_slots = 0
-        else:
-            skills = getattr(player, "skills_slots", getattr(player, "skills", []))
-            max_slots = getattr(player, "max_skills", getattr(player, "max_slots", len(skills)))
-        print(player)
-        if not max_slots:
-            try:
-                if self.equipped_grid:
-                    self.equipped_panel.remove_widget(self.equipped_grid)
-            except Exception:
-                pass
+        player = getattr(self, "player", None)
+        if not player:
+            return
+
+        max_slots = getattr(player, "max_skills", 0)
+        skills_slots = getattr(player, "skills_slots", {})
+
+        if getattr(self, "equipped_grid", None) and self.equipped_grid.parent:
+            self.equipped_panel.remove_widget(self.equipped_grid)
+
+        if max_slots <= 0:
             self.equipped_grid = GridLayout(cols=1, rows=1, size_hint=(1, 0.8))
-            self.equipped_grid.add_widget(Label(text="Nenhum slot", font_size=14))
+            self.equipped_grid.add_widget(
+                Label(text="Nenhum slot", font_size=14)
+            )
             self.equipped_panel.add_widget(self.equipped_grid)
             return
 
-        try:
-            if self.equipped_grid:
-                try:
-                    self.equipped_panel.remove_widget(self.equipped_grid)
-                except Exception:
-                    children = list(self.equipped_panel.children)
-                    for c in children:
-                        if isinstance(c, GridLayout) or isinstance(c, BoxLayout):
-                            self.equipped_panel.remove_widget(c)
-            new_grid = GridLayout(cols=max_slots, rows=1, size_hint=(1, 0.8), spacing=6)
-        except Exception:
-            new_grid = GridLayout(cols=1, rows=1, size_hint=(1, 0.8), spacing=6)
+        self.equipped_grid = GridLayout(
+            cols=max_slots,
+            rows=1,
+            size_hint=(1, 0.8),
+            spacing=6
+        )
 
-        for i in range(max_slots):
-            slot_skill = skills[i] if i < len(skills) else None
-            if slot_skill:
-                src = slot_skill.get("source", "") if isinstance(slot_skill, dict) else getattr(slot_skill, "source", "")
-                img = Image(source=src or "assets/ui/slot_vazio.png",
-                            allow_stretch=True, keep_ratio=True, size_hint=(1, 1))
-            else:
-                img = Image(source="assets/ui/slot_vazio.png",
-                            allow_stretch=True, keep_ratio=True, size_hint=(1, 1))
-            new_grid.add_widget(img)
+        for i in range(1,max_slots+1):
+            slot_id = str(i)
+            skill_id = skills_slots.get(slot_id)
 
-        self.equipped_grid = new_grid
+            src = "assets/ui/slot_vazio.png"
+
+            if skill_id:
+                for nome_item, item_data in ITENS.get("equipaveis", {}).items():
+                    if item_data.get("skill") == skill_id:
+                        src = item_data.get("source", src)
+                        break
+
+            img = Image(
+                source=src,
+                allow_stretch=True,
+                keep_ratio=True,
+                size_hint=(1, 1)
+            )
+
+            self.equipped_grid.add_widget(img)
+
         self.equipped_panel.add_widget(self.equipped_grid)
+
+
 
     def adicionar_itens(self, inventario):
         if self.grid:
