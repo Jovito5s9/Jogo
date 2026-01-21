@@ -18,7 +18,7 @@ from core.world import World
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
 
-import json 
+import json # colocar referencia pro player para o menu no game dps do menu 
 
 def configuracoes():
         try:
@@ -165,7 +165,6 @@ class Game(FloatLayout):
 class ItemImage(ButtonBehavior, Image):
     pass
 
-
 class Menu_player(Popup):
     tipo = OptionProperty("inventario", options=("inventario", "equipaveis"))
 
@@ -180,6 +179,9 @@ class Menu_player(Popup):
         self.add_widget(self.layout)
 
         self.selection_panel = None
+        self.selected_item_panel = None
+        self.equipped_panel = None
+        self.equipped_grid = None
         self.scroll_view = None
         self.grid = None
 
@@ -190,9 +192,13 @@ class Menu_player(Popup):
 
     def on_open(self):
         self.menu[self.tipo]()
+        Clock.schedule_once(lambda dt: self.atualizar_equipados(), 0)
 
     def on_dismiss(self):
-        self.parent.inventario_menu = False
+        try:
+            self.parent.inventario_menu = False
+        except Exception:
+            pass
 
     def preparar_menu(self, *args):
         self.layout.clear_widgets()
@@ -200,18 +206,154 @@ class Menu_player(Popup):
         tipo_label = Label(text=self.tipo, font_size=30, size_hint=(1, 0.2))
         self.layout.add_widget(tipo_label)
 
-        self.selection_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.2), padding=8, spacing=8)
-        self.selection_panel.clear_widgets()
-        self.selection_panel.add_widget(Label(text="Nenhum item selecionado", font_size=18))
+        self.selection_panel = BoxLayout(
+            orientation='horizontal',
+            size_hint=(1, 0.2),
+            padding=8,
+            spacing=8
+        )
+
+        self.selected_item_panel = BoxLayout(
+            orientation='horizontal',
+            size_hint=(0.6, 1),
+            padding=6,
+            spacing=6
+        )
+        self.selected_item_panel.add_widget(
+            Label(text="Nenhum item selecionado", font_size=18)
+        )
+
+        self.equipped_panel = BoxLayout(
+            orientation='vertical',
+            size_hint=(0.4, 1),
+            padding=6,
+            spacing=4
+        )
+
+        equipped_title = Label(
+            text="Equipados",
+            font_size=16,
+            size_hint=(1, 0.2)
+        )
+
+        self.equipped_grid = GridLayout(cols=1, rows=1, size_hint=(1, 0.8), spacing=6)
+        self.equipped_panel.add_widget(equipped_title)
+        self.equipped_panel.add_widget(self.equipped_grid)
+
+        self.selection_panel.add_widget(self.selected_item_panel)
+        self.selection_panel.add_widget(self.equipped_panel)
+
         self.layout.add_widget(self.selection_panel)
 
+        size_px = self.width/8
+
         self.scroll_view = ScrollView(size_hint=(1, 0.6), do_scroll_x=False, do_scroll_y=True)
-        grid_padding=self.scroll_view.width*2
-        grid_spacing=self.scroll_view.width*2
-        self.grid = GridLayout(cols=4, spacing=grid_spacing, padding=grid_padding, size_hint_y=None)
+        self.grid = GridLayout(cols=4, spacing=size_px, padding=size_px, size_hint_y=None)
         self.grid.bind(minimum_height=self.grid.setter('height'))
         self.scroll_view.add_widget(self.grid)
 
+    def on_item_selected(self, widget):
+        nome = getattr(widget, "item_nome", "Desconhecido")
+        info = getattr(widget, "item_info", {}) or {}
+        quantidade = getattr(widget, "item_quantidade", "")
+
+        self.selected_item_panel.clear_widgets()
+
+        img = Image(
+            source=info.get("source", ""),
+            size_hint=(0.3, 1),
+            allow_stretch=True,
+            keep_ratio=True
+        )
+        text_layout = BoxLayout(
+            orientation='vertical',
+            padding=6,
+            spacing=4
+        )
+        nome_label = Label(
+            text=f"{nome}  x{quantidade}",
+            font_size=20,
+            size_hint=(1, None),
+            height=30
+        )
+        raridade_label = Label(
+            text=f"Raridade: {info.get('raridade', 'N/A')}",
+            font_size=16,
+            size_hint=(1, None),
+            height=24
+        )
+        descricao_label = Label(
+            text=f"Descrição: {info.get('descrição', 'Sem descrição')}",
+            font_size=14
+        )
+
+        text_layout.add_widget(nome_label)
+        text_layout.add_widget(raridade_label)
+        text_layout.add_widget(descricao_label)
+
+        self.selected_item_panel.add_widget(img)
+        self.selected_item_panel.add_widget(text_layout)
+
+    def atualizar_equipados(self):
+        player = None
+        skills = []
+        max_slots = 0
+        try:
+            if hasattr(self, 'parent') and self.parent:
+                player = getattr(self.parent, 'player', None)
+        except Exception:
+            player = None
+
+        if player is None:
+            try:
+                with open("saved/player.json", "r", encoding="utf-8") as f:
+                    pdata = json.load(f)
+                    skills = pdata.get("skills_slots", pdata.get("skills", pdata.get("skills_slots", [])))
+                    max_slots = pdata.get("max_skills", pdata.get("max_slots", 0))
+            except Exception:
+                skills = []
+                max_slots = 0
+        else:
+            skills = getattr(player, "skills_slots", getattr(player, "skills", []))
+            max_slots = getattr(player, "max_skills", getattr(player, "max_slots", len(skills)))
+        print(player)
+        if not max_slots:
+            try:
+                if self.equipped_grid:
+                    self.equipped_panel.remove_widget(self.equipped_grid)
+            except Exception:
+                pass
+            self.equipped_grid = GridLayout(cols=1, rows=1, size_hint=(1, 0.8))
+            self.equipped_grid.add_widget(Label(text="Nenhum slot", font_size=14))
+            self.equipped_panel.add_widget(self.equipped_grid)
+            return
+
+        try:
+            if self.equipped_grid:
+                try:
+                    self.equipped_panel.remove_widget(self.equipped_grid)
+                except Exception:
+                    children = list(self.equipped_panel.children)
+                    for c in children:
+                        if isinstance(c, GridLayout) or isinstance(c, BoxLayout):
+                            self.equipped_panel.remove_widget(c)
+            new_grid = GridLayout(cols=max_slots, rows=1, size_hint=(1, 0.8), spacing=6)
+        except Exception:
+            new_grid = GridLayout(cols=1, rows=1, size_hint=(1, 0.8), spacing=6)
+
+        for i in range(max_slots):
+            slot_skill = skills[i] if i < len(skills) else None
+            if slot_skill:
+                src = slot_skill.get("source", "") if isinstance(slot_skill, dict) else getattr(slot_skill, "source", "")
+                img = Image(source=src or "assets/ui/slot_vazio.png",
+                            allow_stretch=True, keep_ratio=True, size_hint=(1, 1))
+            else:
+                img = Image(source="assets/ui/slot_vazio.png",
+                            allow_stretch=True, keep_ratio=True, size_hint=(1, 1))
+            new_grid.add_widget(img)
+
+        self.equipped_grid = new_grid
+        self.equipped_panel.add_widget(self.equipped_grid)
 
     def adicionar_itens(self, inventario):
         if self.grid:
@@ -231,7 +373,6 @@ class Menu_player(Popup):
 
             info = itens.get(nome, {})
             img_source = info.get("source", "")
-            size_px = self.grid.width/6
 
             btn = ItemImage(
                 source=img_source,
@@ -249,31 +390,6 @@ class Menu_player(Popup):
         if self.scroll_view.parent is None:
             self.layout.add_widget(self.scroll_view)
 
-    def on_item_selected(self, widget):
-        nome = getattr(widget, "item_nome", "Desconhecido")
-        info = getattr(widget, "item_info", {}) or {}
-        quantidade = getattr(widget, "item_quantidade", "")
-
-        self.selection_panel.clear_widgets()
-
-        img = Image(source=info.get("source", ""), size_hint=(0.3, 1), allow_stretch=True, keep_ratio=True)
-        self.selection_panel.add_widget(img)
-
-        # bloco de texto com nome, quantidade, raridade e descrição
-        text_layout = BoxLayout(orientation='vertical', padding=6, spacing=4)
-
-        nome_label = Label(text=f"{nome}  x{quantidade}", font_size=20, size_hint=(1, None), height=30)
-        raridade = info.get("raridade", "N/A")
-        raridade_label = Label(text=f"Raridade: {raridade}", font_size=16, size_hint=(1, None), height=24)
-        descricao = info.get("descrição", "Sem descrição")
-        descricao_label = Label(text=f"Descrição: {descricao}", font_size=14)
-
-        text_layout.add_widget(nome_label)
-        text_layout.add_widget(raridade_label)
-        text_layout.add_widget(descricao_label)
-
-        self.selection_panel.add_widget(text_layout)
-
     def equipaveis(self, *args):
         self.preparar_menu()
 
@@ -281,7 +397,6 @@ class Menu_player(Popup):
             with open("saved/player.json", "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
                 inventario = player.get("equipaveis", {})
-
             self.adicionar_itens(inventario)
         except Exception:
             self.grid.clear_widgets()
