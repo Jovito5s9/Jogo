@@ -79,6 +79,7 @@ class BasicEnt(Image):
         self.droped = False
         self.inventario = {}
         self.grid = []
+        self.max_skills=2
         self.skills_slots = {}
         self.skills_ativas = {}
         self.dano_causado=0
@@ -338,6 +339,7 @@ class BasicEnt(Image):
                     self.inventario[item] = quantidade
 
         #equipaveis
+        skills_useds=0
         equipaveis = data.get("equipaveis")
         if isinstance(equipaveis, dict):
             for slot, nome_item in equipaveis.items():
@@ -351,8 +353,9 @@ class BasicEnt(Image):
                 skill_id = item_data.get("skill")
 
                 # skill precisa existir
-                if skill_id in SKILLS:
+                if skill_id in SKILLS and skills_useds<self.max_skills:
                     self.skills_slots[slot] = skill_id
+                    skills_useds+=1
 
         # ativar as passivas
         self.rodar_skills()
@@ -599,11 +602,6 @@ class Player(BasicEnt):
         self.atualizar()
         self.repulsao = 20
         self.alcance_fisico = 100
-        self.skills_slots={
-            #"1": "vampirismo",
-            #"2": "panico",
-            #"3": "esguio"
-            }
         self.acoes = {
             "soco_normal": self.soco_normal,
             "soco_forte": self.soco_forte
