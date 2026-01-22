@@ -114,7 +114,7 @@ class Game(FloatLayout):
     def quebrar(self,*args):
         self.player.acao="soco_forte"
     
-    def inventario(self,tipo="inventario"):
+    def inventario(self,*args, tipo="inventario"):
         if self.menu_player._window:
             if self.menu_player.tipo==tipo:
                 self.menu_player.dismiss()
