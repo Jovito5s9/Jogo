@@ -41,6 +41,11 @@ class Interface(FloatLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.configs = configuracoes()
+        std_size=0.1
+        self.fixed_w=self.height*std_size
+        self.fixed_h=(self.fixed_w/self.height)
+        self.fixed_w=std_size
+        self.fixed_size=(self.fixed_w,self.fixed_h)
 
         if not self.configs["teclado"]:
             self.add_ui()
@@ -54,19 +59,41 @@ class Interface(FloatLayout):
         Clock.schedule_once(self.bind_buttons,1)
     
     def add_joytick(self):
-        self.joystick = Joystick(size_hint=(None, None), size=(800, 800), pos_hint={'center_x': 0.175, 'center_y': 0.175})
-        self.add_widget(self.joystick)
+        self.joystick = Joystick(
+            size_hint=(None, None), 
+            size=(800, 800), 
+            pos_hint={'center_x': 0.175, 'center_y': 0.175}
+            )
+        self.add_widget(self.joystick)#allowstretchg
     
     def add_button_ataque(self,*args):
-        self.button_ataque=InteractiveImage(size_hint=(0.2,0.2),pos_hint={'center_x' : 0.875,'center_y' : 0.7},source=resource_path("assets/ui/soco.png"))
+        self.button_ataque=InteractiveImage(
+            size_hint=self.fixed_size,
+            pos_hint={'center_x' : 0.875,'center_y' : 0.7},
+            source=resource_path("assets/ui/soco.png"),
+            allow_stretch=True,
+            keep_ratio=False
+            )
         self.add_widget(self.button_ataque)
     
     def add_button_quebrar(self,*args):
-        self.button_quebrar=InteractiveImage(size_hint=(0.2,0.2),pos_hint={'center_x' : 0.825,'center_y' : 0.6},source=resource_path("assets/ui/golpe_pesado.png"))
+        self.button_quebrar=InteractiveImage(
+            size_hint=self.fixed_size,
+            pos_hint={'center_x' : 0.825,'center_y' : 0.6},
+            source=resource_path("assets/ui/golpe_pesado.png"),
+            allow_stretch=True,
+            keep_ratio=False
+            )
         self.add_widget(self.button_quebrar)
     
     def add_button_inventario(self,*args):
-        self.button_inventario=InteractiveImage(size_hint=(0.2,0.2),pos_hint={'center_x' : 0.5,'center_y' : 0.925},source=resource_path("assets/ui/inventario.png"))
+        self.button_inventario=InteractiveImage(
+            size_hint=self.fixed_size,
+            pos_hint={'center_x' : 0.5,'center_y' : 0.925},
+            source=resource_path("assets/ui/menu.png"),
+            allow_stretch=True,
+            keep_ratio=False
+            )
         self.add_widget(self.button_inventario)
     
     def bind_buttons(self,*args):
