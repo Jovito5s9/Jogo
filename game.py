@@ -327,6 +327,22 @@ class Menu_player(Popup):
         self.selected_item_panel.add_widget(img)
         self.selected_item_panel.add_widget(text_layout)
 
+#desequipar equipaveis
+        if self.tipo=="equipaveis":
+            with open("saved/player.json","r",encoding='utf-8') as arquivo:
+                data=json.load(arquivo)
+                equipados=data["equipaveis"]
+                for key,equipado in equipados.items():
+                    if nome in equipado:
+                        desequipar_button=Button(
+                            text='desequipar',
+                            font_size=16,
+                            size_hint=(1, None),
+                            height=24
+                            )
+                        self.selected_item_panel.add_widget(desequipar_button)
+
+
     def safe_image(self, path, fallback="assets/ui/slot_vazio.png"):
         path = resource_path(path)
         if path and os.path.exists(path):
