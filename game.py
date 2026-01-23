@@ -340,8 +340,13 @@ class Menu_player(Popup):
                             size_hint=(1, None),
                             height=24
                             )
+                        desequipar_button.bind(on_release=lambda instance:self.desequipar_bitcore(key))
                         self.selected_item_panel.add_widget(desequipar_button)
 
+
+    def desequipar_bitcore(self,slot):
+        self.player.desequipar_slot(slot)
+        self.atualizar_equipados()
 
     def safe_image(self, path, fallback="assets/ui/slot_vazio.png"):
         path = resource_path(path)
