@@ -34,6 +34,9 @@ def configuracoes():
         
         return configs
 
+class InteractiveImage(ButtonBehavior, Image):
+    pass
+
 class Interface(FloatLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -51,19 +54,19 @@ class Interface(FloatLayout):
         Clock.schedule_once(self.bind_buttons,1)
     
     def add_joytick(self):
-        self.joystick = Joystick(size_hint=(None, None), size=(400, 400), pos_hint={'center_x': 0.175, 'center_y': 0.175})
+        self.joystick = Joystick(size_hint=(None, None), size=(800, 800), pos_hint={'center_x': 0.175, 'center_y': 0.175})
         self.add_widget(self.joystick)
     
     def add_button_ataque(self,*args):
-        self.button_ataque=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.9,'center_y' : 0.7},text='soco')
+        self.button_ataque=InteractiveImage(size_hint=(0.2,0.2),pos_hint={'center_x' : 0.875,'center_y' : 0.7},source=resource_path("assets/ui/soco.png"))
         self.add_widget(self.button_ataque)
     
     def add_button_quebrar(self,*args):
-        self.button_quebrar=Button(size_hint=(0.075,0.1),pos_hint={'center_x' : 0.85,'center_y' : 0.6},text='soco\nforte')
+        self.button_quebrar=InteractiveImage(size_hint=(0.2,0.2),pos_hint={'center_x' : 0.825,'center_y' : 0.6},source=resource_path("assets/ui/golpe_pesado.png"))
         self.add_widget(self.button_quebrar)
     
     def add_button_inventario(self,*args):
-        self.button_inventario=Button(size_hint=(0.075,0.075),pos_hint={'center_x' : 0.5,'center_y' : 0.95},text='inventário')
+        self.button_inventario=InteractiveImage(size_hint=(0.2,0.2),pos_hint={'center_x' : 0.5,'center_y' : 0.925},source=resource_path("assets/ui/inventario.png"))
         self.add_widget(self.button_inventario)
     
     def bind_buttons(self,*args):
@@ -165,8 +168,6 @@ class Game(FloatLayout):
         else:
             self.player.speed_x=0
         
-class ItemImage(ButtonBehavior, Image):
-    pass
 
 class Menu_player(Popup):
     tipo = OptionProperty("inventario", options=("inventario", "equipaveis"))
@@ -377,7 +378,7 @@ class Menu_player(Popup):
 
             img_source = self.safe_image(info.get("source"))
 
-            btn = ItemImage(
+            btn = InteractiveImage(
                 source=img_source,
                 size_hint=(None, None),
                 allow_stretch=True,
