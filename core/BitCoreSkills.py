@@ -94,7 +94,11 @@ class esguio(passiva):#basicamente tu fica mais rapido ao apanhar
             self.ent.i_frames = True
 
 
-
+NAME_TO_SKILL_ID = {
+    "núcleo do instinto de pânico":"panico",
+    "núcleo ceifador de energia":"vampirismo",
+    "núcleo da esquiva aleatória":"esguio"
+}
 SKILLS = {
     "panico":panico,
     "vampirismo":vampirismo,
