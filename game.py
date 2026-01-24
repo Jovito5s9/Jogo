@@ -329,39 +329,67 @@ class Menu_player(Popup):
         self.selected_item_panel.add_widget(img)
         self.selected_item_panel.add_widget(text_layout)
 
-#desequipar equipaveis
-        if self.tipo=="equipaveis":
-            with open("saved/player.json","r",encoding='utf-8') as arquivo:
-                data=json.load(arquivo)
-                equipados=data["equipaveis"]
-                for key,equipado in equipados.items():
-                    if nome in equipado:
-                        desequipar_button=Button(
-                            text='desequipar',
-                            font_size=16,
-                            size_hint=(1, None),
-                            height=24
-                            )
-                        desequipar_button.bind(on_release=partial(self.desequipar_bitcore, slot=key))
-                        self.selected_item_panel.add_widget(desequipar_button)
-                    elif not nome in equipado:
-                        equipar_button=Button(
-                            text='equipar',
-                            font_size=16,
-                            size_hint=(1, None),
-                            height=24
-                            )
-                        equipar_button.bind(on_release=partial(self.equipar_bitcore, slot=key,skill=nome))
-                        self.selected_item_panel.add_widget(equipar_button)
+        if self.tipo == "equipaveis":
+            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
+                data = json.load(arquivo)
 
-    def equipar_bitcore(self, *args, slot, skill):
-        skill=NAME_TO_SKILL_ID[skill]
-        self.player.equipar_bitcore(slot,skill)
+            raw_map = data.get("equipaveis") or data.get("bitcores") or {}
+
+            if raw_map and all(str(v).isdigit() for v in raw_map.values()):
+                equipados = {str(v): k for k, v in raw_map.items()}
+            else:
+                equipados = {str(k): v for k, v in raw_map.items()}
+
+            slot_equipado = next((s for s, item in equipados.items() if item == nome), None)
+    #auxilia nas identificacoes
+            if slot_equipado is not None:
+                desequipar_button = Button(
+                    text='desequipar',
+                    font_size=16,
+                    size_hint=(1, None),
+                    height=24
+                )#desequipar
+                desequipar_button.bind(on_release=partial(self.desequipar_bitcore, slot=slot_equipado, widget=widget))
+                self.selected_item_panel.add_widget(desequipar_button)
+
+            else:
+                slot_livre = None
+                slots_usados = set(equipados.keys())
+                for i in range(1, getattr(self.player, "max_skills", 4) + 1):
+                    s = str(i)
+                    if s not in slots_usados:
+                        slot_livre = s
+                        break
+
+                if slot_livre is not None:
+                    equipar_button = Button(#equipar
+                        text=f'equipar (slot {slot_livre})',
+                        font_size=16,
+                        size_hint=(1, None),
+                        height=24
+                    )
+                    equipar_button.bind(on_release=partial(self.equipar_bitcore, nome=nome, widget=widget))
+                    self.selected_item_panel.add_widget(equipar_button)
+
+                else:
+                    sem_slot = Label(
+                        text="Sem slots livres. Desequipe um item antes de equipar.",
+                        font_size=14,
+                        size_hint=(1, None),
+                        height=40
+                    )
+                    self.selected_item_panel.add_widget(sem_slot)
+
+    def equipar_bitcore(self, *args, nome, widget):
+        skill=NAME_TO_SKILL_ID[nome]
+        self.player.equipar_bitcore(skill)
         self.atualizar_equipados()
+        self.on_item_selected(widget=widget)
     
-    def desequipar_bitcore(self,*args,slot):
+    def desequipar_bitcore(self,*args,slot,widget):
         self.player.desequipar_slot(slot)
         self.atualizar_equipados()
+        self.on_item_selected(widget=widget)
 
     def safe_image(self, path, fallback="assets/ui/slot_vazio.png"):
         path = resource_path(path)
