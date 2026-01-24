@@ -17,6 +17,7 @@ from core.player import Player
 from core.world import World
 from utils.joystick import Joystick 
 from saved.itens_db import ITENS
+from core.BitCoreSkills import NAME_TO_SKILL_ID
 from utils.resourcesPath import resource_path
 
 from functools import partial
@@ -343,8 +344,21 @@ class Menu_player(Popup):
                             )
                         desequipar_button.bind(on_release=partial(self.desequipar_bitcore, slot=key))
                         self.selected_item_panel.add_widget(desequipar_button)
+                    elif not nome in equipado:
+                        equipar_button=Button(
+                            text='equipar',
+                            font_size=16,
+                            size_hint=(1, None),
+                            height=24
+                            )
+                        equipar_button.bind(on_release=partial(self.equipar_bitcore, slot=key,skill=nome))
+                        self.selected_item_panel.add_widget(equipar_button)
 
-
+    def equipar_bitcore(self, *args, slot, skill):
+        skill=NAME_TO_SKILL_ID[skill]
+        self.player.equipar_bitcore(slot,skill)
+        self.atualizar_equipados()
+    
     def desequipar_bitcore(self,*args,slot):
         self.player.desequipar_slot(slot)
         self.atualizar_equipados()
