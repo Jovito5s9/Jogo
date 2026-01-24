@@ -19,6 +19,7 @@ from utils.joystick import Joystick
 from saved.itens_db import ITENS
 from utils.resourcesPath import resource_path
 
+from functools import partial
 import json
 import os
 
@@ -340,11 +341,11 @@ class Menu_player(Popup):
                             size_hint=(1, None),
                             height=24
                             )
-                        desequipar_button.bind(on_release=lambda instance:self.desequipar_bitcore(key))
+                        desequipar_button.bind(on_release=partial(self.desequipar_bitcore, slot=key))
                         self.selected_item_panel.add_widget(desequipar_button)
 
 
-    def desequipar_bitcore(self,slot):
+    def desequipar_bitcore(self,*args,slot):
         self.player.desequipar_slot(slot)
         self.atualizar_equipados()
 
