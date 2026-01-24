@@ -261,18 +261,25 @@ class BasicEnt(Image):
         self.bitcores[bitcore_id] = self.bitcores.get(bitcore_id, 0) + qtd
         self.save_data("bitcores", {bitcore_id: self.bitcores[bitcore_id]})
     
-    def equipar_bitcore(self, slot, skill_id):
-        slot = str(slot)
+    def equipar_bitcore(self, skill_id):
 
-        if skill_id not in self.bitcores:
-            return
+        if skill_id in self.skills_slots.values():
+            return False
 
-        if slot not in [str(i) for i in range(1, self.max_skills + 1)]:
-            return
+        slot_livre = None
+        for i in range(1, self.max_skills + 1):
+            s = str(i)
+            if s not in self.skills_slots:
+                slot_livre = s
+                break
 
-        self.skills_slots[slot] = skill_id
+        if slot_livre is None:
+            return False
+
+        self.skills_slots[slot_livre] = skill_id
         self.save_data("equipaveis", None)
         self.rodar_skills()
+        return True
 
 
     def desequipar_slot(self, slot):
