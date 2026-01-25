@@ -56,7 +56,7 @@ class Interface(FloatLayout):
         self.add_joytick()
         self.add_button_ataque()
         self.add_button_quebrar()
-        self.add_button_inventario()
+        self.add_button_menu_player()
 
         Clock.schedule_once(self.bind_buttons,1)
     
@@ -88,20 +88,20 @@ class Interface(FloatLayout):
             )
         self.add_widget(self.button_quebrar)
     
-    def add_button_inventario(self,*args):
-        self.button_inventario=InteractiveImage(
+    def add_button_menu_player(self,*args):
+        self.button_menu=InteractiveImage(
             size_hint=self.fixed_size,
             pos_hint={'center_x' : 0.5,'center_y' : 0.925},
             source=resource_path("assets/ui/menu.png"),
             allow_stretch=True,
             keep_ratio=False
             )
-        self.add_widget(self.button_inventario)
+        self.add_widget(self.button_menu)
     
     def bind_buttons(self,*args):
         self.button_ataque.bind(on_release=self.parent.ataque)
         self.button_quebrar.bind(on_release=self.parent.quebrar)
-        self.button_inventario.bind(on_release=self.parent.inventario)
+        self.button_menu.bind(on_release=self.parent.menu_window)
 
 class Game(FloatLayout):
     def __init__(self,**kwargs):
@@ -146,7 +146,7 @@ class Game(FloatLayout):
     def quebrar(self,*args):
         self.player.acao="soco_forte"
     
-    def inventario(self,*args, tipo="inventario"):
+    def menu_window(self,*args, tipo="inventario"):
         if self.menu_player._window:
             if self.menu_player.tipo==tipo:
                 self.menu_player.dismiss()
@@ -157,7 +157,8 @@ class Game(FloatLayout):
         else:
             self.menu_player.tipo=tipo
             self.menu_player.open()
-    
+
+
     def keyboard_active(self,*args):
         self.key_pressed=set()
         Window.bind(on_key_down=self.on_key_down)
@@ -171,9 +172,9 @@ class Game(FloatLayout):
     def on_key_down(self, window, key, *args):
         self.key_pressed.add(key)
         if key == 105:
-            self.inventario()
+            self.menu_window()
         if key == 101:
-            self.inventario(tipo="equipaveis")
+            self.menu_window(tipo="equipaveis")
     
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)
@@ -234,12 +235,35 @@ class Menu_player(Popup):
             self.parent.inventario_menu = False
         except Exception:
             pass
-
+    
+    def menu_equipaveis(self,*args):
+        if self.tipo=="equipaveis":
+            pass
+        self.tipo="equipaveis"
+        self.on_open()
+    
+    def menu_inventario(self,*args):
+        if self.tipo=="inventario":
+            pass
+        self.tipo="inventario"
+        self.on_open()
+    
     def preparar_menu(self, *args):
         self.layout.clear_widgets()
 
-        tipo_label = Label(text=self.tipo, font_size=30, size_hint=(1, 0.2))
-        self.layout.add_widget(tipo_label)
+        browse_layout =FloatLayout(size_hint=(1, 0.2))
+        
+        tipo_label = Label(text=self.tipo, font_size=30, size_hint=(0.7, 1),pos_hint={'center_x' : 0.5,'center_y' : 0.5})
+        inventario_browse = InteractiveImage(source=resource_path("assets/ui/slot_vazio.png"),pos_hint={'center_x' : 0.25,'center_y' : 0.5})
+        inventario_browse.bind(on_release=self.menu_inventario)
+        equipaveis_browse = InteractiveImage(source=resource_path("assets/ui/bitcore.png"),pos_hint={'center_x' : 0.75,'center_y' : 0.5})        
+        equipaveis_browse.bind(on_release=self.menu_equipaveis)
+
+        browse_layout.add_widget(tipo_label)
+        browse_layout.add_widget(inventario_browse)
+        browse_layout.add_widget(equipaveis_browse)
+        
+        self.layout.add_widget(browse_layout)
 
         self.selection_panel = BoxLayout(
             orientation='horizontal',
