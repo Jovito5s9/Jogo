@@ -665,6 +665,12 @@ class Player(BasicEnt):
         Clock.schedule_interval(self.verificar_acao, 1 / 20)
         self.load_data()
 
+        self.bitcores = {
+        "núcleo ceifador de energia": 1,
+        "núcleo do instinto de pânico": 1,
+        "núcleo da esquiva aleatória": 1
+        }# so pra garantir que ao baixar o player vai ter chances de testar
+
     def soco_normal(self, *args):
         if self.atacando:
             self.acao = ""
@@ -682,7 +688,7 @@ class Player(BasicEnt):
         if self.ataque_name == "soco_forte":
             self.dano = self.power * 1.2
             self.repulsao = 1.5 * self.repulsao
-        # percorre entidades no parent (se definido)
+        # percorre entidades no parent
         try:
             ents = self.parent.ents
         except Exception:
