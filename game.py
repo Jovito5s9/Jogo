@@ -52,13 +52,20 @@ class Interface(FloatLayout):
         self.joystick=None
         self.button_ataque=None
         self.button_quebrar=None
+        self.button_menu=None
+        self.joystick_bind=None
+        self.button_ataque_bind=None
+        self.button_quebrar_bind=None
+        self.button_menu_player_bind=None
 
         self.mobile_layout=FloatLayout()
 
         self.atualizar()
-    
-    def atualizar(self,*args):
-        self.configs = configuracoes()
+        
+    def atualizar(self, *args):
+        new_cfg = configuracoes()
+        if new_cfg != self.configs:
+            self.configs = new_cfg
 
         self.remove_ui()
         if not self.configs["teclado"]:
@@ -116,13 +123,36 @@ class Interface(FloatLayout):
             )
         self.add_widget(self.button_menu)
     
-    def bind_buttons(self,*args):
-        self.button_ataque.bind(on_release=self.parent.ataque)
-        self.button_quebrar.bind(on_release=self.parent.quebrar)
-        self.button_menu.bind(on_release=self.parent.menu_window)
+    def bind_buttons(self, *args):
+        if self.button_ataque:
+            self.button_ataque.bind(on_release=self.parent.ataque)
+        if self.button_quebrar:
+            self.button_quebrar.bind(on_release=self.parent.quebrar)
+        if self.button_menu:
+            self.button_menu.bind(on_release=self.parent.menu_window)
+        self._bind_event = None
+    
+    def unbind_buttons(self, *args):
+        if self.button_ataque:
+            try:
+                self.button_ataque.unbind(on_release=self.parent.ataque)
+            except Exception:
+                pass
+        if self.button_quebrar:
+            try:
+                self.button_quebrar.unbind(on_release=self.parent.quebrar)
+            except Exception:
+                pass
+        if self.button_menu:
+            try:
+                self.button_menu.unbind(on_release=self.parent.menu_window)
+            except Exception:
+                pass      
     
     def remove_ui(self,*args):
-        self.remove_widget(self.mobile_layout)
+        self.unbind_buttons()
+        if self.mobile_layout.parent:
+            self.remove_widget(self.mobile_layout)
 
 class Game(FloatLayout):
     def __init__(self,**kwargs):
@@ -133,6 +163,8 @@ class Game(FloatLayout):
         self.player=Player()
         self.world.player=self.player
         self.joystick_clock=None
+        self.keyboard_clock = None
+        self._joystick_start_event = None
         
         self.world.create(20,15)
         self.inventario_menu=False
@@ -144,18 +176,40 @@ class Game(FloatLayout):
         
 
     def pre_enter(self, *args):
-        self.interface.atualizar()
+        if self.joystick_clock:
+            self.joystick_clock.cancel()
+            self.joystick_clock = None
+
+        if self._joystick_start_event:
+            self._joystick_start_event.cancel()
+            self._joystick_start_event = None
+
+        if self.keyboard_clock:
+            self.keyboard_clock.cancel()
+            self.keyboard_clock = None
+
+        self.keyboard_desactive()
+        if self.interface.configs["teclado"] != configuracoes()["teclado"]:
+            self.interface.atualizar()
         if not self.interface.configs["teclado"]:
-            Clock.schedule_once(self._start_joystick_clock_next_frame, 0)
+            if getattr(self.interface, "joystick", None) and self.interface.joystick.parent:
+                if not self.joystick_clock:
+                    self.joystick_clock = Clock.schedule_interval(self.joystick_movs, 1/20)
+            else:
+                if self._joystick_start_event:
+                    self._joystick_start_event.cancel()
+                self._joystick_start_event = Clock.schedule_interval(self._try_start_joystick, 1/30)
         else:
             self.keyboard_active()
             self.keyboard_clock = Clock.schedule_interval(self.keyboard_actions, 1/20)
 
-    def _start_joystick_clock_next_frame(self, dt):
-        if getattr(self.interface, "joystick", None):
-            self.joystick_clock = Clock.schedule_interval(self.joystick_movs, 1/20)
-        else:
-            Clock.schedule_once(self._start_joystick_clock_next_frame, 1/30)
+    def _try_start_joystick(self, dt):
+        if getattr(self.interface, "joystick", None) and self.interface.joystick.parent:
+            if self._joystick_start_event:
+                self._joystick_start_event.cancel()
+                self._joystick_start_event = None
+            if not self.joystick_clock:
+                self.joystick_clock = Clock.schedule_interval(self.joystick_movs, 1/20)
 
     def pre_leave(self, *args):
         if not self.interface.configs["teclado"]:
@@ -167,7 +221,6 @@ class Game(FloatLayout):
             if getattr(self, "keyboard_clock", None):
                 self.keyboard_clock.cancel()
                 self.keyboard_clock = None
-        self.remove_widget(self.interface)
     
 
     def joystick_movs(self, dt):
@@ -229,14 +282,14 @@ class Game(FloatLayout):
             self.player.speed_y=0.9
         elif 115 in self.key_pressed:
             self.player.speed_y=-0.9
-        else:
+        elif self.player.speed_y!=0:
             self.player.speed_y=0
 
         if 100 in self.key_pressed:
             self.player.speed_x=0.9
         elif 97 in self.key_pressed:
             self.player.speed_x=-0.9
-        else:
+        elif self.player.speed_x!=0:
             self.player.speed_x=0
         
 
