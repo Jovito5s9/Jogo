@@ -5,16 +5,20 @@ class passiva:#classe padrao para as passivas
     id="base"
     event=None
     schedule_interval=None
+    status=None
 
     def __init__(self,ent):
         self.active=False
         self.ent=ent
         self._clock=None
+        self.status_bonus=None
     
     def on_add(self):
         self.active=True
         if self.event:
             self.bind_event()
+        if self.status:
+            self.change_status()
         if self.schedule_interval:
             self._clock = Clock.schedule_interval(
                 self.skill,
@@ -25,6 +29,8 @@ class passiva:#classe padrao para as passivas
         self.active=False
         if self.event:
             self.unbind_event()
+        if self.status:
+            self.unchange_status()
         if self._clock:
             self._clock.cancel()
             self._clock = None
@@ -36,6 +42,18 @@ class passiva:#classe padrao para as passivas
     def unbind_event(self):
         if self.event == "vida":
             self.ent.unbind(vida=self.skill)
+    
+    def change_status(self,*args):
+        if self.status == "i_frames":
+            self.ent.i_frames_time+=self.status_bonus
+        if self.status == "repulsao":
+            self.ent.repulsao+=self.status_bonus
+
+    def unchange_status(self,*args):
+        if self.status == "i_frames":
+            self.ent.i_frames_time-=self.status_bonus
+        if self.status == "repulsao":
+            self.ent.repulsao-=self.status_bonus
     
     def skill(self, *args):
         pass
@@ -54,7 +72,7 @@ class panico(passiva):#basicamente tu fica mais rapido ao apanhar
         if self.ent.i_frames and not self._aplicado:
             self.ent.velocidade *= 1.5
             self._aplicado = True
-            Clock.schedule_once(self.remove_speed,0.7)
+            Clock.schedule_once(self.remove_speed,0.45)
     
     def remove_speed(self,*args):
         if self._aplicado:
@@ -76,7 +94,9 @@ class vampirismo(passiva):#basicamente tu fica mais rapido ao apanhar
 
     def skill(self, *args):#roubar vida ao atacar
         if self.ent.dano_causado:
-            self.ent.vida=self.ent.vida+self.ent.dano_causado
+            self.ent.vida=self.ent.vida+(self.ent.dano_causado*0.125)
+            if self.ent.vida>self.ent.vida_maxima:
+                self.ent.vida=self.ent.vida_maxima
             self.ent.dano_causado=0
 
 
@@ -85,6 +105,8 @@ class esguio(passiva):#basicamente tu fica mais rapido ao apanhar
         super().__init__(ent)
         self.id="esguio"
         self.schedule_interval=0.1
+        self.status="i_frames"
+        self.status_bonus=0.4
 
     def skill(self, *args):#pra desviar ocasionamente de ataques// vou ajeitar dps pra depender da sorte(novo atributo)
         if self.ent.i_frames:
@@ -93,14 +115,23 @@ class esguio(passiva):#basicamente tu fica mais rapido ao apanhar
         if random.randint(0, 200) <= 1:
             self.ent.i_frames = True
 
+class pistao(passiva):
+    def __init__(self, ent):
+        super().__init__(ent)
+        self.id="pistao"
+        self.status="repulsao"
+        self.status_bonus=6
+
 
 NAME_TO_SKILL_ID = {
     "núcleo do instinto de pânico":"panico",
     "núcleo ceifador de energia":"vampirismo",
-    "núcleo da esquiva aleatória":"esguio"
+    "núcleo da esquiva aleatória":"esguio",
+    "núcleo do punho explosivo":"pistao"
 }
 SKILLS = {
+    "pistao":pistao,
     "panico":panico,
     "vampirismo":vampirismo,
     "esguio":esguio
-}#so esse dicionario aq vai ser importado(ele que vai trabalhar para gerenciar as habilidades)
+}#so esse dicionario aq vai ser importado(ele que vai trabalhar para gerenciar as habilidades) e relacionar de forma facil nesse arquivo
