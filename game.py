@@ -50,15 +50,31 @@ class Interface(FloatLayout):
         self.fixed_size=(self.fixed_w,self.fixed_h)
 
         self.joystick=None
+        self.button_ataque=None
+        self.button_quebrar=None
 
+        self.mobile_layout=FloatLayout()
+
+        self.atualizar()
+    
+    def atualizar(self,*args):
+        self.configs = configuracoes()
+
+        self.remove_ui()
         if not self.configs["teclado"]:
             self.add_ui()
             
     def add_ui(self,*args):
-        self.add_joytick()
-        self.add_button_ataque()
-        self.add_button_quebrar()
+        if not self.joystick:
+            self.add_joytick()
+        if not self.button_ataque:
+            self.add_button_ataque()
+        if not self.button_quebrar:
+            self.add_button_quebrar()
         self.add_button_menu_player()
+
+        if not self.mobile_layout in self.children:
+            self.add_widget(self.mobile_layout)
 
         Clock.schedule_once(self.bind_buttons,1)
     
@@ -68,7 +84,7 @@ class Interface(FloatLayout):
             size=(800, 800), 
             pos_hint={'center_x': 0.175, 'center_y': 0.175}
             )
-        self.add_widget(self.joystick)#allowstretchg
+        self.mobile_layout.add_widget(self.joystick)#allowstretchg
     
     def add_button_ataque(self,*args):
         self.button_ataque=InteractiveImage(
@@ -78,7 +94,7 @@ class Interface(FloatLayout):
             allow_stretch=True,
             keep_ratio=False
             )
-        self.add_widget(self.button_ataque)
+        self.mobile_layout.add_widget(self.button_ataque)
     
     def add_button_quebrar(self,*args):
         self.button_quebrar=InteractiveImage(
@@ -88,7 +104,7 @@ class Interface(FloatLayout):
             allow_stretch=True,
             keep_ratio=False
             )
-        self.add_widget(self.button_quebrar)
+        self.mobile_layout.add_widget(self.button_quebrar)
     
     def add_button_menu_player(self,*args):
         self.button_menu=InteractiveImage(
@@ -104,6 +120,9 @@ class Interface(FloatLayout):
         self.button_ataque.bind(on_release=self.parent.ataque)
         self.button_quebrar.bind(on_release=self.parent.quebrar)
         self.button_menu.bind(on_release=self.parent.menu_window)
+    
+    def remove_ui(self,*args):
+        self.remove_widget(self.mobile_layout)
 
 class Game(FloatLayout):
     def __init__(self,**kwargs):
@@ -119,11 +138,13 @@ class Game(FloatLayout):
         self.inventario_menu=False
         self.menu_player=Menu_player()
         self.menu_player.player=self.player
+
+        self.interface = Interface()
+        self.add_widget(self.interface)
         
 
     def pre_enter(self, *args):
-        self.interface = Interface()
-        self.add_widget(self.interface)
+        self.interface.atualizar()
         if not self.interface.configs["teclado"]:
             Clock.schedule_once(self._start_joystick_clock_next_frame, 0)
         else:
