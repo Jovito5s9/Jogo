@@ -49,6 +49,8 @@ class Interface(FloatLayout):
         self.fixed_w=std_size
         self.fixed_size=(self.fixed_w,self.fixed_h)
 
+        self.joystick=None
+
         if not self.configs["teclado"]:
             self.add_ui()
             
@@ -111,6 +113,7 @@ class Game(FloatLayout):
         
         self.player=Player()
         self.world.player=self.player
+        self.joystick_clock=None
         
         self.world.create(20,15)
         self.inventario_menu=False
@@ -118,27 +121,44 @@ class Game(FloatLayout):
         self.menu_player.player=self.player
         
 
-    def pre_enter(self,*args):
-        self.interface=Interface()
+    def pre_enter(self, *args):
+        self.interface = Interface()
         self.add_widget(self.interface)
         if not self.interface.configs["teclado"]:
-            Clock.schedule_interval(self.joystick_movs, 1/20)
+            Clock.schedule_once(self._start_joystick_clock_next_frame, 0)
         else:
             self.keyboard_active()
-            Clock.schedule_interval(self.keyboard_actions, 1/20)
+            self.keyboard_clock = Clock.schedule_interval(self.keyboard_actions, 1/20)
 
-    def pre_leave(self,*args):
+    def _start_joystick_clock_next_frame(self, dt):
+        if getattr(self.interface, "joystick", None):
+            self.joystick_clock = Clock.schedule_interval(self.joystick_movs, 1/20)
+        else:
+            Clock.schedule_once(self._start_joystick_clock_next_frame, 1/30)
+
+    def pre_leave(self, *args):
         if not self.interface.configs["teclado"]:
-            Clock.unschedule(self.joystick_movs, 1/20)
+            if getattr(self, "joystick_clock", None):
+                self.joystick_clock.cancel()
+                self.joystick_clock = None
         else:
             self.keyboard_desactive()
-            Clock.unschedule(self.keyboard_actions, 1/20)
+            if getattr(self, "keyboard_clock", None):
+                self.keyboard_clock.cancel()
+                self.keyboard_clock = None
         self.remove_widget(self.interface)
     
 
-    def joystick_movs(self,*args):
-        self.player.speed_x=self.interface.joystick.x_value
-        self.player.speed_y=self.interface.joystick.y_value
+    def joystick_movs(self, dt):
+        j = getattr(self.interface, "joystick", None)
+        if not j:
+            self.player.speed_x = 0
+            self.player.speed_y = 0
+            return
+
+        self.player.speed_x = j.x_value
+        self.player.speed_y = j.y_value
+
     
     def ataque(self,*args):
         self.player.acao="soco_normal"
