@@ -48,6 +48,10 @@ class passiva:#classe padrao para as passivas
             self.ent.i_frames_time+=self.status_bonus
         if self.status == "repulsao":
             self.ent.repulsao+=self.status_bonus
+        if self.status == "vida_maxima":
+            self.ent.vida_maxima+=self.status_bonus
+            self.ent.vida+=self.status_bonus
+
 
     def unchange_status(self,*args):
         if self.status == "i_frames":
@@ -122,16 +126,24 @@ class pistao(passiva):
         self.status="repulsao"
         self.status_bonus=6
 
+class robusto(passiva):
+    def __init__(self, ent):
+        super().__init__(ent)
+        self.id="robusto"
+        self.status="vida_maxima"
+        self.status_bonus=20
 
 NAME_TO_SKILL_ID = {
     "núcleo do instinto de pânico":"panico",
     "núcleo ceifador de energia":"vampirismo",
     "núcleo da esquiva aleatória":"esguio",
-    "núcleo do punho explosivo":"pistao"
+    "núcleo do punho explosivo":"pistao",
+    "núcleo da vitalidade extendida":"robusto"
 }
 SKILLS = {
     "pistao":pistao,
     "panico":panico,
     "vampirismo":vampirismo,
-    "esguio":esguio
-}#so esse dicionario aq vai ser importado(ele que vai trabalhar para gerenciar as habilidades) e relacionar de forma facil nesse arquivo
+    "esguio":esguio,
+    "robusto":robusto
+}
