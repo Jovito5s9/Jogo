@@ -665,11 +665,14 @@ class Player(BasicEnt):
         Clock.schedule_interval(self.verificar_acao, 1 / 20)
         self.load_data()
 
-        self.bitcores = {
-        "núcleo ceifador de energia": 1,
-        "núcleo do instinto de pânico": 1,
-        "núcleo da esquiva aleatória": 1
-        }# so pra garantir que ao baixar o player vai ter chances de testar
+        if not self.bitcores:
+            self.bitcores = {
+            "núcleo ceifador de energia": 1,
+            "núcleo do instinto de pânico": 1,
+            "núcleo da esquiva aleatória": 1,
+            "núcleo do punho explosivo":1,
+            "núcleo da vitalidade extendida":1
+        },# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
 
     def soco_normal(self, *args):
         if self.atacando:

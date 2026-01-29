@@ -50,6 +50,20 @@ ITENS = {
             "skill": "esguio",
             "descrição": "Um núcleo neural instável que ativa reflexos\n evasivos de forma imprevisível.",
             "source" : "assets/itens/BitCore/random_dodge.png"
-        }
+        },
+        "núcleo do punho explosivo":{
+            "raridade" : "raro",
+            "tipo" : "BitCore",
+            "skill": "pistao",
+            "descrição": "Um núcleo que aumenta a potência dos movimentos.",
+            "source" : "assets/itens/BitCore/piston.png"
+        },
+        "núcleo da vitalidade extendida":{
+            "raridade" : "raro",
+            "tipo" : "BitCore",
+            "skill": "robusto",
+            "descrição": "Um chip energético que fornece tempo de uso\n extra.",
+            "source" : "assets/itens/BitCore/robust.png"
+            }
     }
 }
