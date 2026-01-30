@@ -672,7 +672,7 @@ class Player(BasicEnt):
             "núcleo da esquiva aleatória": 1,
             "núcleo do punho explosivo":1,
             "núcleo da vitalidade extendida":1
-        },# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
+        }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
 
     def soco_normal(self, *args):
         if self.atacando:
