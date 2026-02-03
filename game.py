@@ -99,7 +99,7 @@ class Interface(FloatLayout):
         self.joystick = Joystick(
             size_hint=(None, None), 
             size=(800, 800), 
-            pos_hint={'center_x': 0.175, 'center_y': 0.175}
+            pos_hint={'center_x': 0.150, 'center_y': 0.275}
             )
         self.mobile_layout.add_widget(self.joystick)#allowstretchg
     
