@@ -24,16 +24,27 @@ from functools import partial
 import json
 import os
 
+STD_font_size=30
+
 def configuracoes():
+        global STD_font_size
         try:
             with open("saved/configuracoes.json","r",encoding="utf-8") as config:
                 configs=json.load(config)
+            if not "font" in configs:
+                with open("saved/configuracoes.json","w",encoding="utf-8") as config:
+                    configs["font"]=30
+                    json.dump(configs,config)
         except:
             with open("saved/configuracoes.json","w",encoding="utf-8") as config:
-                newconfig={"teclado": False}
+                newconfig={
+                    "teclado": False,
+                    "font": 30
+                    }
                 configs=newconfig
                 json.dump(newconfig, config)
-        
+        if STD_font_size!=configs["font"]:
+            STD_font_size=configs["font"]
         return configs
 
 class InteractiveImage(ButtonBehavior, Image):
@@ -298,6 +309,7 @@ class Menu_player(Popup):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        global STD_font_size
         self.title = ''
         self.separator_height = 0
         self.size_hint = (0.8, 0.8)
@@ -347,7 +359,7 @@ class Menu_player(Popup):
 
         browse_layout =FloatLayout(size_hint=(1, 0.2))
         
-        tipo_label = Label(text=self.tipo, font_size=30, size_hint=(0.7, 1),pos_hint={'center_x' : 0.5,'center_y' : 0.5})
+        tipo_label = Label(text=self.tipo, font_size=STD_font_size, size_hint=(0.7, 1),pos_hint={'center_x' : 0.5,'center_y' : 0.5})
         inventario_browse = InteractiveImage(source=resource_path("assets/ui/slot_vazio.png"),pos_hint={'center_x' : 0.25,'center_y' : 0.5})
         inventario_browse.bind(on_release=self.menu_inventario)
         equipaveis_browse = InteractiveImage(source=resource_path("assets/ui/bitcore.png"),pos_hint={'center_x' : 0.75,'center_y' : 0.5})        
@@ -373,7 +385,7 @@ class Menu_player(Popup):
             spacing=6
         )
         self.selected_item_panel.add_widget(
-            Label(text="Nenhum item selecionado", font_size=18)
+            Label(text="Nenhum item selecionado", font_size=STD_font_size*0.6)
         )
 
         self.equipped_panel = BoxLayout(
@@ -385,7 +397,7 @@ class Menu_player(Popup):
 
         equipped_title = Label(
             text="Equipados",
-            font_size=16,
+            font_size=STD_font_size*0.5,
             size_hint=(1, 0.2)
         )
 
@@ -425,19 +437,19 @@ class Menu_player(Popup):
         )
         nome_label = Label(
             text=f"{nome}  x{quantidade}",
-            font_size=20,
+            font_size=STD_font_size*0.7,
             size_hint=(1, None),
             height=30
         )
         raridade_label = Label(
             text=f"Raridade: {info.get('raridade', 'N/A')}",
-            font_size=16,
+            font_size=STD_font_size*0.5,
             size_hint=(1, None),
             height=24
         )
         descricao_label = Label(
             text=f"Descrição: {info.get('descrição', 'Sem descrição')}",
-            font_size=14
+            font_size=STD_font_size*0.45
         )
 
         text_layout.add_widget(nome_label)
@@ -482,7 +494,7 @@ class Menu_player(Popup):
                 if slot_livre is not None:
                     equipar_button = Button(#equipar
                         text=f'equipar (slot {slot_livre})',
-                        font_size=16,
+                        font_size=STD_font_size*0.5,
                         size_hint=(1, None),
                         height=24
                     )
@@ -492,7 +504,7 @@ class Menu_player(Popup):
                 else:
                     sem_slot = Label(
                         text="Sem slots livres. Desequipe um item antes de equipar.",
-                        font_size=14,
+                        font_size=STD_font_size*0.45,
                         size_hint=(1, None),
                         height=40
                     )
@@ -531,7 +543,7 @@ class Menu_player(Popup):
         if max_slots <= 0:
             self.equipped_grid = GridLayout(cols=1, rows=1, size_hint=(1, 0.8))
             self.equipped_grid.add_widget(
-                Label(text="Nenhum slot", font_size=14)
+                Label(text="Nenhum slot", font_size=STD_font_size*0.45)
             )
             self.equipped_panel.add_widget(self.equipped_grid)
             return
@@ -576,7 +588,7 @@ class Menu_player(Popup):
         itens = ITENS.get(self.tipo, {})
 
         if not inventario:
-            self.grid.add_widget(Label(text="Sem itens", font_size=25, size_hint_y=None, height=40))
+            self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
             if self.scroll_view.parent is None:
                 self.layout.add_widget(self.scroll_view)
             return
@@ -626,7 +638,7 @@ class Menu_player(Popup):
 
         except Exception:
             self.grid.clear_widgets()
-            self.grid.add_widget(Label(text="Sem itens", font_size=25, size_hint_y=None, height=40))
+            self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
             if self.scroll_view.parent is None:
                 self.layout.add_widget(self.scroll_view)
 
@@ -688,33 +700,61 @@ class ConfiguracoesScreen(Screen):
             self.input='Modo teclado'
         else:
             self.input='Modo toque'
+        if self.configs["font"]==30:
+            self.font='fonte normal'
+        else:
+            self.font='fonte grande'
 
         self.layout=FloatLayout()
         layout_inputs=FloatLayout(
             size_hint=(0.5,0.08),
             pos_hint={'center_x':0.5,'center_y':0.4}
             )
+        layout_font=FloatLayout(
+            size_hint=(0.5,0.08),
+            pos_hint={'center_x':0.5,'center_y':0.3}
+            )
         self.label_inputs=Label(
             text='Layout de controle:',
-            font_size=30,
+            font_size=STD_font_size,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
             )
         self.button_inputs=Button(
             text=f'{self.input}',
-            font_size=25,
+            font_size=STD_font_size*0.8,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.78,'center_y':0.5}
             )
+        
+        self.label_font=Label(
+            text='Tamanho da fonte:',
+            font_size=STD_font_size,
+            size_hint=(0.5,1),
+            pos_hint={'center_x':0.2,'center_y':0.5}
+            )
+        self.button_font=Button(
+            text=f'{self.font}',
+            font_size=STD_font_size*0.8,
+            size_hint=(0.5,1),
+            pos_hint={'center_x':0.78,'center_y':0.5}
+            )
+        
         self.button_inputs.bind(on_release=self.trocar_input)
         layout_inputs.add_widget(self.button_inputs)
         layout_inputs.add_widget(self.label_inputs)
         self.layout.add_widget(layout_inputs)
 
+        self.button_font.bind(on_release=self.tamanho_da_fonte)
+        layout_font.add_widget(self.button_font)
+        layout_font.add_widget(self.label_font)
+        self.layout.add_widget(layout_font)
+
         self.add_widget(self.layout)
 
         Window.bind(on_keyboard=self.ir_para_menu)
     
+
     def trocar_input(self,*args):
         with open("saved/configuracoes.json","r",encoding="utf-8") as config:
             self.configs=json.load(config)
@@ -727,6 +767,28 @@ class ConfiguracoesScreen(Screen):
             self.input='Modo toque'
         self.button_inputs.text=f'{self.input}'
     
+
+    def tamanho_da_fonte(self,*args):
+        
+        global STD_font_size
+
+        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+            self.configs=json.load(config)
+
+        if self.configs["font"]==30:
+            self.configs["font"]=35
+            self.font='fonte grande'
+        else:
+            self.configs["font"]=30
+            self.font='fonte normal'
+        
+        STD_font_size=self.configs["font"]
+
+        with open("saved/configuracoes.json","w",encoding="utf-8") as old_config:
+            json.dump(self.configs,old_config)
+        self.button_font.text=f'{self.font}'
+    
+
     def ir_para_menu(self,window,key,*args):
         if key==27:
             GameScreenManager.current='menu'
