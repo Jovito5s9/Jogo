@@ -650,7 +650,7 @@ class MenuScreen(Screen):
             source=resource_path("assets/geral/dungeon_background.png"),
             size=self.size,
             allow_stretch=True,
-            keep_ratio=True
+            keep_ratio=False
         )
         self.add_widget(background)
         self.layout = FloatLayout()

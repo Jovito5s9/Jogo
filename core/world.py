@@ -10,7 +10,7 @@ import random
 from core.player import Rato, Rata_mae
 from utils.resourcesPath import resource_path
 
-size = Window.height/14
+size = Window.height/12.5
 
 class Object(FloatLayout):
     linha = NumericProperty(0)
