@@ -2,7 +2,6 @@ from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
-from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty
@@ -19,7 +18,7 @@ from utils.joystick import Joystick
 from saved.itens_db import ITENS
 from core.BitCoreSkills import NAME_TO_SKILL_ID
 from utils.resourcesPath import resource_path
-
+from utils.customizedButton import CustomizedButton
 from functools import partial
 import json
 import os
@@ -473,7 +472,7 @@ class Menu_player(Popup):
             slot_equipado = next((s for s, item in equipados.items() if item == nome), None)
     #auxilia nas identificacoes
             if slot_equipado is not None:
-                desequipar_button = Button(
+                desequipar_button = CustomizedButton(
                     text='desequipar',
                     font_size=16,
                     size_hint=(1, None),
@@ -492,7 +491,7 @@ class Menu_player(Popup):
                         break
 
                 if slot_livre is not None:
-                    equipar_button = Button(#equipar
+                    equipar_button = CustomizedButton(#equipar
                         text=f'equipar (slot {slot_livre})',
                         font_size=STD_font_size*0.5,
                         size_hint=(1, None),
@@ -656,19 +655,19 @@ class MenuScreen(Screen):
             pos_hint={'center_x': 0.5, 'center_y': 0.65}
         )
           
-        self.button_play = Button(
+        self.button_play = CustomizedButton(
             text='Jogar',
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.3}
         )
         self.button_play.bind(on_release=self.jogar)
-        self.button_configs = Button(
+        self.button_configs = CustomizedButton(
             text='Configurações',
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.2}
         )
         self.button_configs.bind(on_release=self.configurar)
-        self.button_sair = Button(
+        self.button_sair = CustomizedButton(
             text='Sair',
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.1}
@@ -720,7 +719,7 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
             )
-        self.button_inputs=Button(
+        self.button_inputs=CustomizedButton(
             text=f'{self.input}',
             font_size=STD_font_size*0.8,
             size_hint=(0.5,1),
@@ -733,7 +732,7 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
             )
-        self.button_font=Button(
+        self.button_font=CustomizedButton(
             text=f'{self.font}',
             font_size=STD_font_size*0.8,
             size_hint=(0.5,1),
@@ -769,7 +768,7 @@ class ConfiguracoesScreen(Screen):
     
 
     def tamanho_da_fonte(self,*args):
-        
+
         global STD_font_size
 
         with open("saved/configuracoes.json","r",encoding="utf-8") as config:
