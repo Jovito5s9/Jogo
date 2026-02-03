@@ -645,10 +645,18 @@ class Menu_player(Popup):
 class MenuScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        global STD_font_size
+        background=Image(
+            source=resource_path("assets/geral/dungeon_background.png"),
+            size=self.size,
+            allow_stretch=True,
+            keep_ratio=True
+        )
+        self.add_widget(background)
         self.layout = FloatLayout()
         self.add_widget(self.layout)
         self.logo = Image(
-            source='assets/geral/logo_RadioRoots.png',
+            source=resource_path('assets/geral/logo_RadioRoots.png'),
             allow_stretch=True,
             keep_ratio=True,
             size_hint=(0.4, 0.4),   
@@ -657,18 +665,27 @@ class MenuScreen(Screen):
           
         self.button_play = CustomizedButton(
             text='Jogar',
+            font_size=STD_font_size*1.2,
+            bold=True,
+            color=(0.1, 0.1, 0.1, 1),
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.3}
         )
         self.button_play.bind(on_release=self.jogar)
         self.button_configs = CustomizedButton(
             text='Configurações',
+            font_size=STD_font_size*1.2,
+            bold=True,
+            color=(0.1, 0.1, 0.1, 1),
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.2}
         )
         self.button_configs.bind(on_release=self.configurar)
         self.button_sair = CustomizedButton(
             text='Sair',
+            font_size=STD_font_size*1.2,
+            bold=True,
+            color=(0.1, 0.1, 0.1, 1),
             size_hint=(0.25, 0.08),
             pos_hint={'center_x': 0.5, 'center_y': 0.1}
         )
