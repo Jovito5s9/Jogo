@@ -53,7 +53,7 @@ class Interface(FloatLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.configs = configuracoes()
-        std_size=0.1
+        std_size=0.15
         self.fixed_w=self.height*std_size
         self.fixed_h=(self.fixed_w/self.height)
         self.fixed_w=std_size
@@ -99,14 +99,14 @@ class Interface(FloatLayout):
         self.joystick = Joystick(
             size_hint=(None, None), 
             size=(800, 800), 
-            pos_hint={'center_x': 0.150, 'center_y': 0.275}
+            pos_hint={'center_x': 0.125, 'center_y': 0.35}
             )
         self.mobile_layout.add_widget(self.joystick)#allowstretchg
     
     def add_button_ataque(self,*args):
         self.button_ataque=InteractiveImage(
             size_hint=self.fixed_size,
-            pos_hint={'center_x' : 0.875,'center_y' : 0.7},
+            pos_hint={'center_x' : 0.875,'center_y' : 0.45},
             source=resource_path("assets/ui/soco.png"),
             allow_stretch=True,
             keep_ratio=False
@@ -116,7 +116,7 @@ class Interface(FloatLayout):
     def add_button_quebrar(self,*args):
         self.button_quebrar=InteractiveImage(
             size_hint=self.fixed_size,
-            pos_hint={'center_x' : 0.825,'center_y' : 0.6},
+            pos_hint={'center_x' : 0.825,'center_y' : 0.3},
             source=resource_path("assets/ui/golpe_pesado.png"),
             allow_stretch=True,
             keep_ratio=False
