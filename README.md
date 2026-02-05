@@ -14,6 +14,7 @@ Você controla:
 > ***"uma batata mutante que parece amigável"***
 
 <img src="assets/geral/readme/player_idle.gif">
+
 [Leia mais sobre o Player](docs/lore/player.md)
 
 ---
