@@ -23,7 +23,7 @@ from functools import partial
 import json
 import os
 
-STD_font_size=30
+STD_font_size=35
 
 def configuracoes():
         global STD_font_size
@@ -32,13 +32,13 @@ def configuracoes():
                 configs=json.load(config)
             if not "font" in configs:
                 with open("saved/configuracoes.json","w",encoding="utf-8") as config:
-                    configs["font"]=30
+                    configs["font"]=35
                     json.dump(configs,config)
         except:
             with open("saved/configuracoes.json","w",encoding="utf-8") as config:
                 newconfig={
                     "teclado": False,
-                    "font": 30
+                    "font": 35
                     }
                 configs=newconfig
                 json.dump(newconfig, config)
@@ -716,7 +716,7 @@ class ConfiguracoesScreen(Screen):
             self.input='Modo teclado'
         else:
             self.input='Modo toque'
-        if self.configs["font"]==30:
+        if self.configs["font"]==35:
             self.font='fonte normal'
         else:
             self.font='fonte grande'
@@ -791,11 +791,11 @@ class ConfiguracoesScreen(Screen):
         with open("saved/configuracoes.json","r",encoding="utf-8") as config:
             self.configs=json.load(config)
 
-        if self.configs["font"]==30:
-            self.configs["font"]=35
+        if self.configs["font"]==35:
+            self.configs["font"]=40
             self.font='fonte grande'
         else:
-            self.configs["font"]=30
+            self.configs["font"]=35
             self.font='fonte normal'
         
         STD_font_size=self.configs["font"]

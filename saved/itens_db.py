@@ -34,35 +34,35 @@ ITENS = {
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "vampirismo",
-            "descrição": "Um chip que converte a energia liberada \nno impacto em bioenergia, realimentando os sistemas vitais.",
+            "descrição": "Um chip que converte a energia libe-\nrada no impacto em bioenergia, realimentando \nos sistemas vitais.",
             "source" : "assets/itens/BitCore/energy_reaper.png"
         },
         "núcleo do instinto de pânico":{
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "panico",
-            "descrição": "Um chip neural que intercepta sinais de dor\n e os converte em impulsos motores acelerados.",
+            "descrição": "Um chip neural que intercepta sinais\n de dor e os converte em \nimpulsos motores acelerados.",
             "source" : "assets/itens/BitCore/panic_instinct.png"
         },
         "núcleo da esquiva aleatória":{
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "esguio",
-            "descrição": "Um núcleo neural instável que ativa reflexos\n evasivos de forma imprevisível.",
+            "descrição": "Um núcleo neural instável que ativa\n reflexos evasivos de forma imprevisível.",
             "source" : "assets/itens/BitCore/random_dodge.png"
         },
         "núcleo do punho explosivo":{
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "pistao",
-            "descrição": "Um núcleo que aumenta a potência dos movimentos.",
+            "descrição": "Um núcleo que aumenta a potência \ndos movimentos.",
             "source" : "assets/itens/BitCore/piston.png"
         },
         "núcleo da vitalidade extendida":{
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "robusto",
-            "descrição": "Um chip energético que fornece tempo de uso\n extra.",
+            "descrição": "Um chip energético que fornece \ntempo de uso extra.",
             "source" : "assets/itens/BitCore/robust.png"
             }
     }
