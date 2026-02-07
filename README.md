@@ -46,7 +46,7 @@ Uma masmorra hostil, cheia de:
 ## BitCores
 
 Habilidades concedidas por estranhos chips tecnológicos.
-➡ [Detalhes dos BitCores](docs/lore/BitCores.md)
+➡ [Detalhes dos BitCores](docs/lore/bitcores.md)
 
 ---
 
