@@ -88,5 +88,13 @@ Encontrou bugs ou comportamentos estranhos?
 
 ---
 
+## Contribuições
+
+Este projeto não aceita contribuições automáticas.
+
+Se você deseja contribuir, entre em contato antes de abrir um pull request.
+
+---
+
 ⭐ **O jogo segue em desenvolvimento**  
 Se curtiu a ideia, considere dar uma estrela no repositório!
