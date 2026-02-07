@@ -572,6 +572,9 @@ class World(FloatLayout):
             y1 + h1 > y2
         )
 
+    def respawn_player(self,*args):
+        print("player respawnado")
+
     def gerar_boss(self, *args):
         boss = Rata_mae()
         self.add_widget(boss)

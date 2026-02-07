@@ -654,6 +654,8 @@ class Player(BasicEnt):
         self.atacando_frames = 3
         self.tamanho = 4
 
+        self.respawning=False
+
         self.atualizar()
         self.repulsao = 20
         self.alcance_fisico = 100
@@ -663,6 +665,7 @@ class Player(BasicEnt):
         }
         self.acao = ""
         Clock.schedule_interval(self.verificar_acao, 1 / 20)
+        Clock.schedule_interval(self.check_vida, 1 / 3)
         self.load_data()
 
         if not self.bitcores:
@@ -673,6 +676,21 @@ class Player(BasicEnt):
             "núcleo do punho explosivo":1,
             "núcleo da vitalidade extendida":1
         }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
+    
+    def respawn(self,*args):
+        self.i_frames=True
+        self.vida=self.vida_maxima
+        self.vivo=True
+        self.estado="idle"
+        self.parent.respawn_player()
+
+    def check_vida(self,*args):
+        if self.vivo:
+            return
+        if self.respawning:
+            return
+        self.respawning=True
+        Clock.schedule_once(self.respawn, 3)
 
     def soco_normal(self, *args):
         if self.atacando:
