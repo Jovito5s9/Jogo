@@ -573,7 +573,29 @@ class World(FloatLayout):
         )
 
     def respawn_player(self,*args):
-        print("player respawnado")
+        if self.type=='esgoto' and not self.trocando_mapa:
+            self.trocando_mapa=True
+            for obj in self.obj_list[:]:
+                self.obj_list.remove(obj)
+                try:
+                    self.remove_widget(obj)
+                except Exception:
+                    pass
+            for tile in self.tiles_list[:]:
+                self.tiles_list.remove(tile)
+                try:
+                    self.remove_widget(tile)
+                except Exception:
+                    pass
+            for ent in self.ents[:]:
+                if ent is not self.player:
+                    self.ents.remove(ent)
+                    try:
+                        self.remove_widget(ent)
+                    except Exception:
+                        pass
+            self.carregar_mapa(self.masmorra[1])
+            self.trocando_mapa=False
 
     def gerar_boss(self, *args):
         boss = Rata_mae()
