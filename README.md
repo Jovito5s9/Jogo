@@ -88,6 +88,13 @@ Encontrou bugs ou comportamentos estranhos?
 
 ---
 
+## Licenças
+
+- Código-fonte: ver [LICENSE](LICENSE)
+- Assets: ver [ASSETS_LICENSE.md](ASSETS_LICENSE.md)
+
+---
+
 ## Contribuições
 
 Este projeto não aceita contribuições automáticas.
