@@ -9,6 +9,8 @@ import random
 import json
 import os
 from utils.resourcesPath import resource_path
+from core.BitCoreSkills import SKILLS
+from saved.itens_db import ITENS
 
 class Barra(Widget):
     modificador = NumericProperty(100)
@@ -77,6 +79,11 @@ class BasicEnt(Image):
         self.droped = False
         self.inventario = {}
         self.grid = []
+        self.bitcores = {}
+        self.skills_slots = {}
+        self.skills_ativas = {}
+        self.max_skills = 2
+        self.dano_causado=0
 
         # atributos de animação (inicialmente vazios)
         self.sprite_sheet = None
@@ -249,43 +256,164 @@ class BasicEnt(Image):
             pass
         if self.vida <= 0:
             self.morrer()
+        
+    def receber_bitcore(self, bitcore_id, qtd=1):
+        self.bitcores[bitcore_id] = self.bitcores.get(bitcore_id, 0) + qtd
+        self.save_data("bitcores", {bitcore_id: self.bitcores[bitcore_id]})
+    
+    def equipar_bitcore(self, skill_id):
 
-    def save_data(self, item, key):
+        if skill_id in self.skills_slots.values():
+            return False
+
+        slot_livre = None
+        for i in range(1, self.max_skills + 1):
+            s = str(i)
+            if s not in self.skills_slots:
+                slot_livre = s
+                break
+
+        if slot_livre is None:
+            return False
+
+        self.skills_slots[slot_livre] = skill_id
+        self.save_data("equipaveis", None)
+        self.rodar_skills()
+        return True
+
+
+    def desequipar_slot(self, slot):
+        slot = str(slot)
+
+        if slot in self.skills_slots:
+            del self.skills_slots[slot]
+
+        self.save_data("equipaveis", None)
+        self.rodar_skills()
+
+
+    def rodar_skills(self):
+        valid_equipped = {}
+        for slot, skill_id in list(self.skills_slots.items()):
+            try:
+                idx = int(slot)
+            except Exception:
+                continue
+            if 1 <= idx <= self.max_skills:
+                valid_equipped[slot] = skill_id
+                if skill_id not in self.skills_ativas:
+                    self._ativar_skill(skill_id)
+
+        equipped_set = set(valid_equipped.values())
+        for skill_id in list(self.skills_ativas.keys()):
+            if skill_id not in equipped_set:
+                self._desativar_skill(skill_id)
+
+            
+    def _ativar_skill(self, skill_id):
+        cls = SKILLS.get(skill_id)
+        if not cls:
+            return
+
+        passiva = cls(self)
+        passiva.on_add()
+        self.skills_ativas[skill_id] = passiva
+    
+    def _desativar_skill(self, skill_id):
+        passiva = self.skills_ativas.get(skill_id)
+        if not passiva:
+            return
+
+        passiva.on_remove()
+        del self.skills_ativas[skill_id]
+
+
+    def save_data(self, item, key=None):
         path = resource_path("saved/player.json")
-        if not os.path.exists(path):
-            data = {}
-        else:
+        try:
             with open(path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except Exception:
+            data = {}
+
+        if item == "equipaveis":
+            equip_map = {}
+            itens_equip = ITENS.get("equipaveis", {})
+            for slot, skill_id in list(getattr(self, "skills_slots", {}).items()):
                 try:
-                    data = json.load(file)
-                except json.JSONDecodeError:
-                    data = {}
-        encontrado = False
-        if item in data:
-            if isinstance(data[item], list):
-                if key not in data[item]:
-                    data[item].append(key)
-            elif isinstance(data[item], dict):
-                data[item].update(key)
+                    idx = int(slot)
+                except Exception:
+                    continue
+                if not (1 <= idx <= self.max_skills):
+                    continue
+                found_name = None
+                for item_name, item_data in itens_equip.items():
+                    if item_data.get("skill") == skill_id:
+                        found_name = item_name
+                        break
+                if found_name:
+                    equip_map[str(idx)] = found_name
+            data["equipaveis"] = equip_map
+
+        elif item == "bitcores":
+            if isinstance(key, dict):
+                data.setdefault("bitcores", {})
+                for k, v in key.items():
+                    data["bitcores"][k] = v
             else:
-                data[item] = key
-            encontrado = True
+                data["bitcores"] = key
+
         else:
-            for k, v in data.items():
-                if isinstance(v, dict):
-                    if item in v:
-                        v[item] = key
-                        encontrado = True
-                        break
-                elif isinstance(v, list):
-                    if item in v:
-                        v.append(key)
-                        encontrado = True
-                        break
-        if not encontrado:
             data[item] = key
+
         with open(path, "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+
+    def load_data(self, *args):
+            path = resource_path("saved/player.json")
+
+            if not os.path.exists(path):
+                return
+
+            try:
+                with open(path, "r", encoding="utf-8") as file:
+                    data = json.load(file)
+            except (json.JSONDecodeError, OSError):
+                return
+
+            inventario = data.get("inventario")
+            if isinstance(inventario, dict):
+                for item, quantidade in inventario.items():
+                    if isinstance(quantidade, int) and quantidade > 0:
+                        self.inventario[item] = quantidade
+
+            bitcores = data.get("bitcores")
+            if isinstance(bitcores, dict):
+                for bc, qtd in bitcores.items():
+                    if isinstance(qtd, int) and qtd > 0:
+                        self.bitcores[bc] = qtd
+
+            equipaveis = data.get("equipaveis")
+            if isinstance(equipaveis, dict):
+                for slot, nome_item in equipaveis.items():
+                    try:
+                        idx = int(slot)
+                    except Exception:
+                        continue
+                    if not (1 <= idx <= self.max_skills):
+                        continue
+
+                    item_data = ITENS.get("equipaveis", {}).get(nome_item)
+                    if not item_data:
+                        continue
+
+                    skill_id = item_data.get("skill")
+                    if skill_id in SKILLS:
+                        self.skills_slots[str(idx)] = skill_id
+
+            self.rodar_skills()
 
 
 def mover(ent, dx, dy):
@@ -526,6 +654,8 @@ class Player(BasicEnt):
         self.atacando_frames = 3
         self.tamanho = 4
 
+        self.respawning=False
+
         self.atualizar()
         self.repulsao = 20
         self.alcance_fisico = 100
@@ -535,6 +665,32 @@ class Player(BasicEnt):
         }
         self.acao = ""
         Clock.schedule_interval(self.verificar_acao, 1 / 20)
+        Clock.schedule_interval(self.check_vida, 1 / 3)
+        self.load_data()
+
+        if not self.bitcores:
+            self.bitcores = {
+            "núcleo ceifador de energia": 1,
+            "núcleo do instinto de pânico": 1,
+            "núcleo da esquiva aleatória": 1,
+            "núcleo do punho explosivo":1,
+            "núcleo da vitalidade extendida":1
+        }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
+    
+    def respawn(self,*args):
+        self.i_frames=True
+        self.vida=self.vida_maxima
+        self.vivo=True
+        self.estado="idle"
+        self.parent.respawn_player()
+
+    def check_vida(self,*args):
+        if self.vivo:
+            return
+        if self.respawning:
+            return
+        self.respawning=True
+        Clock.schedule_once(self.respawn, 3)
 
     def soco_normal(self, *args):
         if self.atacando:
@@ -553,7 +709,7 @@ class Player(BasicEnt):
         if self.ataque_name == "soco_forte":
             self.dano = self.power * 1.2
             self.repulsao = 1.5 * self.repulsao
-        # percorre entidades no parent (se definido)
+        # percorre entidades no parent
         try:
             ents = self.parent.ents
         except Exception:
@@ -565,6 +721,7 @@ class Player(BasicEnt):
                         atacar(self, ent)
                     elif not self.facing_right and ent.x <= self.x:
                         atacar(self, ent)
+        self.dano_causado=self.dano
         self.dano = self.power
         self.repulsao = repulsao
 

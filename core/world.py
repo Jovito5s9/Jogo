@@ -10,7 +10,7 @@ import random
 from core.player import Rato, Rata_mae
 from utils.resourcesPath import resource_path
 
-size = 75
+size = Window.height/12.5
 
 class Object(FloatLayout):
     linha = NumericProperty(0)
@@ -571,6 +571,31 @@ class World(FloatLayout):
             y1 < y2 + h2 and
             y1 + h1 > y2
         )
+
+    def respawn_player(self,*args):
+        if self.type=='esgoto' and not self.trocando_mapa:
+            self.trocando_mapa=True
+            for obj in self.obj_list[:]:
+                self.obj_list.remove(obj)
+                try:
+                    self.remove_widget(obj)
+                except Exception:
+                    pass
+            for tile in self.tiles_list[:]:
+                self.tiles_list.remove(tile)
+                try:
+                    self.remove_widget(tile)
+                except Exception:
+                    pass
+            for ent in self.ents[:]:
+                if ent is not self.player:
+                    self.ents.remove(ent)
+                    try:
+                        self.remove_widget(ent)
+                    except Exception:
+                        pass
+            self.carregar_mapa(self.masmorra[1])
+            self.trocando_mapa=False
 
     def gerar_boss(self, *args):
         boss = Rata_mae()

@@ -15,11 +15,11 @@ class Joystick(Widget):
         
         with self.canvas:
             # Desenha o círculo base (área de movimentação do joystick)
-            Color(0.8, 0.8, 0.8, 0.5)
-            self.base_circle = Ellipse(pos=(self.center_x - 100 , self.center_y -100), size=(200, 200))
+            Color(0.8, 0.8, 0.8, 0.1)
+            self.base_circle = Ellipse(pos=(self.center_x - 125 , self.center_y -125), size=(250, 250))
             
             # Desenha o botão do joystick
-            Color(0, 0.6, 0.8)
+            Color(0.4, 0.4, 0.4, 0.75)
             self.stick_circle = Ellipse(pos=(self.center_x - 25, self.center_y - 25), size=(50, 50))
 
         # Atualiza o layout quando a janela é redimensionada
@@ -27,7 +27,7 @@ class Joystick(Widget):
 
     def update_graphics(self, *args):
         # Centraliza o círculo base e o stick na tela
-        self.base_circle.pos = (self.center_x - 100, self.center_y - 100)
+        self.base_circle.pos = (self.center_x - 125, self.center_y - 125)
         self.stick_circle.pos = (self.center_x - 25, self.center_y - 25)
 
     def on_touch_down(self, touch):
@@ -58,7 +58,7 @@ class Joystick(Widget):
         distance = (dx**2 + dy**2)**0.5
         
         # Limita o stick ao raio do círculo base
-        max_distance = 100
+        max_distance = 125
         if distance > max_distance:
             factor = max_distance / distance
             dx *= factor
