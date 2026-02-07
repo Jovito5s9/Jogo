@@ -3,7 +3,7 @@ setlocal
 
 set APP_NAME=RadioRoots
 set ARCH=x64
-set VERSION=1.0.0
+set VERSION=1.1.0
 
 set DIST_DIR=dist\%APP_NAME%
 set RELEASE_NAME=%APP_NAME%-windows-%ARCH%-V%VERSION%

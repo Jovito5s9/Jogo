@@ -2,7 +2,7 @@
 set -e
 APP_NAME="RadioRoots"
 ARCH="x86_64"
-VERSION="1.0.0"
+VERSION="1.1.0"
 
 DIST_DIR="dist/$APP_NAME"
 RELEASE_NAME="$APP_NAME-linux-$ARCH-V$VERSION"

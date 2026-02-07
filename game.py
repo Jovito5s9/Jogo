@@ -27,15 +27,16 @@ STD_font_size=35
 
 def configuracoes():
         global STD_font_size
+        configs_path=resource_path("saved/configuracoes.json")
         try:
-            with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+            with open(configs_path,"r",encoding="utf-8") as config:
                 configs=json.load(config)
             if not "font" in configs:
-                with open("saved/configuracoes.json","w",encoding="utf-8") as config:
+                with open(configs_path,"w",encoding="utf-8") as config:
                     configs["font"]=35
                     json.dump(configs,config)
         except:
-            with open("saved/configuracoes.json","w",encoding="utf-8") as config:
+            with open(configs_path,"w",encoding="utf-8") as config:
                 newconfig={
                     "teclado": False,
                     "font": 35
@@ -424,7 +425,7 @@ class Menu_player(Popup):
         self.selected_item_panel.clear_widgets()
 
         img = Image(
-            source=info.get("source", ""),
+            source=resource_path(info.get("source", "")),
             size_hint=(0.3, 1),
             allow_stretch=True,
             keep_ratio=True
@@ -459,7 +460,7 @@ class Menu_player(Popup):
         self.selected_item_panel.add_widget(text_layout)
 
         if self.tipo == "equipaveis":
-            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
+            with open(resource_path("saved/player.json"), "r", encoding="utf-8") as arquivo:
                 data = json.load(arquivo)
 
             raw_map = data.get("equipaveis") or data.get("bitcores") or {}
@@ -558,7 +559,7 @@ class Menu_player(Popup):
             slot_id = str(i)
             skill_id = skills_slots.get(slot_id)
 
-            src = "assets/ui/slot_vazio.png"
+            src = resource_path("assets/ui/slot_vazio.png")
 
             if skill_id:
                 for _, item_data in ITENS.get("equipaveis", {}).items():
@@ -599,7 +600,7 @@ class Menu_player(Popup):
             img_source = self.safe_image(info.get("source"))
 
             btn = InteractiveImage(
-                source=img_source,
+                source=resource_path(img_source),
                 size_hint=(None, None),
                 allow_stretch=True,
                 keep_ratio=False
@@ -629,7 +630,7 @@ class Menu_player(Popup):
         self.preparar_menu()
 
         try:
-            with open("saved/player.json", "r", encoding="utf-8") as arquivo:
+            with open(resource_path("saved/player.json"), "r", encoding="utf-8") as arquivo:
                 player = json.load(arquivo)
                 inventario = player.get("inventario", {})
 
@@ -712,6 +713,7 @@ class ConfiguracoesScreen(Screen):
         super().__init__(**kwargs)
         self.configs=configuracoes()
         self.teclado=self.configs["teclado"]
+        self.configs_path=resource_path("saved/configuracoes.json")
         if self.teclado:
             self.input='Modo teclado'
         else:
@@ -772,10 +774,10 @@ class ConfiguracoesScreen(Screen):
     
 
     def trocar_input(self,*args):
-        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+        with open(self.configs_path,"r",encoding="utf-8") as config:
             self.configs=json.load(config)
         self.configs["teclado"]=not self.configs["teclado"]
-        with open("saved/configuracoes.json","w",encoding="utf-8") as old_config:
+        with open(self.configs_path,"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         if self.configs["teclado"]:
             self.input='Modo teclado'
@@ -788,7 +790,7 @@ class ConfiguracoesScreen(Screen):
 
         global STD_font_size
 
-        with open("saved/configuracoes.json","r",encoding="utf-8") as config:
+        with open(self.configs_path,"r",encoding="utf-8") as config:
             self.configs=json.load(config)
 
         if self.configs["font"]==35:
@@ -800,7 +802,7 @@ class ConfiguracoesScreen(Screen):
         
         STD_font_size=self.configs["font"]
 
-        with open("saved/configuracoes.json","w",encoding="utf-8") as old_config:
+        with open(self.configs_path,"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         self.button_font.text=f'{self.font}'
     
