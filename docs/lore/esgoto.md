@@ -1,3 +1,7 @@
+##### [retornar para o README](../../README.md)
+
+---
+
 # O Esgoto
 
 <img src="../../assets/geral/readme/print_masmorra.png">

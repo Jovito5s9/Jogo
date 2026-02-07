@@ -1,3 +1,7 @@
+##### [retornar para o README](../../README.md)
+
+---
+
 # Build do RadioRoots
 
 Este documento é para desenvolvedores que desejam compilar o jogo a partir do código-fonte.

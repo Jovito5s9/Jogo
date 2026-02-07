@@ -1,3 +1,7 @@
+##### [retornar para o README](../../README.md)
+
+---
+
 # Stack utilizada
 
 * [Python](https://www.python.org/) - linguagem de programação escolhida para desenvolver as lógicas do jogo incluindo combate, fisica e colisões, geração de mundo e estruturas de salvamento persistente de dados e de classes robustas e escaláveis. O principal motivo da escolha é pela simplicidade do uso de POO e por ser a linguagem relacionada com o Pydroid3, que nas buscas por uma linguagem para desenvolver pelo android era a que tinha mais recursos para oferecer de todas as linguagens e IDEs testadas.
