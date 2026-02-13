@@ -1,3 +1,4 @@
+from kivy.uix.screenmanager import Screen
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.clock import Clock
@@ -268,3 +269,21 @@ class Game(FloatLayout):
         elif self.player.speed_x!=0:
             self.player.speed_x=0
         
+class GameScreen(Screen): 
+    def __init__(self, GameScreenManager=None, **kwargs):
+        super().__init__(**kwargs)
+        self.GameScreenManager=GameScreenManager
+        Window.bind(on_keyboard=self.ir_para_menu)
+    
+    def on_pre_enter(self, *args):
+        try:
+            self.game.pre_enter()
+        except:
+            self.game=Game()
+            self.add_widget(self.game)
+            self.game.pre_enter()
+    
+    def ir_para_menu(self,window,key,*args):
+        if key==27:
+            self.GameScreenManager.current='menu'
+            return True
