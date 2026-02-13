@@ -373,7 +373,7 @@ class Menu_player(Popup):
 
         self.selection_panel = BoxLayout(
             orientation='horizontal',
-            size_hint=(1, 0.2),
+            size_hint=(1, 0.25),
             padding=8,
             spacing=8
         )
@@ -475,9 +475,9 @@ class Menu_player(Popup):
             if slot_equipado is not None:
                 desequipar_button = CustomizedButton(
                     text='desequipar',
-                    font_size=16,
-                    size_hint=(1, None),
-                    height=24
+                    font_size=STD_font_size*0.6,
+                    size_hint=(0.8, None),
+                    height=40
                 )#desequipar
                 desequipar_button.bind(on_release=partial(self.desequipar_bitcore, slot=slot_equipado, widget=widget))
                 self.selected_item_panel.add_widget(desequipar_button)
@@ -494,9 +494,9 @@ class Menu_player(Popup):
                 if slot_livre is not None:
                     equipar_button = CustomizedButton(#equipar
                         text=f'equipar (slot {slot_livre})',
-                        font_size=STD_font_size*0.5,
-                        size_hint=(1, None),
-                        height=24
+                        font_size=STD_font_size*0.6,
+                        size_hint=(0.8, None),
+                        height=40
                     )
                     equipar_button.bind(on_release=partial(self.equipar_bitcore, nome=nome, widget=widget))
                     self.selected_item_panel.add_widget(equipar_button)
@@ -660,7 +660,7 @@ class MenuScreen(Screen):
             source=resource_path('assets/geral/logo_RadioRoots.png'),
             allow_stretch=True,
             keep_ratio=True,
-            size_hint=(0.4, 0.4),   
+            size_hint=(0.6, 0.6),   
             pos_hint={'center_x': 0.5, 'center_y': 0.65}
         )
           
