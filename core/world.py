@@ -5,7 +5,9 @@ from kivy.core.window import Window
 from kivy.clock import Clock 
 
 import random
+import json
 
+from utils.resourcesPath import resource_path
 from core.tiles import Object as Obj, Grid as Grd
 from core.player import Rata_mae
 
@@ -181,11 +183,31 @@ class World(FloatLayout):
     def carregar_mapa(self, sala):
         if not sala:
             return
+
+        for obj in self.obj_list[:]:
+            try:
+                self.remove_widget(obj)
+            except Exception:
+                pass
+        for tile in self.tiles_list[:]:
+            try:
+                self.remove_widget(tile)
+            except Exception:
+                pass
+        for ent in self.ents[:]:
+            if ent is not self.player:
+                try:
+                    self.remove_widget(ent)
+                except Exception:
+                    pass
+
         self.tiles_list.clear()
         self.obj_list.clear()
+        self.ents = [self.player] if self.player else []
+
         for coluna, linha, tipo in sala["tiles"]:
             tile = Grid(
-                posicao=(linha, coluna),
+                posicao=(coluna, linha),
                 patern_center=(self.offset_x, self.offset_y),
                 max=(self.linhas, self.colunas),
                 source=tipo
@@ -195,7 +217,7 @@ class World(FloatLayout):
 
         for coluna, linha, tipo, resistencia, ativado in sala["objs"]:
             obj = Object(
-                posicao=(linha, coluna),
+                posicao=(coluna, linha),
                 patern_center=(self.offset_x, self.offset_y),
                 max=(self.linhas, self.colunas),
                 source=tipo,
@@ -204,6 +226,7 @@ class World(FloatLayout):
             obj.resistencia = resistencia
             self.obj_list.append(obj)
             self.add_widget(obj)
+
         try:
             if self.player:
                 self.remove_widget(self.player)
@@ -211,7 +234,14 @@ class World(FloatLayout):
             print(e)
         if self.player:
             self.add_widget(self.player)
-    
+
+        if self.player:
+            self.player.pos = (self.offset_x, self.offset_y)
+            if hasattr(self.player, "atualizar_pos"):
+                try:
+                    self.player.atualizar_pos()
+                except Exception:
+                    pass
 
     def re_map(self, type, nivel=1):
         if self.trocando_mapa:
@@ -249,26 +279,38 @@ class World(FloatLayout):
         else:
             self.create(self.linhas, self.colunas, type)
             self.trocando_mapa = False
-    
 
-    def add_objects(self, type, grid):
-        grid_x, grid_y = grid
-        obj = Object(
-            posicao=(grid_y, grid_x),
-            patern_center=(self.offset_x, self.offset_y),
-            max=(self.linhas, self.colunas),
-            source=type + ".png"
-        )
-        self.add_widget(obj)
-        self.obj_list.append(obj)
-        # reordena entidades para ficarem por cima
-        for ent in self.ents:
-            try:
-                self.remove_widget(ent)
-                self.add_widget(ent)
-            except Exception:
-                pass
-    
+    def load_mapa(self, mapa):
+        mapa = "core/maps/" + mapa + ".json"
+
+        with open(resource_path(mapa), "r") as file:
+            data = json.load(file)
+
+        self.linhas = data["linhas"]
+        self.colunas = data["colunas"]
+
+        self.size = (size * self.linhas, size * self.colunas * 0.8)
+        self.offset_x = (Window.width / 2) - (self.width / 2)
+        self.offset_y = (Window.height / 2) - (self.height / 2)
+        self.pos = (self.offset_x, self.offset_y)
+        self.limites = (self.x, self.y, self.x + self.width, self.y + self.height)
+
+        self.carregar_mapa(data)
+
+        try:
+            if self.player:
+                self.remove_widget(self.player)
+        except Exception as e:
+            print(e)
+        if self.player:
+            self.add_widget(self.player)
+            self.player.pos = (self.offset_x, self.offset_y)
+            if hasattr(self.player, "atualizar_pos"):
+                try:
+                    self.player.atualizar_pos()
+                except Exception:
+                    pass
+
     
     def collision_verify(self, *args):        
         for ent in list(self.ents):
