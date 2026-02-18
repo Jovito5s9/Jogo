@@ -289,7 +289,7 @@ class World(FloatLayout):
         self.linhas = data["linhas"]
         self.colunas = data["colunas"]
 
-        self.size = (size * self.linhas, size * self.colunas * 0.8)
+        self.size = (size * self.colunas, size * self.linhas * 0.8)
         self.offset_x = (Window.width / 2) - (self.width / 2)
         self.offset_y = (Window.height / 2) - (self.height / 2)
         self.pos = (self.offset_x, self.offset_y)
