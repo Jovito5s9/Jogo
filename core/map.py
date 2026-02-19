@@ -1,5 +1,6 @@
 from kivy.core.window import Window
 import json
+import random
 from utils.resourcesPath import resource_path
 from core.tiles import Object as Obj, Grid as Grd
 
@@ -59,8 +60,45 @@ class Map:
         self.tiles_list.clear()
         self.obj_list.clear()
 
+
     def create(self, xm, ym, type=None):
-        self.type = type or 'esgoto'
+        type = type or "esgoto"
+        self.type = type
+
+        combate_nivel = 1
+        if self.mapa_modificador == "combate":
+            combate_nivel = 2.5
+        elif self.mapa_modificador == "coleta":
+            combate_nivel = 1
+
+        if type == "esgoto":
+            if self.nivel <= 0:
+                self.nivel = 1
+
+            if self.nivel not in self.masmorra:
+                self.masmorra[self.nivel] = {}
+
+            if self.nivel > 0:
+                self.subida_dungeon = self.descida_dungeon
+
+            y = random.randint(0, xm - 1)
+            x = random.randint(0, ym - 1)
+            self.descida_dungeon = (x, y)
+
+            if self.descida_dungeon == self.subida_dungeon:
+                y = random.randint(0, xm - 1)
+                x = random.randint(0, ym - 1)
+                self.descida_dungeon = (x, y)
+
+            if self.nivel == 10:
+                combate_nivel = 7
+
+        if type is None:
+            self.nivel = 0
+
+        grid_padrao = self.padrao["grid"][type]
+        objeto_padrao = self.padrao["obj"][type]
+        spawner_padrao = self.padrao["spawner"][type]
 
         self.linhas = xm
         self.colunas = ym
@@ -71,8 +109,17 @@ class Map:
         offset_y = (Window.height / 2) - (self.world.height / 2)
 
         self.world.pos = (offset_x, offset_y)
+        self.world.limites = (
+            self.world.x,
+            self.world.y,
+            self.world.x + self.world.width,
+            self.world.y + self.world.height
+        )
 
-        grid_padrao = self.padrao["grid"][self.type]
+        self.offset_x = offset_x
+        self.offset_y = offset_y
+
+        self.limpar_mapa()
 
         for y in range(self.linhas):
             for x in range(self.colunas):
@@ -85,9 +132,80 @@ class Map:
                 self.tiles_list.append(grid)
                 self.world.add_widget(grid)
 
-    def re_map(self, type, nivel=1):
-        self.limpar_mapa()
+        if self.world.player:
+            self.world.player.pos = (offset_x, offset_y)
 
+        self.ents = [self.world.player] if self.world.player else []
+        self.world.ents = self.ents
+
+        for y in range(self.linhas):
+            for x in range(self.colunas):
+
+                if self.descida_dungeon == (x, y):
+                    obj = Object(
+                        posicao=(x, y),
+                        patern_center=(offset_x, offset_y),
+                        max=(self.linhas, self.colunas),
+                        source="descer_esgoto.png"
+                    )
+                    self.obj_list.append(obj)
+                    self.world.add_widget(obj)
+                    continue
+
+                if self.subida_dungeon == (x, y):
+                    obj = Object(
+                        posicao=(x, y),
+                        patern_center=(offset_x, offset_y),
+                        max=(self.linhas, self.colunas),
+                        source="subir_esgoto.png"
+                    )
+                    self.obj_list.append(obj)
+                    self.world.add_widget(obj)
+                    continue
+
+                r = random.randint(0, 10)
+                if r == 0:
+                    if not ((x in (0, 1)) and (y in (0, 1))):
+                        m = random.randint(0, 100)
+
+                        if m < (10 + self.nivel) * combate_nivel:
+                            obj = Object(
+                                posicao=(x, y),
+                                patern_center=(offset_x, offset_y),
+                                max=(self.linhas, self.colunas),
+                                source=spawner_padrao
+                            )
+                        else:
+                            obj = Object(
+                                posicao=(x, y),
+                                patern_center=(offset_x, offset_y),
+                                max=(self.linhas, self.colunas),
+                                source=objeto_padrao
+                            )
+
+                        self.obj_list.append(obj)
+                        self.world.add_widget(obj)
+
+        self.masmorra[self.nivel] = {
+            "tiles": [(t.linha, t.coluna, t.type) for t in self.tiles_list],
+            "objs": [(o.linha, o.coluna, o.type, o.resistencia, True) for o in self.obj_list]
+        }
+
+        try:
+            if self.world.player:
+                self.world.remove_widget(self.world.player)
+        except Exception:
+            pass
+
+        if self.world.player:
+            self.world.add_widget(self.world.player)
+
+        if self.nivel == 10 and hasattr(self.world, "gerar_boss"):
+            self.world.gerar_boss()
+
+
+    def re_map(self, type=None, nivel=1):
+        self.limpar_mapa()
         if type == self.type:
             self.nivel += nivel
 
@@ -95,6 +213,7 @@ class Map:
             self.carregar_mapa(self.masmorra[self.nivel])
         else:
             self.create(self.linhas, self.colunas, type)
+
 
     def load_mapa(self, mapa):
         mapa = "core/maps/" + mapa + ".json"

@@ -170,9 +170,9 @@ class Object(Tile):
                     return
             if not self.parent.trocando_mapa:
                 if self.type == "descer_esgoto.png":
-                    self.parent.re_map(type="esgoto")
+                    self.parent.map.re_map(type="esgoto")
                 elif self.type == "subir_esgoto.png":
-                    self.parent.re_map(type="esgoto", nivel=-1)
+                    self.parent.map.re_map(type="esgoto", nivel=-1)
         if self.type == "veneno.png":
             for ent in self.parent.ents:
                 if ent.grid == (self.coluna, self.linha):
