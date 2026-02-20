@@ -4,6 +4,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 
 from core.map import Map
+from core.camera import Camera
 from core.player import Rata_mae
 
 size = Window.height / 12.5
@@ -25,10 +26,17 @@ class World(FloatLayout):
 
         self.ev_colisao = None
         self.ev_sprite = None
+        self.ev_camera = None
 
         self.trocando_mapa = False
 
         self.map = Map(world=self)
+        self.camera = Camera(
+            position=(0, 0), 
+            map_size=(0,0), 
+            player=self.player,
+            parent=self
+            )
 
         self.atualizar()
 
@@ -37,6 +45,10 @@ class World(FloatLayout):
         self.map.create(linhas, colunas, tipo)
         self.linhas = self.map.linhas
         self.colunas = self.map.colunas
+
+        self.add_player()
+        self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.camera.player = self.player
 
 
     def re_map(self, tipo, nivel=1):
@@ -47,11 +59,19 @@ class World(FloatLayout):
         self.map.re_map(tipo, nivel)
         self.trocando_mapa = False
 
+        self.add_player()
+        self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.camera.player = self.player
+
 
     def load_mapa(self, nome):
         self.map.load_mapa(nome)
         self.linhas = self.map.linhas
         self.colunas = self.map.colunas
+
+        self.add_player()
+        self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.camera.player = self.player
 
 
     def collision_verify(self, *args):
@@ -60,6 +80,19 @@ class World(FloatLayout):
             self.verificar_colisao_vertical(ent)
             self.map_collision(ent)
             self.grid_verify(ent)
+
+
+    def add_player(self, *args):
+        try:
+            self.remove_widget(self.player)
+            self.add_widget(self.player)
+        except:
+            self.add_widget(self.player)
+
+        if not self.player in self.ents:
+            self.ents.append(self.player)
+        if hasattr(self, "camera"):
+            self.camera.player = self.player
 
 
     def verificar_colisao_horizontal(self, ent):
@@ -163,9 +196,28 @@ class World(FloatLayout):
             self.ev_colisao.cancel()
         if self.ev_sprite:
             self.ev_sprite.cancel()
+        if self.ev_camera:
+            self.ev_camera.cancel()
 
+        self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/30)
         self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
         self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
+        
+
+    def atualizar_camera(self, *args):
+        nova_pos = self.camera.update()
+        if nova_pos:
+            for tile in self.map.tiles_list:
+                tile.patern_center = nova_pos
+            for obj in self.map.obj_list:
+                obj.patern_center = nova_pos
+            for ent in self.ents:
+                try:
+                    if hasattr(ent, "atualizar_pos"):
+                        ent.atualizar_pos()
+                except Exception:
+                    pass
+
 
 
     def atualizar_sprites(self, *args):
