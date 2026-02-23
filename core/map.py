@@ -105,10 +105,10 @@ class Map:
 
         self.world.size = (size * xm, size * ym * 0.8)
 
-        offset_x = (Window.width / 2) - (self.world.width / 2)
-        offset_y = (Window.height / 2) - (self.world.height / 2)
+        self.world.pos = (0, 0)
+        self.offset_x = 0
+        self.offset_y = 0
 
-        self.world.pos = (offset_x, offset_y)
         self.world.limites = (
             self.world.x,
             self.world.y,
@@ -116,16 +116,13 @@ class Map:
             self.world.y + self.world.height
         )
 
-        self.offset_x = offset_x
-        self.offset_y = offset_y
-
         self.limpar_mapa()
 
         for y in range(self.linhas):
             for x in range(self.colunas):
                 grid = Grid(
                     posicao=(x, y),
-                    patern_center=(offset_x, offset_y),
+                    patern_center=(self.offset_x, self.offset_y),
                     max=(self.linhas, self.colunas),
                     source=grid_padrao
                 )
@@ -133,7 +130,7 @@ class Map:
                 self.world.add_widget(grid)
 
         if self.world.player:
-            self.world.player.pos = (offset_x, offset_y)
+            self.world.player.pos = (self.offset_x, self.offset_y)
 
         self.ents = [self.world.player] if self.world.player else []
         self.world.ents = self.ents
@@ -144,7 +141,7 @@ class Map:
                 if self.descida_dungeon == (x, y):
                     obj = Object(
                         posicao=(x, y),
-                        patern_center=(offset_x, offset_y),
+                        patern_center=(self.offset_x, self.offset_y),
                         max=(self.linhas, self.colunas),
                         source="descer_esgoto.png"
                     )
@@ -155,7 +152,7 @@ class Map:
                 if self.subida_dungeon == (x, y):
                     obj = Object(
                         posicao=(x, y),
-                        patern_center=(offset_x, offset_y),
+                        patern_center=(self.offset_x, self.offset_y),
                         max=(self.linhas, self.colunas),
                         source="subir_esgoto.png"
                     )
@@ -171,14 +168,14 @@ class Map:
                         if m < (10 + self.nivel) * combate_nivel:
                             obj = Object(
                                 posicao=(x, y),
-                                patern_center=(offset_x, offset_y),
+                                patern_center=(self.offset_x, self.offset_y),
                                 max=(self.linhas, self.colunas),
                                 source=spawner_padrao
                             )
                         else:
                             obj = Object(
                                 posicao=(x, y),
-                                patern_center=(offset_x, offset_y),
+                                patern_center=(self.offset_x, self.offset_y),
                                 max=(self.linhas, self.colunas),
                                 source=objeto_padrao
                             )
@@ -225,15 +222,12 @@ class Map:
         self.colunas = data["colunas"]
 
         self.world.size = (size * self.colunas, size * self.linhas * 0.8)
-        offset_x = (Window.width / 2) - (self.world.width / 2)
-        offset_y = (Window.height / 2) - (self.world.height / 2)
-        self.world.pos = (offset_x, offset_y)
+        self.world.pos = (0, 0)
+        self.offset_x = 0
+        self.offset_y = 0
         self.world.limites = (self.world.x, self.world.y,
                             self.world.x + self.world.width,
                             self.world.y + self.world.height)
-
-        self.offset_x = offset_x
-        self.offset_y = offset_y
 
         self.carregar_mapa(data)
 

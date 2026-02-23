@@ -211,14 +211,6 @@ class World(FloatLayout):
                 tile.patern_center = nova_pos
             for obj in self.map.obj_list:
                 obj.patern_center = nova_pos
-            for ent in self.ents:
-                try:
-                    if hasattr(ent, "atualizar_pos"):
-                        ent.atualizar_pos()
-                except Exception:
-                    pass
-
-
 
     def atualizar_sprites(self, *args):
         for ent in self.ents:
