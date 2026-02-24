@@ -106,10 +106,17 @@ class Object(Tile):
     def get_hitbox(self, *args):
         if self.s == "pedra.png":
             self.hitbox = [
+                self.x + (self.width * 0.1),
+                self.y + (self.height * 0.45),
+                self.width * 0.8,
+                self.height * 0.65,
+            ]
+        elif self.s == "teto_quebrado.png":
+            self.hitbox = [
                 self.x + (self.width * 0.15),
                 self.y + (self.height * 0.5),
-                self.width * 0.7,
-                self.height * 0.6,
+                self.width * 0.65,
+                self.height * 0.55,
             ]
         elif self.s in (
             "entrada_esgoto.png",
