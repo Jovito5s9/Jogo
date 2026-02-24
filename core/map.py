@@ -21,6 +21,9 @@ class Map:
     def __init__(self, world):
         self.world = world
 
+        self.respawn_map = "inicial"
+        self.current_map = ""
+
         self.linhas = 0
         self.colunas = 0
         self.tiles_list = []
@@ -64,6 +67,8 @@ class Map:
     def create(self, xm, ym, type=None):
         type = type or "esgoto"
         self.type = type
+        if type == "esgoto":
+            self.current_map = self.masmorra.get(self.nivel, None)
 
         combate_nivel = 1
         if self.mapa_modificador == "combate":
@@ -238,6 +243,13 @@ class Map:
                             self.world.y + self.world.height)
 
         self.carregar_mapa(data)
+        self.current_map = mapa
+        if "respawn" in data:
+            self.respawn_map = mapa
+            if ".json" in self.respawn_map:
+                self.respawn_map = self.respawn_map.replace(".json", "")
+            if "core/maps/" in self.respawn_map:
+                self.respawn_map = self.respawn_map.replace("core/maps/", "")
 
     
     def carregar_mapa(self, sala):

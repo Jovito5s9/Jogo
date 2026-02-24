@@ -683,6 +683,7 @@ class Player(BasicEnt):
         self.vivo=True
         self.estado="idle"
         self.parent.respawn_player()
+        self.respawning=False
 
     def check_vida(self,*args):
         if self.vivo:

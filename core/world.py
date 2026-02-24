@@ -16,7 +16,6 @@ class World(FloatLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.size_hint = (None, None)
         self.size = (Window.width, Window.height)
 
@@ -43,7 +42,7 @@ class World(FloatLayout):
 
     def create(self, colunas = 0, linhas = 0, tipo="esgoto"):
         if tipo == "esgoto":
-            colunas, linhas = 19, 15
+            colunas, linhas = 20, 15
         self.map.create(colunas, linhas, tipo)
         self.linhas = self.map.linhas
         self.colunas = self.map.colunas
@@ -98,7 +97,35 @@ class World(FloatLayout):
             self.ents.append(self.player)
         if hasattr(self, "camera"):
             self.camera.player = self.player
-
+        
+    def respawn_player(self, *args):
+        for obj in self.map.obj_list[:]:
+            self.map.obj_list.remove(obj)
+            try:
+                self.remove_widget(obj)
+            except Exception:
+                pass
+        for tile in self.map.tiles_list[:]:
+            self.map.tiles_list.remove(tile)
+            try:
+                self.remove_widget(tile)
+            except Exception:
+                pass
+        for ent in self.ents[:]:
+            if ent is not self.player:
+                self.ents.remove(ent)
+                try:
+                    self.remove_widget(ent)
+                except Exception:
+                    pass
+        if self.map.respawn_map:
+            self.trocando_mapa=True
+            self.load_mapa(self.map.respawn_map, respawn=True)
+            self.trocando_mapa=False
+        else:
+            self.trocando_mapa=True
+            self.load_mapa("inicial", respawn=True)
+            self.trocando_mapa=False
 
     def verificar_colisao_horizontal(self, ent):
         original_x = ent.x
