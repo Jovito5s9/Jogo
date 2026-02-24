@@ -209,7 +209,10 @@ class Map:
         if self.nivel in self.masmorra:
             self.carregar_mapa(self.masmorra[self.nivel])
         else:
-            self.create(self.linhas, self.colunas, type)
+            if type == "esgoto":
+                self.world.create(type)
+            else:
+                self.world.create(self.colunas, self.linhas, type)
 
 
     def load_mapa(self, mapa):

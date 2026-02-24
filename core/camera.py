@@ -8,6 +8,8 @@ class Camera:
         self.player = player
 
     def update(self):
+        if self.map_size != self.parent.size:
+            self.map_size = self.parent.size
         if not self.player:
             self.player = getattr(self.parent, "player", None)
         if not self.player:
@@ -18,19 +20,21 @@ class Camera:
             return None
 
         px = self.player.center_x
-        py = self.player.center_y
-
-        # Sempre centraliza
         cam_x = px - Window.width / 2
-        cam_y = py - Window.height / 2
-
-        # Limites
         max_x = map_w - Window.width
-        max_y = map_h - Window.height
-
-        # Clamp final
         cam_x = max(0, min(cam_x, max_x))
-        cam_y = max(0, min(cam_y, max_y))
+
+        if map_h > Window.height:
+            py = self.player.center_y
+            # Sempre centraliza
+            cam_y = py - Window.height / 2
+            # Limites
+            max_y = map_h - Window.height
+            # Clamp final
+            cam_y = max(0, min(cam_y, max_y))
+        else:
+            cam_y = 0
+
 
         new_center = (-cam_x, -cam_y)
 

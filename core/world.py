@@ -41,8 +41,10 @@ class World(FloatLayout):
         self.atualizar()
 
 
-    def create(self, linhas, colunas, tipo="esgoto"):
-        self.map.create(linhas, colunas, tipo)
+    def create(self, colunas = 0, linhas = 0, tipo="esgoto"):
+        if tipo == "esgoto":
+            colunas, linhas = 19, 15
+        self.map.create(colunas, linhas, tipo)
         self.linhas = self.map.linhas
         self.colunas = self.map.colunas
 
@@ -60,7 +62,7 @@ class World(FloatLayout):
         self.trocando_mapa = False
 
         self.add_player()
-        self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.size = self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
         self.camera.player = self.player
 
 
@@ -176,8 +178,8 @@ class World(FloatLayout):
         elif ent.x < left_limit:
             ent.x = left_limit
 
-        bottom_limit = self.y
-        top_limit = self.y + self.height - (ent.height / 2)
+        bottom_limit = self.y - (ent.height * 0.2)
+        top_limit = self.y + self.height - size
 
         if ent.y < bottom_limit:
             ent.y = bottom_limit
@@ -203,10 +205,18 @@ class World(FloatLayout):
         self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
         self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
         
+    def new_limites(self, *args):
+        self.limites = (
+            self.x,
+            self.y,
+            self.width - self.x-size,
+            self.height - self.y-size
+        )
 
     def atualizar_camera(self, *args):
         nova_pos = self.camera.update()
         if nova_pos:
+            self.new_limites()
             for tile in self.map.tiles_list:
                 tile.patern_center = nova_pos
             for obj in self.map.obj_list:
