@@ -66,8 +66,8 @@ class World(FloatLayout):
         self.camera.player = self.player
 
 
-    def load_mapa(self, nome):
-        self.map.load_mapa(nome)
+    def load_mapa(self, nome, respawn=False):
+        self.map.load_mapa(nome, respawn=respawn)
         self.linhas = self.map.linhas
         self.colunas = self.map.colunas
 
@@ -90,6 +90,9 @@ class World(FloatLayout):
             self.add_widget(self.player)
         except:
             self.add_widget(self.player)
+
+        if self.map.spawn_pos:
+            self.player.center = self.map.spawn_pos
 
         if not self.player in self.ents:
             self.ents.append(self.player)

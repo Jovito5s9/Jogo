@@ -215,7 +215,7 @@ class Map:
                 self.world.create(self.colunas, self.linhas, type)
 
 
-    def load_mapa(self, mapa):
+    def load_mapa(self, mapa, respawn=False):
         mapa = "core/maps/" + mapa + ".json"
 
         with open(resource_path(mapa), "r") as file:
@@ -223,6 +223,11 @@ class Map:
 
         self.linhas = data["linhas"]
         self.colunas = data["colunas"]
+
+        if respawn:
+            self.offset_x = data.get("respawn", {}).get("x", 0)
+            self.offset_y = data.get("respawn", {}).get("y", 0)
+            self.spawn_pos = (self.offset_x*size-size*0.5, self.offset_y*size*0.8)
 
         self.world.size = (size * self.colunas, size * self.linhas * 0.8)
         self.world.pos = (0, 0)

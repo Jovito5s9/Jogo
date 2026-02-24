@@ -2,6 +2,10 @@
     "linhas": 15,
     "colunas": 21
 ,
+    "respawn": {
+        "x": 4,
+        "y": 5
+    },
     "tiles": [
         [0, 0, "terra.png"],
         [0, 1, "terra.png"],
