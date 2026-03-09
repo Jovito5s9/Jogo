@@ -143,8 +143,8 @@ class Game(FloatLayout):
         self.keyboard_clock = None
         self._joystick_start_event = None
 
-        self.world.create(20,15)
-        #self.world.load_mapa("inicial", respawn=True)
+        #self.world.create(20,15)
+        self.world.load_mapa("inicial", respawn=True)
         self.inventario_menu=False
         self.menu_player=Menu_player()
         self.menu_player.player=self.player
