@@ -3,6 +3,9 @@ import json
 import random
 from utils.resourcesPath import resource_path
 from core.tiles import Object as Obj, Grid as Grd
+from kivy.uix.widget import Widget
+from kivy.graphics import Rectangle, PushMatrix, PopMatrix, Translate, Scale
+from kivy.core.image import Image as CoreImage
 
 size = Window.height / 12.5
 
@@ -17,12 +20,70 @@ class Object(Obj):
         super().__init__(global_size=size, source=source, **kwargs)
 
 
+class TileData:#representar os nn widgets
+    def __init__(self, linha, coluna, tipo):
+        self.linha = linha
+        self.coluna = coluna
+        self.type = tipo
+
+
+# widget unico q desenha o chão do mapa com uma textura
+class GroundLayer(Widget):
+    def __init__(self, cols, rows, tile_size, tile_source, tiles=None, offset=(0, 0), **kwargs):
+        super().__init__(**kwargs)
+        if not tile_source:
+            tile_source = "terra.png"
+        self.cols = cols
+        self.rows = rows
+        self.tile_w = tile_size
+        self.tile_h = tile_size * 0.8
+        self.offset_x, self.offset_y = offset
+
+        # carregar a textura
+        try:
+            tex_path = resource_path("assets/tiles/ground/" + tile_source)
+        except Exception:
+            tex_path = tile_source
+        self.texture = CoreImage(tex_path).texture
+
+        self.tiles = tiles or []
+
+        self._draw_tiles()
+
+    def _draw_tiles(self):
+        self.canvas.clear()
+
+        with self.canvas:
+            PushMatrix()
+            Translate(-self.offset_x * self.tile_w, -self.offset_y * self.tile_h, 0)
+
+            if self.tiles:
+                for t in self.tiles:
+                    x = t.linha * self.tile_w
+                    y = t.coluna * self.tile_h
+                    Rectangle(texture=self.texture, pos=(x, y), size=(self.tile_w, self.tile_h))
+            else:
+                for row in range(self.rows):
+                    for col in range(self.cols):
+                        x = col * self.tile_w
+                        y = row * self.tile_h
+                        Rectangle(texture=self.texture, pos=(x, y), size=(self.tile_w, self.tile_h))
+
+            PopMatrix()
+
+    def update_tiles(self, tiles, offset=(0,0)):
+        self.tiles = tiles
+        self.offset_x, self.offset_y = offset
+        self._draw_tiles()
+
+
 class Map:
     def __init__(self, world):
         self.world = world
 
         self.respawn_map = "inicial"
         self.current_map = ""
+        self.spawn_pos = None
 
         self.linhas = 0
         self.colunas = 0
@@ -56,9 +117,26 @@ class Map:
 
     def limpar_mapa(self):
         for obj in self.obj_list[:]:
-            self.world.remove_widget(obj)
+            try:
+                self.world.remove_widget(obj)
+            except Exception:
+                pass
+        if hasattr(self, "ground") and getattr(self, "ground") in getattr(self.world, "children", []):
+            try:
+                self.world.remove_widget(self.ground)
+            except Exception:
+                pass
+            try:
+                del self.ground
+            except Exception:
+                pass
+
         for tile in self.tiles_list[:]:
-            self.world.remove_widget(tile)
+            if hasattr(tile, "parent") and tile.parent is not None:
+                try:
+                    self.world.remove_widget(tile)
+                except Exception:
+                    pass
 
         self.tiles_list.clear()
         self.obj_list.clear()
@@ -101,7 +179,7 @@ class Map:
         if type is None:
             self.nivel = 0
 
-        grid_padrao = self.padrao["grid"][type]
+        grid_padrao = self.padrao["grid"].get(type, self.padrao["grid"][None])
         objeto_padrao = self.padrao["obj"][type]
         spawner_padrao = self.padrao["spawner"][type]
 
@@ -109,7 +187,6 @@ class Map:
         self.colunas = ym
 
         self.world.size = (size * xm, size * ym * 0.8)
-
         self.world.pos = (0, 0)
         self.offset_x = 0
         self.offset_y = 0
@@ -123,21 +200,30 @@ class Map:
 
         self.limpar_mapa()
 
+        tiles = []
         for y in range(self.linhas):
             for x in range(self.colunas):
-                grid = Grid(
-                    posicao=(x, y),
-                    patern_center=(self.offset_x, self.offset_y),
-                    max=(self.linhas, self.colunas),
-                    source=grid_padrao
-                )
-                self.tiles_list.append(grid)
-                self.world.add_widget(grid)
+                t = TileData(linha=y, coluna=x, tipo=grid_padrao)
+                tiles.append(t)
+        self.tiles_list = tiles
 
-        if self.world.player:
+        self.ground = GroundLayer(
+            cols=self.colunas,
+            rows=self.linhas,
+            tile_size=size,
+            tile_source=grid_padrao,
+            tiles=self.tiles_list,
+            offset=(self.offset_x, self.offset_y)
+        )
+        try:
+            self.world.add_widget(self.ground, index=0)
+        except TypeError:
+            self.world.add_widget(self.ground)
+
+        if getattr(self.world, "player", None):
             self.world.player.pos = (self.offset_x, self.offset_y)
 
-        self.ents = [self.world.player] if self.world.player else []
+        self.ents = [self.world.player] if getattr(self.world, "player", None) else []
         self.world.ents = self.ents
 
         for y in range(self.linhas):
@@ -194,12 +280,12 @@ class Map:
         }
 
         try:
-            if self.world.player:
+            if getattr(self.world, "player", None):
                 self.world.remove_widget(self.world.player)
         except Exception:
             pass
 
-        if self.world.player:
+        if getattr(self.world, "player", None):
             self.world.add_widget(self.world.player)
 
         if self.nivel == 10 and hasattr(self.world, "gerar_boss"):
