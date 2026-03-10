@@ -30,6 +30,7 @@ class World(FloatLayout):
         self.trocando_mapa = False
 
         self.map = Map(world=self)
+        self.background = None
         self.camera = Camera(
             position=(0, 0), 
             map_size=(0,0), 
@@ -39,6 +40,12 @@ class World(FloatLayout):
 
         self.atualizar()
 
+    def background_pos(self, pos):
+        if self.background:
+            self.background.pos = (
+                pos[0],
+                self.height + pos[1] - 100 + size * 0.245
+            )
 
     def create(self, colunas = 0, linhas = 0, tipo="esgoto"):
         if tipo == "esgoto":
@@ -247,6 +254,7 @@ class World(FloatLayout):
         nova_pos = self.camera.update()
         if nova_pos:
             self.new_limites()
+            self.background_pos(nova_pos)
             for tile in self.map.tiles_list:
                 tile.patern_center = nova_pos
             for obj in self.map.obj_list:

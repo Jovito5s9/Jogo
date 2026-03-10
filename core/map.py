@@ -1,4 +1,5 @@
 from kivy.core.window import Window
+from kivy.uix.image import Image
 import json
 import random
 from utils.resourcesPath import resource_path
@@ -23,6 +24,7 @@ class Map:
 
         self.respawn_map = "inicial"
         self.current_map = ""
+        self.background = ""
 
         self.linhas = 0
         self.colunas = 0
@@ -228,13 +230,29 @@ class Map:
 
         self.linhas = data["linhas"]
         self.colunas = data["colunas"]
+        background_ok=False
+        if "background" in data:
+            if data["background"]:
+                self.background = data["background"]
+                background_ok=True
 
         if respawn:
             self.offset_x = data.get("respawn", {}).get("x", 0)
             self.offset_y = data.get("respawn", {}).get("y", 0)
             self.spawn_pos = (self.offset_x*size-size*0.5, self.offset_y*size*0.8)
-
-        self.world.size = (size * self.colunas, size * self.linhas * 0.8)
+        if background_ok:
+            self.world.size = (size * self.colunas, (size * self.linhas * 0.8))
+            self.world.background = Image(
+                    source=resource_path("assets/tiles/background/" + self.background), 
+                    size_hint = (None, None),
+                    size=(self.world.width,150), 
+                    pos=(0, self.world.height - 100 + size * 0.245),
+                    allow_stretch=True,
+                    keep_ratio=False
+            )
+            self.world.add_widget(self.world.background)
+        else:
+            self.world.size = (size * self.colunas, size * self.linhas * 0.8)
         self.world.pos = (0, 0)
         self.offset_x = 0
         self.offset_y = 0

@@ -6,6 +6,7 @@
         "x": 4,
         "y": 5
     },
+    "background":"inicial.png",
     "tiles": [
         [0, 0, "terra.png"],
         [0, 1, "terra.png"],
