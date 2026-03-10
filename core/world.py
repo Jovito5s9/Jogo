@@ -33,6 +33,8 @@ class World(FloatLayout):
         self.scroll_view = ScrollView(size=self.size, do_scroll_x=False, do_scroll_y=False)
         self.map_layout = FloatLayout(size=self.size, size_hint=(None, None))
         self.scroll_view.add_widget(self.map_layout)
+        self.scroll_view.scroll_x = 0
+        self.scroll_view.scroll_y = 0
         self.add_widget(self.scroll_view)   
         self.map = Map(world=self)
         self.background = None
@@ -45,12 +47,6 @@ class World(FloatLayout):
 
         self.atualizar()
 
-    def background_pos(self, pos):
-        if self.background:
-            self.background.pos = (
-                pos[0],
-                self.height + pos[1] - 100 + size * 0.245
-            )
 
     def create(self, colunas = 0, linhas = 0, tipo="esgoto"):
         if tipo == "esgoto":
@@ -220,8 +216,8 @@ class World(FloatLayout):
         elif ent.x < left_limit:
             ent.x = left_limit
 
-        bottom_limit = self.y - (ent.height * 0.2)
-        top_limit = self.y + self.height - size
+        bottom_limit = self.y
+        top_limit = self.y + self.height - size * 1.2
 
         if ent.y < bottom_limit:
             ent.y = bottom_limit
@@ -243,7 +239,7 @@ class World(FloatLayout):
         if self.ev_camera:
             self.ev_camera.cancel()
 
-        self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/30)
+        self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/60)
         self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
         self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
         

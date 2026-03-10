@@ -245,8 +245,8 @@ class Map:
             self.world.background = Image(
                     source=resource_path("assets/tiles/background/" + self.background), 
                     size_hint = (None, None),
-                    size=(self.world.width,150), 
-                    pos=(0, self.world.height - 100 + size * 0.245),
+                    size=(self.world.width+size,75), 
+                    pos=(0, self.world.height - 75),
                     allow_stretch=True,
                     keep_ratio=False
             )

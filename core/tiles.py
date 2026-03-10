@@ -37,9 +37,6 @@ class Tile(FloatLayout):
             self.patern_y + (self.linha * self.height),
         )
 
-    def on_center_changed(self, *args):
-        self.position()
-
 
 class Object(Tile):
     def __init__(self, global_size, source, ativado=False, **kwargs):
@@ -92,7 +89,6 @@ class Object(Tile):
         self.add_widget(self.image)
 
         self.bind(pos=self.update_image_pos)
-        self.bind(patern_center=self.on_center_changed)
 
         self.position()
 
@@ -205,6 +201,5 @@ class Grid(Tile):
         self.add_widget(self.image)
 
         self.bind(pos=self.update_image_pos)
-        self.bind(patern_center=self.on_center_changed)
 
         self.position()
