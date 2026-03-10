@@ -28,8 +28,29 @@ from typing import Dict, Tuple, List, Any, Optional
 # ---------------------------
 
 def load_map(path: str) -> Dict[str, Any]:
-    with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+
+            # se arquivo vazio → cria estrutura padrão
+            if not content:
+                return {
+                    "linhas": 0,
+                    "colunas": 0,
+                    "tiles": [],
+                    "objs": []
+                }
+
+            return json.loads(content)
+
+    except FileNotFoundError:
+        # se o arquivo nem existir ainda
+        return {
+            "linhas": 0,
+            "colunas": 0,
+            "tiles": [],
+            "objs": []
+        }
 
 def save_map_compact(data: Dict[str, Any], path: str) -> None:
     """
