@@ -58,9 +58,9 @@ class Map:
 
     def limpar_mapa(self):
         for obj in self.obj_list[:]:
-            self.world.remove_widget(obj)
+            self.world.map_layout.remove_widget(obj)
         for tile in self.tiles_list[:]:
-            self.world.remove_widget(tile)
+            self.world.map_layout.remove_widget(tile)
 
         self.tiles_list.clear()
         self.obj_list.clear()
@@ -134,7 +134,7 @@ class Map:
                     source=grid_padrao
                 )
                 self.tiles_list.append(grid)
-                self.world.add_widget(grid)
+                self.world.map_layout.add_widget(grid)
 
         if self.world.player:
             self.world.player.pos = (self.offset_x, self.offset_y)
@@ -153,7 +153,7 @@ class Map:
                         source="descer_esgoto.png"
                     )
                     self.obj_list.append(obj)
-                    self.world.add_widget(obj)
+                    self.world.map_layout.add_widget(obj)
                     continue
 
                 if self.subida_dungeon == (x, y):
@@ -164,7 +164,7 @@ class Map:
                         source="subir_esgoto.png"
                     )
                     self.obj_list.append(obj)
-                    self.world.add_widget(obj)
+                    self.world.map_layout.add_widget(obj)
                     continue
 
                 r = random.randint(0, 10)
@@ -188,7 +188,7 @@ class Map:
                             )
 
                         self.obj_list.append(obj)
-                        self.world.add_widget(obj)
+                        self.world.map_layout.add_widget(obj)
 
         self.masmorra[self.nivel] = {
             "tiles": [(t.linha, t.coluna, t.type) for t in self.tiles_list],
@@ -197,12 +197,12 @@ class Map:
 
         try:
             if self.world.player:
-                self.world.remove_widget(self.world.player)
+                self.world.map_layout.remove_widget(self.world.player)
         except Exception:
             pass
 
         if self.world.player:
-            self.world.add_widget(self.world.player)
+            self.world.map_layout.add_widget(self.world.player)
 
         if self.nivel == 10 and hasattr(self.world, "gerar_boss"):
             self.world.gerar_boss()
@@ -250,7 +250,7 @@ class Map:
                     allow_stretch=True,
                     keep_ratio=False
             )
-            self.world.add_widget(self.world.background)
+            self.world.map_layout.add_widget(self.world.background)
         else:
             self.world.size = (size * self.colunas, size * self.linhas * 0.8)
         self.world.pos = (0, 0)
@@ -276,18 +276,18 @@ class Map:
 
         for obj in list(self.obj_list):
             try:
-                self.world.remove_widget(obj)
+                self.world.map_layout.remove_widget(obj)
             except Exception:
                 pass
         for tile in list(self.tiles_list):
             try:
-                self.world.remove_widget(tile)
+                self.world.map_layout.remove_widget(tile)
             except Exception:
                 pass
         for ent in list(self.ents):
             if ent is not getattr(self.world, "player", None):
                 try:
-                    self.world.remove_widget(ent)
+                    self.world.map_layout.remove_widget(ent)
                 except Exception:
                     pass
 
@@ -308,7 +308,7 @@ class Map:
                 source=tipo
             )
             self.tiles_list.append(tile)
-            self.world.add_widget(tile)
+            self.world.map_layout.add_widget(tile)
 
         for coluna, linha, tipo, resistencia, ativado in sala.get("objs", []):
             obj = Object(
@@ -320,16 +320,16 @@ class Map:
             )
             obj.resistencia = resistencia
             self.obj_list.append(obj)
-            self.world.add_widget(obj)
+            self.world.map_layout.add_widget(obj)
 
         try:
             if getattr(self.world, "player", None):
-                self.world.remove_widget(self.world.player)
+                self.world.map_layout.remove_widget(self.world.player)
         except Exception:
             pass
 
         if getattr(self.world, "player", None):
-            self.world.add_widget(self.world.player)
+            self.world.map_layout.add_widget(self.world.player)
             self.world.player.pos = (offset_x, offset_y)
             if hasattr(self.world.player, "atualizar_pos"):
                 try:

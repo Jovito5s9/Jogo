@@ -1,4 +1,5 @@
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.scrollview import ScrollView
 from kivy.properties import NumericProperty
 from kivy.core.window import Window
 from kivy.clock import Clock
@@ -29,6 +30,10 @@ class World(FloatLayout):
 
         self.trocando_mapa = False
 
+        self.scroll_view = ScrollView(size=self.size, do_scroll_x=False, do_scroll_y=False)
+        self.map_layout = FloatLayout(size=self.size, size_hint=(None, None))
+        self.scroll_view.add_widget(self.map_layout)
+        self.add_widget(self.scroll_view)   
         self.map = Map(world=self)
         self.background = None
         self.camera = Camera(
@@ -92,10 +97,10 @@ class World(FloatLayout):
 
     def add_player(self, *args):
         try:
-            self.remove_widget(self.player)
-            self.add_widget(self.player)
+            self.map_layout.remove_widget(self.player)
+            self.map_layout.add_widget(self.player)
         except:
-            self.add_widget(self.player)
+            self.map_layout.add_widget(self.player)
 
         if self.map.spawn_pos:
             self.player.center = self.map.spawn_pos
@@ -109,20 +114,20 @@ class World(FloatLayout):
         for obj in self.map.obj_list[:]:
             self.map.obj_list.remove(obj)
             try:
-                self.remove_widget(obj)
+                self.map_layout.remove_widget(obj)
             except Exception:
                 pass
         for tile in self.map.tiles_list[:]:
             self.map.tiles_list.remove(tile)
             try:
-                self.remove_widget(tile)
+                self.map_layout.remove_widget(tile)
             except Exception:
                 pass
         for ent in self.ents[:]:
             if ent is not self.player:
                 self.ents.remove(ent)
                 try:
-                    self.remove_widget(ent)
+                    self.map_layout.remove_widget(ent)
                 except Exception:
                     pass
         if self.map.respawn_map:
@@ -253,12 +258,9 @@ class World(FloatLayout):
     def atualizar_camera(self, *args):
         nova_pos = self.camera.update()
         if nova_pos:
+            self.scroll_view.scroll_x = nova_pos[0]/(self.size[0]-Window.width)
+            self.scroll_view.scroll_y = nova_pos[1]/(self.size[1]-Window.height)
             self.new_limites()
-            self.background_pos(nova_pos)
-            for tile in self.map.tiles_list:
-                tile.patern_center = nova_pos
-            for obj in self.map.obj_list:
-                obj.patern_center = nova_pos
 
     def atualizar_sprites(self, *args):
         for ent in self.ents:
@@ -267,7 +269,7 @@ class World(FloatLayout):
 
     def gerar_boss(self):
         boss = Rata_mae()
-        self.add_widget(boss)
+        self.map_layout.add_widget(boss)
         self.ents.append(boss)
 
         boss.pos = (
