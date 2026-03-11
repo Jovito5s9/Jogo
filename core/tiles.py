@@ -2,7 +2,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.properties import NumericProperty, ReferenceListProperty
 from kivy.clock import Clock
-from kivy.core.window import Window
+from kivy.uix.widget import Widget
 
 import random
 
@@ -45,7 +45,19 @@ class Object(Tile):
         self.height = global_size * 0.8
         self.s = source
         self.type = source
+        
         self.source = resource_path("assets/tiles/objects/" + f"{source}")
+
+        self.image = Image(
+        source=self.source,
+        allow_stretch=True,
+        keep_ratio=False,
+        size=self.size,
+        pos=self.pos,
+        )
+        self.add_widget(self.image)
+        self.bind(pos=self.update_image_pos)
+
         self.colisivel = True
         self.quebravel = False
         self.quebrando = False
@@ -53,14 +65,6 @@ class Object(Tile):
         self.resistencia=0
         self.dano_colisao = 0
         self.drops = {}
-
-        self.image = Image(
-            source=self.source,
-            allow_stretch=True,
-            keep_ratio=False,
-            size=self.size,
-            pos=self.pos,
-        )
 
         if source == "pedra.png":
             self.hitbox = [
@@ -86,10 +90,6 @@ class Object(Tile):
         elif self.type == "entrada_esgoto.png":
             Clock.schedule_once(self.spawn, 0.5)
 
-        self.add_widget(self.image)
-
-        self.bind(pos=self.update_image_pos)
-
         self.position()
 
     def position(self, *args):
@@ -100,7 +100,14 @@ class Object(Tile):
         self.get_hitbox()
 
     def get_hitbox(self, *args):
-        if self.s == "pedra.png":
+        if self.s == "vazio.png":
+            self.hitbox = [
+                self.x,
+                self.y,
+                self.width,
+                self.height,
+            ]
+        elif self.s == "pedra.png":
             self.hitbox = [
                 self.x + (self.width * 0.1),
                 self.y + (self.height * 0.45),
