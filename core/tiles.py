@@ -39,8 +39,11 @@ class Tile(FloatLayout):
 
 
 class Object(Tile):
-    def __init__(self, global_size, source, ativado=False, **kwargs):
+    def __init__(self, global_size, source, ativado=False, extra_func="", extra_arg=None, **kwargs):
         super().__init__(**kwargs)
+        self.extra_func = extra_func
+        self.extra_arg = extra_arg
+        
         self.width = global_size
         self.height = global_size * 0.8
         self.s = source
@@ -187,6 +190,15 @@ class Object(Tile):
             for ent in self.parent.ents:
                 if ent.grid == (self.coluna, self.linha):
                     ent.vida -= self.dano_colisao
+        if self.extra_func and self.extra_arg:
+            self.ativar_func()
+    
+    
+    def ativar_func(self, *args):
+        if self.extra_func == "load_mapa":
+            self.parent.parent.parent.map.load_mapa(self.extra_arg)
+        elif self.extra_func == "create":
+            self.parent.parent.parent.map.create(self.extra_arg)
 
 
 class Grid(Tile):

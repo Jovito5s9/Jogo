@@ -322,6 +322,20 @@ class Map:
             self.obj_list.append(obj)
             self.world.map_layout.add_widget(obj)
 
+        for coluna, linha, tipo, resistencia, ativado, extra_func, extra_arg in sala.get("colliders", []):
+            obj = Object(
+                posicao=(coluna, linha),
+                patern_center=(offset_x, offset_y),
+                max=(self.linhas, self.colunas),
+                source=tipo,
+                ativado=ativado,
+                extra_func=extra_func,
+                extra_arg=extra_arg
+            )
+            obj.resistencia = resistencia
+            self.obj_list.append(obj)
+            self.world.map_layout.add_widget(obj)
+
         try:
             if getattr(self.world, "player", None):
                 self.world.map_layout.remove_widget(self.world.player)
