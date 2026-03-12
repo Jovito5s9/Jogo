@@ -7,8 +7,7 @@ from kivy.uix.widget import Widget
 import random
 
 from utils.resourcesPath import resource_path
-from core.player import Rato
-
+from core.entity.ent_factory import create_ent
 
 class Tile(FloatLayout):
     linha = NumericProperty(0)
@@ -156,7 +155,7 @@ class Object(Tile):
         if not self.world:
             return
         if self.type == "entrada_esgoto.png":
-            rato = Rato()
+            rato = create_ent("rato")
             rato.pos = self.pos
             self.world.map_layout.add_widget(rato)
             self.world.ents.append(rato)

@@ -7,6 +7,7 @@ from kivy.properties import OptionProperty, BooleanProperty, NumericProperty
 import json
 import os
 from utils.resourcesPath import resource_path
+from core.entity.interact import distancia
 from core.BitCoreSkills import SKILLS
 from saved.itens_db import ITENS
 
@@ -135,7 +136,13 @@ class BasicEnt(Image):
         except Exception:
             # Se for usado em contexto onde add_widget não é apropriado, ignore silenciosamente
             pass
-
+    
+    def add_player(self, *args):
+        try:
+            self.player = self.world.player
+        except Exception:
+            self.player = None
+    
     def move_x(self, *args):
         if self.vivo:
             self.x += self.speed_x * self.velocidade
@@ -452,3 +459,17 @@ class BasicEnt(Image):
                         self.skills_slots[str(idx)] = skill_id
 
             self.rodar_skills()
+
+    def ia(self, *args):
+        if not self.vivo:
+            return
+        if self.alvo:
+            if distancia(self) <= self.alcance_fisico and not self.atacando:
+                self.ataque_name = "garras"
+                self.acoes["atacar"](self)
+                self.atacando = True
+                Clock.schedule_once(self.atualizar_atacando, 0.4)
+            else:
+                self.acoes["perseguir"](self)
+        else:
+            self.acoes["rastrear"](self)
