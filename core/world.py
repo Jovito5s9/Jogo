@@ -6,7 +6,7 @@ from kivy.clock import Clock
 
 from core.map import Map
 from core.camera import Camera
-from core.player import Rata_mae
+from core.entity.ent_factory import create_ent
 
 size = Window.height / 12.5
 
@@ -268,7 +268,7 @@ class World(FloatLayout):
 
 
     def gerar_boss(self):
-        boss = Rata_mae()
+        boss = create_ent("ratona")
         self.map_layout.add_widget(boss)
         self.ents.append(boss)
 
