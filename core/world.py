@@ -276,5 +276,12 @@ class World(FloatLayout):
             self.x + self.map.linhas * size * 0.5,
             self.y + self.map.colunas * size * 0.5 * 0.8
         )
-
         self.boss = boss
+        Clock.schedule_once(self.limpar_sala_boss, 0.5)
+    
+    def limpar_sala_boss(self,*args):
+    
+        for obj in self.map.obj_list[:]:
+            if obj.type == self.map.padrao["spawner"][self.map.type]:
+                self.map_layout.remove_widget(obj)
+                self.map.obj_list.remove(obj)
