@@ -107,18 +107,14 @@ class Player(BasicEnt):
             alvo_x += 1
         else:
             alvo_x -= 1
-        print("Alvo do soco forte:", alvo_x, alvo_y)
         try:
             obj_list = self.world.map.obj_list
         except Exception:
             obj_list = []
         
         for obj in obj_list:
-            print("Verificando objeto na posição:", obj.coluna, obj.linha,obj.quebravel) if obj.linha == alvo_y and obj.coluna == alvo_x else None
             if obj.linha == alvo_y and obj.coluna == alvo_x and obj.quebravel:
-                print(obj.resistencia)
                 obj.resistencia -= self.power
-                print(obj.resistencia)
             if (obj.coluna, obj.linha) == tuple(self.grid) and obj.quebravel:
                 obj.resistencia -= self.power
 
@@ -134,7 +130,7 @@ class Player(BasicEnt):
         if action and callable(action):
             try:
                 action()
-            except Exception as e:
-                print("Erro ao executar ação", self.acao, ":", e)
+            except Exception:
+                pass
         else:
             self.acao = ""

@@ -97,7 +97,6 @@ class BasicEnt(Image):
     def procurar_parent(self, *args):
         if self.parent:
             self.world = self.parent.parent.parent
-            print(self.world.player)
         else:
             Clock.schedule_once(self.procurar_parent, 0.2)
             
@@ -411,8 +410,8 @@ class BasicEnt(Image):
         try:
             with open(path, "w", encoding="utf-8") as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)
-        except Exception as e:
-            print("Erro ao salvar player.json:", e)
+        except Exception:
+            pass
 
 
 

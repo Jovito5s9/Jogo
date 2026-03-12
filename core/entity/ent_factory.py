@@ -96,19 +96,14 @@ def _apply_equipaveis(ent, equip):
 def _apply_acao_mapping(ent, acoes_list):
     pool = ia_base()
 
-    print("Ações JSON:", acoes_list)
-    print("Pool IA:", pool.keys())
-
     ent.acoes = {}
 
     for nome in acoes_list:
         fn = pool.get(nome)
-        print("Procurando:", nome, "->", fn)
 
         if fn:
             ent.acoes[nome] = fn
 
-    print("Ações finais:", ent.acoes)
 
 def create_ent(ent_name, **kwargs):
     if ent_name in REGISTRO_BOSS:
@@ -175,5 +170,4 @@ def create_ent(ent_name, **kwargs):
             Clock.schedule_once(ent.add_player, 1)
     except Exception:
         pass
-    Clock.schedule_once(lambda dt: print(ent.player,"qooqowowo"), 2)
     return ent
