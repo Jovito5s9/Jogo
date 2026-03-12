@@ -473,3 +473,10 @@ class BasicEnt(Image):
                 self.acoes["perseguir"](self)
         else:
             self.acoes["rastrear"](self)
+    
+    def atualizar_atacando(self, *args):
+        self.atacando = False
+        if self.speed_x or self.speed_y:
+            self.estado = "running"
+        else:
+            self.estado = "idle"
