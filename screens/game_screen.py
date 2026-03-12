@@ -5,7 +5,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
 
-from core.player import Player
+from core.entity.player import Player
 from core.world import World
 from utils.joystick import Joystick
 from utils.resourcesPath import resource_path
