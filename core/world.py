@@ -254,8 +254,10 @@ class World(FloatLayout):
     def atualizar_camera(self, *args):
         nova_pos = self.camera.update()
         if nova_pos:
-            self.scroll_view.scroll_x = nova_pos[0]/(self.size[0]-Window.width)
-            self.scroll_view.scroll_y = nova_pos[1]/(self.size[1]-Window.height)
+            if self.size[0] !=Window.width:
+                self.scroll_view.scroll_x = nova_pos[0]/(self.size[0]-Window.width)
+            if self.size[1] != Window.height:
+                self.scroll_view.scroll_y = nova_pos[1]/(self.size[1]-Window.height)
             self.new_limites()
 
     def atualizar_sprites(self, *args):
