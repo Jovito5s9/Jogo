@@ -93,6 +93,7 @@ class BasicEnt(Image):
         self.sprite_sheet = None
         self.total_frames = 1
         self.current_frame = 0
+        self.auto_destruir_is_ok=False
     
     def procurar_parent(self, *args):
         if self.parent:
@@ -460,14 +461,13 @@ class BasicEnt(Image):
             self.rodar_skills()
 
     def ia(self, *args):
-        if not self.vivo:
+        if not self.vivo or self.auto_destruir_is_ok:
             return
         if self.alvo:
             if distancia(self) <= self.alcance_fisico and not self.atacando:
-                self.ataque_name = "garras"
-                self.acoes["atacar"](self)
+                self.acoes[self.ataque_name](self)
                 self.atacando = True
-                Clock.schedule_once(self.atualizar_atacando, 0.4)
+                Clock.schedule_once(self.atualizar_atacando, 0.1 * self.atacando_frames)
             else:
                 self.acoes["perseguir"](self)
         else:
@@ -475,7 +475,15 @@ class BasicEnt(Image):
     
     def atualizar_atacando(self, *args):
         self.atacando = False
+        if self.auto_destruir_is_ok:
+            self.vida=0
+            self.world.ents.remove(self)
+            self.world.map_layout.remove_widget(self)
+            self.morrer()
         if self.speed_x or self.speed_y:
             self.estado = "running"
         else:
             self.estado = "idle"
+    
+    def autodestruct(self,*args):
+        self.auto_destruir_is_ok=True

@@ -30,16 +30,16 @@ def rastrear(rastreador):
         rastreador.alvo = True
 
 
-def atacar(atacante, alvo=None):
+def atacar(atacante, alvo=None, force_damage=False):
     if alvo is None:
         if not atacante.player:
             return
         alvo = atacante.player
-    if not alvo.i_frames:
+    if not alvo.i_frames or force_damage:
         atacante.estado = "atacando"
         knockback = 1
         if not alvo.vivo:
-            knockback = 2
+            knockback = 1.5
         if atacante.facing_right:
             alvo.x += atacante.repulsao * knockback
         else:
@@ -64,13 +64,18 @@ def distancia(ent1, ent2=None):
     except Exception:
         return 0
 
+def autodestruct(atacante, alvo=None):
+    atacar(atacante=atacante, alvo=alvo, force_damage=True)
+    atacante.autodestruct()
+
 
 # funcao destinada a colocar as possibilidades de acoes de entidades basicas
 def ia_base():
     acoes = {
         "perseguir": perseguir,
         "rastrear": rastrear,
-        "atacar": atacar
+        "atacar": atacar,
+        "autodestruct": autodestruct
     }
     return acoes
 

@@ -104,6 +104,9 @@ def _apply_acao_mapping(ent, acoes_list):
         if fn:
             ent.acoes[nome] = fn
 
+def _apply_ataque_name(ent, ataque_name):
+    ent.ataque_name=ataque_name
+
 
 def create_ent(ent_name, **kwargs):
     if ent_name in REGISTRO_BOSS:
@@ -120,6 +123,7 @@ def create_ent(ent_name, **kwargs):
 
     ent = cls(**kwargs)
 
+    _apply_ataque_name(ent=ent, ataque_name=ent_data.get("ataque_name","atacar"))
     _apply_sources(ent, ent_data.get("sources") or ent_data.get("sprites"))
 
     _apply_sprite_props(ent, ent_data.get("sprite"))

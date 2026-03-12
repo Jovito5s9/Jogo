@@ -5,7 +5,7 @@
     "idle": "assets/sprites/rato/idle.png",
     "running": "assets/sprites/rato/running.png",
     "morto": "assets/sprites/rato/morto.png",
-    "garras": "assets/sprites/rato/garras.png"
+    "atacar": "assets/sprites/rato/garras.png"
   },
   "sprite": {
     "frame_width": 32,
@@ -30,6 +30,7 @@
     "carne": [0, 2]
   },
   "acoes": ["perseguir", "rastrear", "atacar"],
+  "ataque_name":"atacar",
   "ai_interval": 10,
   "pos": [200, 150]
 }
