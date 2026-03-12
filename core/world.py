@@ -121,11 +121,13 @@ class World(FloatLayout):
                 pass
         for ent in self.ents[:]:
             if ent is not self.player:
-                self.ents.remove(ent)
                 try:
                     self.map_layout.remove_widget(ent)
                 except Exception:
                     pass
+
+        self.ents = [self.player]
+        self.map.ents = [self.player]
         if self.map.respawn_map:
             self.trocando_mapa=True
             self.load_mapa(self.map.respawn_map, respawn=True)

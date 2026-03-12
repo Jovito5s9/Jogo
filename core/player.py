@@ -84,11 +84,24 @@ class BasicEnt(Image):
         self.skills_ativas = {}
         self.max_skills = 2
         self.dano_causado=0
+        if self.parent:
+            self.world = self.parent.parent.parent
+        else:
+            self.world = None
+            self.procurar_parent()
 
         # atributos de animação (inicialmente vazios)
         self.sprite_sheet = None
         self.total_frames = 1
         self.current_frame = 0
+    
+    def procurar_parent(self, *args):
+        if self.parent:
+            self.world = self.parent.parent.parent
+            print(self.world.player)
+        else:
+            Clock.schedule_once(self.procurar_parent, 0.2)
+            
 
     def atualizar(self, *args):
         # Carrega o sprite sheet
@@ -227,22 +240,24 @@ class BasicEnt(Image):
         self.droped = True
 
     def recive_itens(self, list_drops):
+        if not hasattr(self.world.player, "inventario"):
+            return
+        
         for drop, quantidade in list_drops.items():
-            if quantidade == 0:
-                pass
+            if quantidade <= 0:
+                continue
             # garante que parent e parent.player existam
-            try:
-                self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
-                self.save_data("inventario", {drop: self.parent.player.inventario[drop]})
-            except Exception:
-                pass
+            
+            self.world.player.inventario[drop] = self.world.player.inventario.get(drop, 0) + quantidade
+            if hasattr(self.world.player, "save_data"):
+                self.world.player.save_data("inventario", {drop: self.world.player.inventario[drop]})
 
     def morrer(self, *args):
         self.vivo = False
         self.estado = "morto"
         self.speed_x = 0
         self.speed_y = 0
-        if not self.parent.player == self:
+        if not self.world.player == self:
             self.drop()
 
     def on_vida(self, *args):
@@ -330,6 +345,7 @@ class BasicEnt(Image):
 
     def save_data(self, item, key=None):
         path = resource_path("saved/player.json")
+
         try:
             with open(path, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -339,23 +355,29 @@ class BasicEnt(Image):
         if item == "equipaveis":
             equip_map = {}
             itens_equip = ITENS.get("equipaveis", {})
+
             for slot, skill_id in list(getattr(self, "skills_slots", {}).items()):
                 try:
                     idx = int(slot)
                 except Exception:
                     continue
+
                 if not (1 <= idx <= self.max_skills):
                     continue
+
                 found_name = None
                 for item_name, item_data in itens_equip.items():
                     if item_data.get("skill") == skill_id:
                         found_name = item_name
                         break
+
                 if found_name:
                     equip_map[str(idx)] = found_name
+
             data["equipaveis"] = equip_map
 
         elif item == "bitcores":
+
             if isinstance(key, dict):
                 data.setdefault("bitcores", {})
                 for k, v in key.items():
@@ -363,11 +385,29 @@ class BasicEnt(Image):
             else:
                 data["bitcores"] = key
 
-        else:
-            data[item] = key
+        elif item == "inventario":
 
-        with open(path, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
+            if isinstance(key, dict):
+                data.setdefault("inventario", {})
+
+                for k, v in key.items():
+                    data["inventario"][k] = v
+            else:
+                data["inventario"] = key
+
+        else:
+
+            if isinstance(key, dict):
+                data.setdefault(item, {})
+                for k, v in key.items():
+                    data[item][k] = v
+            else:
+                data[item] = key
+        try:
+            with open(path, "w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print("Erro ao salvar player.json:", e)
 
 
 
@@ -520,7 +560,7 @@ class Rato(BasicEnt):
 
     def add_player(self, *args):
         try:
-            self.player = self.parent.player
+            self.player = self.world.player
         except Exception:
             self.player = None
 
@@ -682,7 +722,7 @@ class Player(BasicEnt):
         self.vida=self.vida_maxima
         self.vivo=True
         self.estado="idle"
-        self.parent.respawn_player()
+        self.world.respawn_player()
         self.respawning=False
 
     def check_vida(self,*args):
@@ -712,7 +752,7 @@ class Player(BasicEnt):
             self.repulsao = 1.5 * self.repulsao
         # percorre entidades no parent
         try:
-            ents = self.parent.ents
+            ents = self.world.ents
         except Exception:
             ents = []
         for ent in ents:
@@ -745,13 +785,18 @@ class Player(BasicEnt):
             alvo_x += 1
         else:
             alvo_x -= 1
+        print("Alvo do soco forte:", alvo_x, alvo_y)
         try:
-            obj_list = self.parent.obj_list
+            obj_list = self.world.map.obj_list
         except Exception:
             obj_list = []
+        
         for obj in obj_list:
+            print("Verificando objeto na posição:", obj.coluna, obj.linha,obj.quebravel) if obj.linha == alvo_y and obj.coluna == alvo_x else None
             if obj.linha == alvo_y and obj.coluna == alvo_x and obj.quebravel:
+                print(obj.resistencia)
                 obj.resistencia -= self.power
+                print(obj.resistencia)
             if (obj.coluna, obj.linha) == tuple(self.grid) and obj.quebravel:
                 obj.resistencia -= self.power
 

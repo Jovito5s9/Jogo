@@ -39,6 +39,7 @@ class Tile(FloatLayout):
 
 
 class Object(Tile):
+    resistencia = NumericProperty(0)
     def __init__(self, global_size, source, ativado=False, extra_func="", extra_arg=None, **kwargs):
         super().__init__(**kwargs)
         self.extra_func = extra_func
@@ -50,6 +51,11 @@ class Object(Tile):
         self.type = source
         
         self.source = resource_path("assets/tiles/objects/" + f"{source}")
+        if self.parent:
+            self.world = self.parent.parent.parent
+        else:
+            self.world = None
+            Clock.schedule_once(self.procurar_parent, 0.5)
 
         self.image = Image(
         source=self.source,
@@ -94,6 +100,12 @@ class Object(Tile):
             Clock.schedule_once(self.spawn, 0.5)
 
         self.position()
+
+    def procurar_parent(self, *args):
+        if self.parent:
+            self.world = self.parent.parent.parent
+        else:
+            Clock.schedule_once(self.procurar_parent, 0.5)
 
     def position(self, *args):
         self.pos = (
@@ -140,14 +152,14 @@ class Object(Tile):
     def spawn(self, *args):
         if self.ativado and random.randint(1, 10) <= 5:
             return
-        world = self.parent
-        if not world:
+        
+        if not self.world:
             return
         if self.type == "entrada_esgoto.png":
             rato = Rato()
             rato.pos = self.pos
-            world.add_widget(rato)
-            world.ents.append(rato)
+            self.world.map_layout.add_widget(rato)
+            self.world.ents.append(rato)
             self.ativado = True
 
     def quebrar(self, *args):
@@ -156,11 +168,11 @@ class Object(Tile):
                 self.remove_widget(self.image)
             except Exception:
                 pass
-            self.parent.player.recive_itens(self.drops)
-            if self in self.parent.obj_list:
-                self.parent.obj_list.remove(self)
+            self.world.player.recive_itens(self.drops)
+            if self in self.world.map.obj_list:
+                self.world.map.obj_list.remove(self)
             try:
-                self.parent.remove_widget(self)
+                self.world.map_layout.remove_widget(self)
             except Exception:
                 pass
 
@@ -175,19 +187,21 @@ class Object(Tile):
             Clock.schedule_once(self.quebrar, 0.2)
 
     def colisao(self, *args):
+        if not self.world:
+            return
         if self.type in ("descer_esgoto.png", "subir_esgoto.png"):
-            for ent in self.parent.ents:
+            for ent in self.world.ents:
                 if not ent.vivo:
                     continue
-                if not ent == self.parent.player:
+                if not ent == self.world.player:
                     return
-            if not self.parent.trocando_mapa:
+            if not self.world.trocando_mapa:
                 if self.type == "descer_esgoto.png":
-                    self.parent.map.re_map(type="esgoto")
+                    self.world.map.re_map(type="esgoto")
                 elif self.type == "subir_esgoto.png":
-                    self.parent.map.re_map(type="esgoto", nivel=-1)
+                    self.world.map.re_map(type="esgoto", nivel=-1)
         if self.type == "veneno.png":
-            for ent in self.parent.ents:
+            for ent in self.world.ents:
                 if ent.grid == (self.coluna, self.linha):
                     ent.vida -= self.dano_colisao
         if self.extra_func and self.extra_arg:
@@ -196,9 +210,9 @@ class Object(Tile):
     
     def ativar_func(self, *args):
         if self.extra_func == "load_mapa":
-            self.parent.parent.parent.map.load_mapa(self.extra_arg)
+            self.world.map.load_mapa(self.extra_arg)
         elif self.extra_func == "create":
-            self.parent.parent.parent.map.create(self.extra_arg)
+            self.world.map.create(self.extra_arg)
 
 
 class Grid(Tile):

@@ -25,6 +25,7 @@ class Map:
         self.respawn_map = "inicial"
         self.current_map = ""
         self.background = ""
+        self.spawn_pos = None
 
         self.linhas = 0
         self.colunas = 0
@@ -124,7 +125,6 @@ class Map:
         )
 
         self.limpar_mapa()
-
         for y in range(self.linhas):
             for x in range(self.colunas):
                 grid = Grid(
