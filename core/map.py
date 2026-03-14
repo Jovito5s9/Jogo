@@ -1,5 +1,6 @@
 from kivy.core.window import Window
 from kivy.uix.image import Image
+from kivy.clock import Clock
 import json
 import random
 from utils.resourcesPath import resource_path
@@ -274,7 +275,7 @@ class Map:
                 self.world.create(self.colunas, self.linhas, type)
 
 
-    def load_mapa(self, mapa, respawn=False):
+    def load_mapa(self, mapa, respawn=False, entrada=0):
         mapa = "core/maps/" + mapa + ".json"
 
         with open(resource_path(mapa), "r") as file:
@@ -288,6 +289,12 @@ class Map:
             self.ent_spawnable = data["spawn"].get("enemies", [])
             if self.ent_spawnable and self.max_procedural_ents:
                 self.procedural_ent_spawn=True
+            
+        ponto_entrada=[]
+        if "entrada" in data and entrada:
+            ponto_entrada = data.get("entrada", {}).get(str(entrada), [])
+            self.world.player.pos=[ponto_entrada[0]*size,ponto_entrada[1]*size*0.8]
+            
 
         self.linhas = data["linhas"]
         self.colunas = data["colunas"]
@@ -318,10 +325,10 @@ class Map:
         self.offset_x = 0
         self.offset_y = 0
         self.world.limites = (self.world.x, self.world.y,
-                            self.world.x + self.world.width,
-                            self.world.y + self.world.height)
+            self.world.x + self.world.width,
+            self.world.y + self.world.height)
 
-        self.carregar_mapa(data)
+        self.carregar_mapa(data,entrada=ponto_entrada)
         self.current_map = mapa
         if "respawn" in data:
             self.respawn_map = mapa
@@ -331,7 +338,7 @@ class Map:
                 self.respawn_map = self.respawn_map.replace("core/maps/", "")
 
     
-    def carregar_mapa(self, sala):
+    def carregar_mapa(self, sala, entrada=[]):
         if not sala:
             return
         self.limpar_mapa()
@@ -365,7 +372,7 @@ class Map:
             self.obj_list.append(obj)
             self.world.map_layout.add_widget(obj)
 
-        for coluna, linha, tipo, resistencia, ativado, extra_func, extra_arg in sala.get("colliders", []):
+        for coluna, linha, tipo, resistencia, ativado, extra_func, extra_arg1, extra_arg2 in sala.get("colliders", []):
             obj = Object(
                 posicao=(coluna, linha),
                 patern_center=(offset_x, offset_y),
@@ -373,7 +380,8 @@ class Map:
                 source=tipo,
                 ativado=ativado,
                 extra_func=extra_func,
-                extra_arg=extra_arg
+                extra_arg1=extra_arg1,
+                extra_arg2=extra_arg2
             )
             obj.resistencia = resistencia
             self.obj_list.append(obj)
@@ -387,10 +395,14 @@ class Map:
 
         if getattr(self.world, "player", None):
             self.world.map_layout.add_widget(self.world.player)
-            self.world.player.pos = (offset_x, offset_y)
-            if hasattr(self.world.player, "atualizar_pos"):
-                try:
-                    self.world.player.atualizar_pos()
-                except Exception:
-                    pass
+
+            if entrada and len(entrada) >= 2:
+                px = entrada[0] * size
+                py = entrada[1] * size * 0.8
+
+                Clock.schedule_once(
+                    lambda dt: setattr(self.world.player, "pos", (px, py)), 0
+    )
+            else:
+                self.world.player.pos = (offset_x, offset_y)
 

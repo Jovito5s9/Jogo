@@ -2,6 +2,9 @@
     "linhas": 20,
     "colunas": 42
 ,
+    "entrada":{
+        "1":[1,1]
+    },
     "spawn":{
         "enemies":["drone"],
         "max":20
