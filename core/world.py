@@ -27,6 +27,7 @@ class World(FloatLayout):
         self.ev_colisao = None
         self.ev_sprite = None
         self.ev_camera = None
+        self.ev_spawn_ents = None
 
         self.trocando_mapa = False
 
@@ -240,10 +241,13 @@ class World(FloatLayout):
             self.ev_sprite.cancel()
         if self.ev_camera:
             self.ev_camera.cancel()
+        if self.ev_spawn_ents:
+            self.ev_spawn_ents.cancel()
 
         self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/60)
         self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
         self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
+        self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1)
         
     def new_limites(self, *args):
         self.limites = (
@@ -265,6 +269,10 @@ class World(FloatLayout):
     def atualizar_sprites(self, *args):
         for ent in self.ents:
             ent.atualizar_pos()
+    
+    def procedural_ent_spawn(self,*args):
+        if self.map.procedural_ent_spawn:
+            self.map.spawn_ent()
 
 
     def gerar_boss(self):

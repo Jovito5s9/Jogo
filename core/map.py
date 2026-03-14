@@ -4,6 +4,7 @@ import json
 import random
 from utils.resourcesPath import resource_path
 from core.tiles import Object as Obj, Grid as Grd
+from core.entity.ent_factory import create_ent
 
 size = Window.height / 12.5
 
@@ -39,6 +40,12 @@ class Map:
         self.type = None
         self.nivel = 0
 
+        self.procedural_ent_spawn = False
+        self.ent_spawnable = []
+        self.max_procedural_ents = 0
+        self.spawned_ent = 0
+        self.procedural_spawnable_area = 0.2
+
         self.lista_modificadores = ["coleta", "combate"]
         self.mapa_modificador = "coleta"
 
@@ -56,6 +63,45 @@ class Map:
                 None: "terra.png"
             }
         }
+        
+    
+    def spawn_ent(self,*args):
+        if not self.ent_spawnable or not self.procedural_ent_spawn:
+            return
+        if self.spawned_ent >= self.max_procedural_ents:
+            return
+        if not self.world.width*(1+2*self.procedural_spawnable_area)>Window.width and \
+        self.world.height*(1+2*self.procedural_spawnable_area)>Window.height:
+            return
+        ent_name = random.choice(self.ent_spawnable)
+        ent = create_ent(ent_name)
+        if not ent:
+            return
+        visible_x = self.world.scroll_view.scroll_x * self.world.width
+        visible_y = self.world.scroll_view.scroll_y * self.world.height
+        visible_size_x = visible_x + Window.width
+        visible_size_y = visible_y + Window.height
+        spawn_area=[
+            int(visible_x-self.procedural_spawnable_area), 
+            int(visible_y-self.procedural_spawnable_area),
+            int(visible_size_x+self.procedural_spawnable_area),
+            int(visible_size_y+self.procedural_spawnable_area)
+            ]
+        spawn_point_is_ok=False
+        point=[]
+        while not spawn_point_is_ok:
+            if not point:
+                point=[
+                    random.randint(spawn_area[0],spawn_area[2]),
+                    random.randint(spawn_area[1],spawn_area[3])
+                ]
+            if (point[0]<visible_x or point[0]>visible_size_x) and (point[1]<visible_y or point[1]>visible_size_y):
+                spawn_point_is_ok=True
+            else:
+                point=[]
+        ent.pos=point
+        self.world.map_layout.add_widget(ent)
+        self.world.ents.append(ent)
 
     def limpar_mapa(self):
         for obj in self.obj_list[:]:
@@ -68,6 +114,9 @@ class Map:
 
 
     def create(self, xm, ym, type=None):
+        self.procedural_ent_spawn=True
+        self.ent_spawnable = ["rato"]
+        self.max_procedural_ents = 10
         type = type or "esgoto"
         self.type = type
         if type == "esgoto":
