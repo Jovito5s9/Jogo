@@ -245,7 +245,7 @@ class World(FloatLayout):
         self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/60)
         self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
         self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
-        self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1)
+        self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1/3)
         
     def new_limites(self, *args):
         self.limites = (

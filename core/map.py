@@ -67,13 +67,13 @@ class Map:
     
     def spawn_ent(self,*args):
         if len(self.world.ents)<self.max_procedural_ents:
-            self.max_procedural_ents=len(self.world.ents)
+            self.spawned_ent=len(self.world.ents)
         if not self.ent_spawnable or not self.procedural_ent_spawn:
             return
         if self.spawned_ent >= self.max_procedural_ents:
             return
         if not self.world.width>Window.width*(1+2*self.procedural_spawnable_area) and \
-        self.world.height>Window.height*(1+2*self.procedural_spawnable_area):
+        not self.world.height>Window.height*(1+2*self.procedural_spawnable_area):
             return
         ent_name = random.choice(self.ent_spawnable)
         ent = create_ent(ent_name)
@@ -93,18 +93,17 @@ class Map:
             int(min(self.world.width, int(visible_size_x + margin_x))),
             int(min(self.world.height, int(visible_size_y + margin_y)))
         ]
-        spawn_point_is_ok=False
-        point=[]
-        for _ in range(1,10):
-            point=[
-                random.randint(spawn_area[0],spawn_area[2]),
-                random.randint(spawn_area[3],spawn_area[1])
-            ]
-            if (point[0]<visible_x or point[0]>visible_size_x) and (point[1]<visible_y or point[1]>visible_size_y):
-                spawn_point_is_ok=True
-                break
+        if spawn_area[0] >= spawn_area[2] or spawn_area[1] >= spawn_area[3]:
+            return
         
-        if spawn_point_is_ok:
+        spawn_point_is_ok=False
+
+        point=[
+            random.randint(spawn_area[0],spawn_area[2]),
+            random.randint(spawn_area[1],spawn_area[3])
+        ]
+
+        if (point[0]<visible_x or point[0]>visible_size_x) and (point[1]<visible_y or point[1]>visible_size_y):
             self.spawned_ent+=1
             ent.pos=point
             self.world.map_layout.add_widget(ent)
@@ -285,12 +284,10 @@ class Map:
         self.max_procedural_ents=0
         self.ent_spawnable=[]
         if "spawn" in data:
-            self.max_procedural_ents = data["spawn"].get("max", 2)
+            self.max_procedural_ents = data["spawn"].get("max", 0)
             self.ent_spawnable = data["spawn"].get("enemies", [])
             if self.ent_spawnable and self.max_procedural_ents:
                 self.procedural_ent_spawn=True
-            else:
-                self.procedural_ent_spawn=False
 
         self.linhas = data["linhas"]
         self.colunas = data["colunas"]
