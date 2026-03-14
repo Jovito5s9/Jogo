@@ -2,6 +2,11 @@
     "linhas": 20,
     "colunas": 42
 ,
+    "spawn":{
+        "enemies":["drone"],
+        "max":20
+    }
+    ,
     "tiles": [
         [0, 0, "grama.png"],
         [0, 1, "grama.png"],

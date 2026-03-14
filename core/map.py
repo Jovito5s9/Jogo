@@ -98,7 +98,7 @@ class Map:
         for _ in range(1,10):
             point=[
                 random.randint(spawn_area[0],spawn_area[2]),
-                random.randint(spawn_area[1],spawn_area[3])
+                random.randint(spawn_area[3],spawn_area[1])
             ]
             if (point[0]<visible_x or point[0]>visible_size_x) and (point[1]<visible_y or point[1]>visible_size_y):
                 spawn_point_is_ok=True
@@ -280,6 +280,17 @@ class Map:
 
         with open(resource_path(mapa), "r") as file:
             data = json.load(file)
+        
+        self.procedural_ent_spawn=False
+        self.max_procedural_ents=0
+        self.ent_spawnable=[]
+        if "spawn" in data:
+            self.max_procedural_ents = data["spawn"].get("max", 2)
+            self.ent_spawnable = data["spawn"].get("enemies", [])
+            if self.ent_spawnable and self.max_procedural_ents:
+                self.procedural_ent_spawn=True
+            else:
+                self.procedural_ent_spawn=False
 
         self.linhas = data["linhas"]
         self.colunas = data["colunas"]
@@ -326,26 +337,8 @@ class Map:
     def carregar_mapa(self, sala):
         if not sala:
             return
+        self.limpar_mapa()
 
-        for obj in list(self.obj_list):
-            try:
-                self.world.map_layout.remove_widget(obj)
-            except Exception:
-                pass
-        for tile in list(self.tiles_list):
-            try:
-                self.world.map_layout.remove_widget(tile)
-            except Exception:
-                pass
-        for ent in list(self.ents):
-            if ent is not getattr(self.world, "player", None):
-                try:
-                    self.world.map_layout.remove_widget(ent)
-                except Exception:
-                    pass
-
-        self.tiles_list.clear()
-        self.obj_list.clear()
         self.ents = [self.world.player] if getattr(self.world, "player", None) else []
 
         offset_x = getattr(self, "offset_x", self.world.x)
