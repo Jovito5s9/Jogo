@@ -50,8 +50,6 @@ class World(FloatLayout):
 
 
     def create(self, colunas = 0, linhas = 0, tipo="esgoto"):
-        if tipo == "esgoto":
-            colunas, linhas = 20, 15
         self.map.create(colunas, linhas, tipo)
         self.linhas = self.map.linhas
         self.colunas = self.map.colunas

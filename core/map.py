@@ -66,12 +66,14 @@ class Map:
         
     
     def spawn_ent(self,*args):
+        if len(self.world.ents)<self.max_procedural_ents:
+            self.max_procedural_ents=len(self.world.ents)
         if not self.ent_spawnable or not self.procedural_ent_spawn:
             return
         if self.spawned_ent >= self.max_procedural_ents:
             return
-        if not self.world.width*(1+2*self.procedural_spawnable_area)>Window.width and \
-        self.world.height*(1+2*self.procedural_spawnable_area)>Window.height:
+        if not self.world.width>Window.width*(1+2*self.procedural_spawnable_area) and \
+        self.world.height>Window.height*(1+2*self.procedural_spawnable_area):
             return
         ent_name = random.choice(self.ent_spawnable)
         ent = create_ent(ent_name)
@@ -81,27 +83,32 @@ class Map:
         visible_y = self.world.scroll_view.scroll_y * self.world.height
         visible_size_x = visible_x + Window.width
         visible_size_y = visible_y + Window.height
-        spawn_area=[
-            int(visible_x-self.procedural_spawnable_area), 
-            int(visible_y-self.procedural_spawnable_area),
-            int(visible_size_x+self.procedural_spawnable_area),
-            int(visible_size_y+self.procedural_spawnable_area)
-            ]
+
+        margin_x = self.procedural_spawnable_area * Window.width
+        margin_y = self.procedural_spawnable_area * Window.height
+
+        spawn_area = [
+            int(max(0, int(visible_x - margin_x))),
+            int(max(0, int(visible_y - margin_y))),
+            int(min(self.world.width, int(visible_size_x + margin_x))),
+            int(min(self.world.height, int(visible_size_y + margin_y)))
+        ]
         spawn_point_is_ok=False
         point=[]
-        while not spawn_point_is_ok:
-            if not point:
-                point=[
-                    random.randint(spawn_area[0],spawn_area[2]),
-                    random.randint(spawn_area[1],spawn_area[3])
-                ]
+        for _ in range(1,10):
+            point=[
+                random.randint(spawn_area[0],spawn_area[2]),
+                random.randint(spawn_area[1],spawn_area[3])
+            ]
             if (point[0]<visible_x or point[0]>visible_size_x) and (point[1]<visible_y or point[1]>visible_size_y):
                 spawn_point_is_ok=True
-            else:
-                point=[]
-        ent.pos=point
-        self.world.map_layout.add_widget(ent)
-        self.world.ents.append(ent)
+                break
+        
+        if spawn_point_is_ok:
+            self.spawned_ent+=1
+            ent.pos=point
+            self.world.map_layout.add_widget(ent)
+            self.world.ents.append(ent)
 
     def limpar_mapa(self):
         for obj in self.obj_list[:]:
@@ -114,9 +121,6 @@ class Map:
 
 
     def create(self, xm, ym, type=None):
-        self.procedural_ent_spawn=True
-        self.ent_spawnable = ["rato"]
-        self.max_procedural_ents = 10
         type = type or "esgoto"
         self.type = type
         if type == "esgoto":
