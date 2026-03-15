@@ -97,7 +97,6 @@ class Map:
         if spawn_area[0] >= spawn_area[2] or spawn_area[1] >= spawn_area[3]:
             return
         
-        spawn_point_is_ok=False
 
         point=[
             random.randint(spawn_area[0],spawn_area[2]),
@@ -115,9 +114,12 @@ class Map:
             self.world.map_layout.remove_widget(obj)
         for tile in self.tiles_list[:]:
             self.world.map_layout.remove_widget(tile)
+        for ent in self.world.ents[:]:
+            self.world.map_layout.remove_widget(ent)
 
         self.tiles_list.clear()
         self.obj_list.clear()
+        self.world.ents=[self.world.player]
 
 
     def create(self, xm, ym, type=None):
