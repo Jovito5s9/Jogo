@@ -6,6 +6,9 @@
         "x": 4,
         "y": 5
     },
+    "entrada":{
+        "1":[8,13]
+    },
     "background":"inicial.png",
     "tiles": [
         [0, 0, "terra.png"],

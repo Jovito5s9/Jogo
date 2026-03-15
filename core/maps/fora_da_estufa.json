@@ -3,7 +3,7 @@
     "colunas": 42
 ,
     "entrada":{
-        "1":[1,22],
+        "1":[22,1],
         "2":[40,9]
     },
     "spawn":{
@@ -33,9 +33,9 @@
         [0, 18, "grama.png"],
         [0, 19, "grama.png"],
         [0, 20, "grama.png"],
-        [0, 21, "grama.png"],
-        [0, 22, "grama.png"],
-        [0, 23, "grama.png"],
+        [0, 21, "terra.png"],
+        [0, 22, "terra.png"],
+        [0, 23, "terra.png"],
         [0, 24, "grama.png"],
         [0, 25, "grama.png"],
         [0, 26, "grama.png"],
@@ -876,5 +876,31 @@
         [17, 40, "pedra.png", 23, true],
         [19, 31, "pedra.png", 23, true],
         [19, 35, "pedra.png", 23, true]
+    ],
+
+    "colliders":[
+        [0, 21, "vazio.png", 0, true, "load_mapa","inicial","1"],
+        [0, 22, "vazio.png", 0, true, "load_mapa","inicial","1"],
+        [0, 23, "vazio.png", 0, true, "load_mapa","inicial","1"],
+        [0, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [1, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [2, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [3, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [4, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [5, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [6, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [7, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [8, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [9, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [10, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [11, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [12, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [13, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [14, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [15, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [16, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [17, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [18, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"],
+        [19, 41, "vazio.png", 0, true, "load_mapa","deserto_antinatural","1"]
     ]
 }
