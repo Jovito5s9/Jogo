@@ -3,11 +3,12 @@
     "colunas": 42
 ,
     "entrada":{
-        "1":[1,1]
+        "1":[1,22],
+        "2":[40,9]
     },
     "spawn":{
         "enemies":["drone"],
-        "max":20
+        "max":10
     }
     ,
     "tiles": [
