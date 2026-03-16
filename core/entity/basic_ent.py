@@ -161,6 +161,11 @@ class BasicEnt(Image):
             self.y += self.speed_y * self.velocidade
 
     def atualizar_pos(self, *args):
+        # atualiza posição da barra de vida (se existir)
+        try:
+            self.barra_vida.pos = (self.center_x, self.center_y)
+        except Exception:
+            pass
         if not self.vivo:
             return
         if self.speed_x > 0:
@@ -173,11 +178,6 @@ class BasicEnt(Image):
             self.estado = "running"
         else:
             self.estado = "idle"
-        # atualiza posição da barra de vida (se existir)
-        try:
-            self.barra_vida.pos = (self.center_x, self.center_y)
-        except Exception:
-            pass
         self.hitbox = self.get_hitbox()
 
     def on_estado(self, *args):

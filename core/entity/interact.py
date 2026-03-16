@@ -66,7 +66,7 @@ def distancia(ent1, ent2=None):
 
 def autodestruct(atacante):
     for ent in atacante.world.ents:
-        if distancia(atacante,ent)<=atacante.alcance_fisico:
+        if distancia(atacante,ent)<=atacante.alcance_fisico*2:
             atacar(atacante=atacante, alvo=ent, force_damage=True)
     atacante.autodestruct()
 
