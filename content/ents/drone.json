@@ -4,7 +4,7 @@
   "sources": {
     "idle": "assets/sprites/drone/standard.png",
     "running": "assets/sprites/drone/standard.png",
-    "morto": "assets/sprites/drone/standard.png",
+    "morto": "assets/sprites/drone/morto.png",
     "autodestruct": "assets/sprites/drone/explosion.png"
   },
   "sprite": {
@@ -21,8 +21,8 @@
     "dano": 15,
     "velocidade": 1.8,
     "repulsao": 30,
-    "alcance_fisico": 60,
-    "raio_visao": 400,
+    "alcance_fisico": 120,
+    "raio_visao": 550,
     "i_frames_time": 1,
     "max_skills": 0
   },
