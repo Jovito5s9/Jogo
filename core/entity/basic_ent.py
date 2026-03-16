@@ -68,6 +68,7 @@ class BasicEnt(Image):
         self.power = 5
         self.dano = self.power
         self.atacando = False
+        self.ataque_delay=False
         self.alcance_fisico = 70
         self.dano_contato = 0
         self.velocidade = 3
@@ -172,7 +173,7 @@ class BasicEnt(Image):
             self.facing_right = True
         elif self.speed_x < 0:
             self.facing_right = False
-        if self.atacando:
+        if self.atacando and not self.ataque_delay:
             self.estado = "atacando"
         elif self.speed_x != 0 or self.speed_y:
             self.estado = "running"

@@ -21,6 +21,7 @@ class Player(BasicEnt):
         self.atualizar()
         self.repulsao = 20
         self.alcance_fisico = 100
+        self.ataque_forte_delay = 0.3
         self.acoes = {
             "soco_normal": self.soco_normal,
             "soco_forte": self.soco_forte
@@ -89,11 +90,21 @@ class Player(BasicEnt):
         self.repulsao = repulsao
 
     def remover_ataque(self, *args):
-        self.atacando = False
+        if self.ataque_name=="soco_forte":
+            Clock.schedule_once(self.remover_atacando,self.ataque_forte_delay)
+            self.ataque_delay=True
+        else:
+            self.remover_atacando()
+        
         if self.speed_x or self.speed_y:
             self.estado = "running"
         else:
             self.estado = "idle"
+
+    def remover_atacando(self,*args):
+        self.atacando = False
+        if self.ataque_delay:
+            self.ataque_delay=False
 
     def soco_forte(self, *args):
         if self.atacando:
@@ -120,7 +131,7 @@ class Player(BasicEnt):
 
         self.ataque_name = "soco_forte"
         self.atacar()
-        Clock.schedule_once(self.remover_ataque, 0.8)
+        Clock.schedule_once(self.remover_ataque, 0.4)
 
     def verificar_acao(self, *args):
         if not self.acao or not self.vivo:
