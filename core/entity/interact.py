@@ -64,8 +64,9 @@ def distancia(ent1, ent2=None):
     except Exception:
         return 0
 
-def autodestruct(atacante, alvo=None):
-    atacar(atacante=atacante, alvo=alvo, force_damage=True)
+def autodestruct(atacante):
+    for ent in atacante.world.ents:
+        atacar(atacante=atacante, alvo=ent, force_damage=True)
     atacante.autodestruct()
 
 
