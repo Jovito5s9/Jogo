@@ -45,12 +45,11 @@ class NPC(BasicEnt):
                 self.estado="idle"
         else: 
             self.add_player()
-            print(self.pos,self.global_pos)
     
     def get_hitbox(self, *args):
         x = self.x + (self.width * 0.25)
         y = self.y - 0.05 * self.height
         width = self.width * 0.5
-        height = self.height * 0.7
+        height = self.height * 0.8
         self.get_center_hitbox(x, y, width, height)
         return [x, y, width, height]

@@ -77,6 +77,9 @@ class Object(Tile):
         self.resistencia=0
         self.dano_colisao = 0
         self.drops = {}
+        self.solido=True
+        if source == "vazio.png":
+            self.colisivel=False
 
         if source == "pedra.png":
             self.hitbox = [
@@ -212,18 +215,24 @@ class Object(Tile):
     
     
     def ativar_func(self, *args):
-        if not self.passivo:
-            if self.extra_func == "load_mapa":
-                self.world.map.load_mapa(self.extra_arg1,entrada=self.extra_arg2)
-            elif self.extra_func == "create":
-                self.world.map.create(self.extra_arg1)
-        if self.extra_func == "spawn_npc" and self.passivo:
-            if not self.extra_arg2:
-                self.extra_arg2=self.pos
-            self.world.map.add_npc(ent_name=self.extra_arg1,pos=self.extra_arg2)
-            print(self.extra_func,self.extra_arg1,self.extra_arg2)
-        if self.passivo:
-            self.passivo=False
+        try:
+            if not self.passivo:
+                if self.extra_func == "load_mapa":
+                    self.world.map.load_mapa(self.extra_arg1,entrada=self.extra_arg2)
+                elif self.extra_func == "create":
+                    self.world.map.create(self.extra_arg1)
+        except:
+            Clock.schedule_once(self.ativar_func,0.1)
+        try:
+            if self.extra_func == "spawn_npc" and self.passivo:
+                if not self.extra_arg2:
+                    self.extra_arg2=self.pos
+                self.world.map.add_npc(ent_name=self.extra_arg1,pos=self.extra_arg2)
+            if self.passivo:
+                self.passivo=False
+        except:
+            self.passivo=True
+            Clock.schedule_once(self.ativar_func,0.1)
 
 
 class Grid(Tile):
