@@ -64,7 +64,12 @@ class Map:
                 None: "terra.png"
             }
         }
-        
+
+    def add_npc(self,ent_name,pos):
+        npc = create_ent(ent_name)
+        npc.global_pos=pos
+        self.world.map_layout.add_widget(npc)
+        self.world.ents.append(npc)
     
     def spawn_ent(self,*args):
         if len(self.world.ents)<self.max_procedural_ents:

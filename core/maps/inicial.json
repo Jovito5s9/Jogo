@@ -359,7 +359,6 @@
         [4, 19, "teto_quebrado.png", 0, true],
         [4, 20, "teto_quebrado.png", 0, true],
         [5, 19, "teto_quebrado.png", 0, true],
-        [6, 18, "teto_quebrado.png", 0, true],
         [7, 18, "teto_quebrado.png", 0, true],
         [7, 19, "descer_esgoto.png", 0, true],
         [8, 18, "teto_quebrado.png", 0, true],
@@ -374,6 +373,7 @@
     "colliders":[
         [14, 7, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"],
         [14, 8, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"],
-        [14, 9, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"]
+        [14, 9, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"],
+        [6, 18, "vazio.png", 0, true, "spawn_npc","gabiru",false]
     ]
 }

@@ -44,6 +44,9 @@ class Object(Tile):
         self.extra_func = extra_func
         self.extra_arg1 = extra_arg1
         self.extra_arg2 = extra_arg2
+        self.passivo=True
+        if self.passivo:
+            Clock.schedule_once(self.ativar_func,1)
         
         self.width = global_size
         self.height = global_size * 0.8
@@ -209,10 +212,18 @@ class Object(Tile):
     
     
     def ativar_func(self, *args):
-        if self.extra_func == "load_mapa":
-            self.world.map.load_mapa(self.extra_arg1,entrada=self.extra_arg2)
-        elif self.extra_func == "create":
-            self.world.map.create(self.extra_arg1)
+        if not self.passivo:
+            if self.extra_func == "load_mapa":
+                self.world.map.load_mapa(self.extra_arg1,entrada=self.extra_arg2)
+            elif self.extra_func == "create":
+                self.world.map.create(self.extra_arg1)
+        if self.extra_func == "spawn_npc" and self.passivo:
+            if not self.extra_arg2:
+                self.extra_arg2=self.pos
+            self.world.map.add_npc(ent_name=self.extra_arg1,pos=self.extra_arg2)
+            print(self.extra_func,self.extra_arg1,self.extra_arg2)
+        if self.passivo:
+            self.passivo=False
 
 
 class Grid(Tile):

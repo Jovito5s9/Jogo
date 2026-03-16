@@ -1,4 +1,5 @@
 from core.entity.basic_ent import BasicEnt
+from core.entity.npc import NPC
 from core.entity.ratona_boss import Ratona
 from core.entity.interact import ia_base
 from utils.resourcesPath import resource_path
@@ -11,6 +12,10 @@ import random
 
 REGISTRO_BOSS = {
     "ratona": Ratona
+}
+
+REGISTRO_NPC = {
+    "gabiru": NPC
 }
 
 def load_ent_data(ent_name):
@@ -111,6 +116,8 @@ def _apply_ataque_name(ent, ataque_name):
 def create_ent(ent_name, **kwargs):
     if ent_name in REGISTRO_BOSS:
         return REGISTRO_BOSS[ent_name](**kwargs)
+    if ent_name in REGISTRO_NPC:
+        return REGISTRO_NPC[ent_name](nome=ent_name,**kwargs)
     ent_data = load_ent_data(ent_name)
     if not ent_data:
         return None
