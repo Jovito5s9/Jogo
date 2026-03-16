@@ -1,5 +1,5 @@
 from kivy.uix.widget import Widget
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, RoundedRectangle
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty, BooleanProperty, NumericProperty
@@ -17,11 +17,18 @@ class Barra(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cor = ([1, 0, 0, 1])
+        self.cor_bg = ([0, 0, 0, 0.5])
         self.w = 1
         self.h = 1
         with self.canvas:
+            self.color = Color(*self.cor_bg)
+            self.bg_rect = RoundedRectangle(
+                pos=self.pos,
+                size=(self.w * (self.modificador / 100) + 1, self.h),
+            )
+        with self.canvas:
             self.color = Color(*self.cor)
-            self.rect = Rectangle(
+            self.rect = RoundedRectangle(
                 pos=self.pos,
                 size=(self.w * (self.modificador / 100) + 1, self.h),
             )
@@ -31,6 +38,8 @@ class Barra(Widget):
 
     def atualizar(self, *args):
         # Posiciona o rect relativo ao centro horizontal definido por self.w
+        self.bg_rect.pos = (self.x - (self.w / 2), self.y)
+        self.bg_rect.size = (self.w * 1 + 1, self.h)
         self.rect.pos = (self.x - (self.w / 2), self.y)
         self.rect.size = (self.w * (self.modificador / 100) + 1, self.h)
 
@@ -477,8 +486,10 @@ class BasicEnt(Image):
         self.atacando = False
         if self.auto_destruir_is_ok:
             self.vida=0
-            self.world.ents.remove(self)
-            self.world.map_layout.remove_widget(self)
+            if self in self.world.ents:
+                self.world.ents.remove(self)
+            if self.parent:
+                self.world.map_layout.remove_widget(self)
             self.morrer()
         if self.speed_x or self.speed_y:
             self.estado = "running"
