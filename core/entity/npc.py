@@ -1,6 +1,20 @@
 from core.entity.basic_ent import BasicEnt
 from core.entity.interact import distancia
+from utils.resourcesPath import resource_path
+from kivy.uix.image import Image
+from kivy.uix.button import ButtonBehavior
 from kivy.clock import Clock
+
+class ballon(ButtonBehavior,Image):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.source=resource_path("assets/ui/exclamacao.png")
+    
+    def on_release(self):
+        if not self.parent:
+            return
+        self.parent.interact()
+        self.parent.remove_widget(self)
 
 class NPC(BasicEnt):
     def __init__(self,nome, **kwargs):
@@ -21,7 +35,17 @@ class NPC(BasicEnt):
         Clock.schedule_interval(self.ia, 1/10)
         self.add_player()
         self.pos=2000,2000
+        self.interact_button=ballon()
     
+    def add_interact_button(self,*args):
+        self.add_widget(self.interact_button)
+        self.interact_button.pos=self.x,self.y+self.height
+        self.interact_button.size=(100,100)
+
+    def interact(self,*args):
+        print("oiiii")
+        pass
+
     def on_pos(self,*args):
         if not hasattr(self,"global_pos"):
             return
@@ -40,8 +64,12 @@ class NPC(BasicEnt):
         if self.player:
             if distancia(self,self.player) <= self.area_detect:
                 self.atacando=True
+                if not self.interact_button in self.children and "tradutor" in self.player.drivers:
+                    self.add_interact_button()
             else:
                 self.atacando=False
+                if self.interact_button in self.children:
+                    self.remove_widget(self.interact_button)
                 self.estado="idle"
         else: 
             self.add_player()

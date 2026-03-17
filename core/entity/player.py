@@ -47,7 +47,7 @@ class Player(BasicEnt):
     
     def unlock_skill(self,skill):
         self.drivers.append(skill)
-        print("unlocked")
+        
 
     def respawn(self,*args):
         self.i_frames=True
