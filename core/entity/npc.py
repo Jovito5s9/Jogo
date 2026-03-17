@@ -1,11 +1,15 @@
 from core.entity.basic_ent import BasicEnt
+from utils.customizedButton import CustomizedButton
 from core.entity.interact import distancia
 from utils.resourcesPath import resource_path
 from kivy.uix.image import Image
 from kivy.uix.button import ButtonBehavior
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.label import Label
 from kivy.clock import Clock
+from kivy.core.window import Window
 
-class ballon(ButtonBehavior,Image):
+class Ballon(ButtonBehavior,Image):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.source=resource_path("assets/ui/exclamacao.png")
@@ -13,12 +17,51 @@ class ballon(ButtonBehavior,Image):
     def on_release(self):
         if not self.parent:
             return
-        self.parent.interact()
+        self.parent.add_interact_menu()
         self.parent.remove_widget(self)
+
+
+class Escolha(CustomizedButton):
+    def __init__(self, text, func, **kwargs):
+        super().__init__(**kwargs)
+        self.text=text
+        self.func=func
+    
+    def on_release(self):
+        self.func()
+
+
+class Menu_interact(FloatLayout):
+    def __init__(self, nome_npc="", escolhas=[], funcs=[], **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint=(1,None)
+        self.npc=nome_npc
+        self.i=0
+        self.std_height=35
+        if escolhas:
+            for text in escolhas:
+                self.add_opc(text,self.i,funcs[self.i])
+                self.i+=1
+        self.size=(200,self.i*self.std_height)
+        self.add_widget(
+            Label(
+                text=self.npc, 
+                font_size=40,
+                pos=(Window.width/2,Window.height*0.6+self.std_height*2)
+            )
+        )
+    
+    def add_opc(self, text, i, func):
+        opc=Escolha(text=text,func=func)
+        self.add_widget(opc)
+        opc.height=self.std_height
+        opc.pos=Window.width/2,Window.height*0.6-(i*self.std_height*2)
+
 
 class NPC(BasicEnt):
     def __init__(self,nome, **kwargs):
         super().__init__(**kwargs)
+        self.nome=nome
         self.global_pos=self.pos
         self.i_frames=True
         self.sources={
@@ -35,11 +78,28 @@ class NPC(BasicEnt):
         Clock.schedule_interval(self.ia, 1/10)
         self.add_player()
         self.pos=2000,2000
-        self.interact_button=ballon()
+        self.menu_is_active=True
+        self.interact_button=Ballon()
+        self.interact_menu=None
+        self.interactions_text=["oi","..."]
+        self.interactions_funcs=[self.interact,self.free_menu]
     
+
+    def add_interact_menu(self,*args):
+        self.menu_is_active=True
+        if not "..." in self.interactions_text:
+            self.interactions_text.append("...")
+        if not self.free_menu in self.interactions_funcs:
+            self.interactions_funcs.append(self.free_menu)
+        self.interact_menu=Menu_interact(nome_npc=self.nome,escolhas=self.interactions_text,funcs=self.interactions_funcs)
+        self.add_widget(self.interact_menu)
+    
+    def free_menu(self,*args):
+        self.menu_is_active=False
+
     def add_interact_button(self,*args):
         self.add_widget(self.interact_button)
-        self.interact_button.pos=self.x,self.y+self.height
+        self.interact_button.pos=self.x,self.y+self.height*0.6
         self.interact_button.size=(100,100)
 
     def interact(self,*args):
@@ -66,10 +126,16 @@ class NPC(BasicEnt):
                 self.atacando=True
                 if not self.interact_button in self.children and "tradutor" in self.player.drivers:
                     self.add_interact_button()
+                if not self.menu_is_active:
+                    if self.interact_menu in self.children:
+                        self.remove_widget(self.interact_menu)
+
             else:
                 self.atacando=False
                 if self.interact_button in self.children:
                     self.remove_widget(self.interact_button)
+                if self.interact_menu in self.children:
+                    self.remove_widget(self.interact_menu)
                 self.estado="idle"
         else: 
             self.add_player()
