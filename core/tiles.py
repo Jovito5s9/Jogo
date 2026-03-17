@@ -77,7 +77,8 @@ class Object(Tile):
         self.resistencia=0
         self.dano_colisao = 0
         self.drops = {}
-        self.solido=True
+
+
         if source == "vazio.png":
             self.colisivel=False
 
@@ -102,10 +103,14 @@ class Object(Tile):
             self.colisivel = False
             self.dano_colisao = 0.075
 
-        elif self.type == "entrada_esgoto.png":
+        elif source == "entrada_esgoto.png":
             Clock.schedule_once(self.spawn, 0.5)
 
+        elif source=="usb.png":
+            self.colisivel=False
+
         self.position()
+
 
     def procurar_parent(self, *args):
         if self.parent:
@@ -141,6 +146,20 @@ class Object(Tile):
                 self.y + (self.height * 0.5),
                 self.width * 0.65,
                 self.height * 0.55,
+            ]
+        elif self.s == "pc.png":
+            self.hitbox = [
+                self.x + (self.width * 0.075),
+                self.y + (self.height * 0.5),
+                self.width * 0.65,
+                self.height * 0.55,
+            ]
+        elif self.s == "usb.png":
+            self.hitbox = [
+                self.x + (self.width * 0.4),
+                self.y + (self.height * 0.4),
+                self.width * 0.2,
+                self.height * 0.15,
             ]
         elif self.s in (
             "entrada_esgoto.png",
