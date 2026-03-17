@@ -9,6 +9,9 @@ from kivy.uix.label import Label
 from kivy.clock import Clock
 from kivy.core.window import Window
 
+size = Window.height / 12.5
+
+
 class Ballon(ButtonBehavior,Image):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -81,8 +84,8 @@ class NPC(BasicEnt):
         self.menu_is_active=True
         self.interact_button=Ballon()
         self.interact_menu=None
-        self.interactions_text=["oi","..."]
-        self.interactions_funcs=[self.interact,self.free_menu]
+        self.interactions_text=["sai daqui","..."]
+        self.interactions_funcs=[self.move_gabiru,self.free_menu]
     
 
     def add_interact_menu(self,*args):
@@ -96,6 +99,43 @@ class NPC(BasicEnt):
     
     def free_menu(self,*args):
         self.menu_is_active=False
+    
+    def move_gabiru(self,*args):
+        self.move_to_new_grid(17,5)
+    
+    def move_to_new_grid(self, x=None, y=None):
+        need_to_move = False
+
+        grid_x = int(self.x / size)
+        grid_y = int(self.y / size)
+
+        dx = 0 if x is None else x - grid_x
+        dy = 0 if y is None else y - grid_y
+
+        if x is not None and grid_x == x:
+            self.x = x * size
+            self.speed_x = 0
+        if y is not None and grid_y == y:
+            self.y = y * size
+            self.speed_y = 0
+
+        if dx != 0:
+            self.speed_x = 1 if dx > 0 else -1
+            self.speed_y = 0
+            need_to_move = True
+        elif dy != 0:
+            self.speed_y = 1 if dy > 0 else -1
+            self.speed_x = 0
+            need_to_move = True
+
+        self.global_pos = self.pos
+
+        if need_to_move:
+            Clock.schedule_once(lambda dt: self.move_to_new_grid(x, y), 0.1)
+        else:
+            if self.interact_button in self.children:
+                self.remove_widget(self.interact_button)
+
 
     def add_interact_button(self,*args):
         self.add_widget(self.interact_button)
