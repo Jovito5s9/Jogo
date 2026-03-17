@@ -369,13 +369,13 @@
         [12, 17, "teto_quebrado.png", 0, true],
         [13, 19, "teto_quebrado.png", 0, true],
         [13, 16, "teto_quebrado.png", 0, true],
-        [0, 16, "pc.png", 0, true],
-        [0, 17, "usb.png", 0, true]
+        [0, 16, "pc.png", 0, true]
     ],
     "colliders":[
         [14, 7, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"],
         [14, 8, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"],
         [14, 9, "vazio.png", 0, true, "load_mapa","fora_da_estufa","1"],
-        [6, 18, "vazio.png", 0, true, "spawn_npc","gabiru",false]
+        [6, 18, "vazio.png", 0, true, "spawn_npc","gabiru",false],
+        [0, 17, "usb.png", 0, true, "unlock_skill","tradutor",false]
     ]
 }

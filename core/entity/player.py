@@ -11,10 +11,14 @@ class Player(BasicEnt):
         self.sources["morto"] = resource_path("assets/sprites/player/morto.png")
         self.sources["soco"] = resource_path("assets/sprites/player/soco.png")
         self.sources["soco_forte"] = resource_path("assets/sprites/player/soco_forte.png")
+
         self.idle_frames = 2
         self.running_frames = 4
         self.atacando_frames = 3
         self.tamanho = 4
+
+
+        self.drivers=[]
 
         self.respawning=False
 
@@ -31,6 +35,7 @@ class Player(BasicEnt):
         Clock.schedule_interval(self.check_vida, 1 / 3)
         self.load_data()
 
+
         if not self.bitcores:
             self.bitcores = {
             "núcleo ceifador de energia": 1,
@@ -40,6 +45,10 @@ class Player(BasicEnt):
             "núcleo da vitalidade extendida":1
         }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
     
+    def unlock_skill(self,skill):
+        self.drivers.append(skill)
+        print("unlocked")
+
     def respawn(self,*args):
         self.i_frames=True
         self.vida=self.vida_maxima

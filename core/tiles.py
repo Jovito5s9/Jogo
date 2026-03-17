@@ -240,6 +240,9 @@ class Object(Tile):
                     self.world.map.load_mapa(self.extra_arg1,entrada=self.extra_arg2)
                 elif self.extra_func == "create":
                     self.world.map.create(self.extra_arg1)
+                elif self.extra_func=="unlock_skill":
+                    if not self.extra_arg1 in self.world.player.geral_skills:
+                        self.world.player.unlock_skill(self.extra_arg1)
         except:
             Clock.schedule_once(self.ativar_func,0.1)
         try:
