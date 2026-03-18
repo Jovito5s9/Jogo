@@ -126,7 +126,49 @@ class Object(Tile):
         self.get_hitbox()
 
     def get_hitbox(self, *args):
-        if self.s == "vazio.png":
+        if self.s == "morto1.png":
+            self.hitbox = [
+                self.x + (self.width * 0.2),
+                self.y + (self.height * 0.2),
+                self.width * 0.6,
+                self.height * 0.5
+            ]
+        elif self.s == "morto2.png":
+            self.hitbox = [
+                self.x + (self.width * 0.1),
+                self.y + (self.height * 0.2),
+                self.width * 0.8,
+                self.height * 0.3
+            ]
+        elif self.s == "morto3.png":
+            self.hitbox = [
+                self.x + (self.width * 0.15),
+                self.y + (self.height * 0.2),
+                self.width * 0.7,
+                self.height * 0.4
+            ]
+        elif self.s == "morto4.png":
+            self.hitbox = [
+                self.x + (self.width * 0.2),
+                self.y + (self.height * 0.2),
+                self.width * 0.6,
+                self.height * 0.4
+            ]
+        elif self.s == "morto5.png":
+            self.hitbox = [
+                self.x + (self.width * 0.2),
+                self.y + (self.height * 0.2),
+                self.width * 0.6,
+                self.height * 0.4
+            ]
+        elif self.s == "frascos.png":
+            self.hitbox = [
+                self.x + (self.width * 0.25),
+                self.y + (self.height * 0.2),
+                self.width * 0.6,
+                self.height * 0.6
+            ]
+        elif self.s == "vazio.png":
             self.hitbox = [
                 self.x,
                 self.y,
