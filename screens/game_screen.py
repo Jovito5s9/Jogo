@@ -148,6 +148,7 @@ class Game(FloatLayout):
         self.inventario_menu=False
         self.menu_player=Menu_player()
         self.menu_player.player=self.player
+        self.pausado = False
 
         self.interface = Interface()
         self.add_widget(self.interface)
@@ -211,6 +212,13 @@ class Game(FloatLayout):
         self.player.speed_x = j.x_value
         self.player.speed_y = j.y_value
 
+    def pause(self,*args):
+        if self.pausado:
+            self.world.despausar()
+            self.pausado = False
+            return
+        self.world.pausar()
+        self.pausado = True
     
     def ataque(self,*args):
         self.player.acao="soco_normal"
@@ -243,6 +251,8 @@ class Game(FloatLayout):
     
     def on_key_down(self, window, key, *args):
         self.key_pressed.add(key)
+        if 117 in self.key_pressed:
+            self.pause() #u, nao esquecer de remapiar as teclas q ta bagunçado kk
         if key == 105:
             self.menu_window(tipo="inventario")
         if key == 101:

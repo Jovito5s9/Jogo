@@ -246,6 +246,21 @@ class World(FloatLayout):
         self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
         self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
         self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1/3)
+    
+    def pausar(self,*args):
+        if self.ev_colisao:
+            self.ev_colisao.cancel()
+        if self.ev_sprite:
+            self.ev_sprite.cancel()
+        if self.ev_camera:
+            self.ev_camera.cancel()
+        if self.ev_spawn_ents:
+            self.ev_spawn_ents.cancel()
+        for ent in self.ents:
+            ent.estado="idle"
+
+    def despausar(self,*args):
+        self.atualizar()
         
     def new_limites(self, *args):
         self.limites = (
