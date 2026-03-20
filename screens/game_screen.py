@@ -11,6 +11,7 @@ from utils.joystick import Joystick
 from utils.resourcesPath import resource_path
 from screens.shared import configuracoes
 from screens.menu_player import Menu_player
+from screens.menu_pause import MenuPause
 
 class InteractiveImage(ButtonBehavior, Image):
     pass
@@ -147,12 +148,15 @@ class Game(FloatLayout):
         self.world.load_mapa("inicial", respawn=True)
         self.inventario_menu=False
         self.menu_player=Menu_player()
+        self.menu_pause=MenuPause()
         self.menu_player.player=self.player
         self.pausado = False
 
         self.interface = Interface()
         self.add_widget(self.interface)
         
+    def on_parent(self,*args):
+        self.menu_pause.game=self
 
     def pre_enter(self, *args):
         if self.joystick_clock:
@@ -215,9 +219,11 @@ class Game(FloatLayout):
     def pause(self,*args):
         if self.pausado:
             self.world.despausar()
+            self.menu_pause.dismiss()
             self.pausado = False
             return
         self.world.pausar()
+        self.menu_pause.open()
         self.pausado = True
     
     def ataque(self,*args):
