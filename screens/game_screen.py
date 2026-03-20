@@ -244,9 +244,11 @@ class Game(FloatLayout):
     def on_key_down(self, window, key, *args):
         self.key_pressed.add(key)
         if key == 105:
-            self.menu_window()
+            self.menu_window(tipo="inventario")
         if key == 101:
             self.menu_window(tipo="equipaveis")
+        if key == 99:
+            self.menu_window(tipo="core")
     
     def on_key_up(self, window, key, *args):
         self.key_pressed.remove(key)

@@ -65,5 +65,12 @@ ITENS = {
             "descrição": "Um chip energético que fornece \ntempo de uso extra.",
             "source" : "assets/itens/BitCore/robust.png"
             }
+    },
+    "core":{
+        "tradutor":{
+            "tipo":"Driver",
+            "descrição":"Extenção das capacidades que per\nmite comunicação e tradução de sinais para\nalgo que até uma batata entenda.",
+            "source":"assets/ui/driver_comunicacao.png"
+        }
     }
 }

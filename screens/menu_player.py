@@ -22,7 +22,7 @@ class InteractiveImage(ButtonBehavior, Image):
     pass
 
 class Menu_player(Popup):
-    tipo = OptionProperty("inventario", options=("inventario", "equipaveis"))
+    tipo = OptionProperty("inventario", options=("inventario", "equipaveis", "core"))
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -39,6 +39,7 @@ class Menu_player(Popup):
         self.selected_item_panel = None
         self.equipped_panel = None
         self.equipped_grid = None
+        self.cpu_layout=None
         self.scroll_view = None
         self.grid = None
 
@@ -46,7 +47,8 @@ class Menu_player(Popup):
 
         self.menu = {
             "inventario": self.inventario,
-            "equipaveis": self.equipaveis
+            "equipaveis": self.equipaveis,
+            "core":self.cpu
         }
 
     def on_open(self):
@@ -123,7 +125,8 @@ class Menu_player(Popup):
         self.equipped_panel.add_widget(self.equipped_grid)
 
         self.selection_panel.add_widget(self.selected_item_panel)
-        self.selection_panel.add_widget(self.equipped_panel)
+        if self.tipo=="equipaveis":
+            self.selection_panel.add_widget(self.equipped_panel)
 
         self.layout.add_widget(self.selection_panel)
 
@@ -153,7 +156,7 @@ class Menu_player(Popup):
             spacing=4
         )
         nome_label = Label(
-            text=f"{nome}  x{quantidade}",
+            text=f"{nome}  {quantidade}",
             font_size=STD_font_size*0.7,
             size_hint=(1, None),
             height=30
@@ -246,7 +249,8 @@ class Menu_player(Popup):
 
 
     def atualizar_equipados(self):
-
+        if self.tipo!="equipados":
+            return
         player = getattr(self, "player", None)
         if not player:
             return
@@ -314,7 +318,7 @@ class Menu_player(Popup):
 
             info = itens.get(nome, {})
 
-            img_source = self.safe_image(info.get("source"))
+            img_source = self.safe_image(info.get("source",""))
 
             btn = InteractiveImage(
                 source=resource_path(img_source),
@@ -324,13 +328,56 @@ class Menu_player(Popup):
             )
             btn.item_nome = nome
             btn.item_info = info
-            btn.item_quantidade = quantidade
+            if quantidade!=1:
+                btn.item_quantidade = "x "+str(quantidade)
             btn.bind(on_press=self.on_item_selected)
 
             self.grid.add_widget(btn)
 
         if self.scroll_view.parent is None:
             self.layout.add_widget(self.scroll_view)
+
+    def show_drivers(self,*args):
+        drivers = self.player.drivers
+        self.grid.cols=1
+        drivers_to_show={}
+        for driver in drivers:
+            drivers_to_show[driver]=1
+
+        str_drivers=" --- "
+        if drivers:
+            str_drivers=""
+            n_drivers=len(drivers_to_show)
+            for d in drivers_to_show:
+                str_drivers+=d
+                if n_drivers>1:
+                    n_drivers-=1
+                    str_drivers+=", "
+        self.adicionar_itens(drivers_to_show)
+
+        poder=self.player.power
+        speed=self.player.velocidade
+        vida=self.player.vida
+        vida_max=self.player.vida_maxima
+        skills=" --- "
+        slots_skills=self.player.skills_slots.values()
+        if slots_skills:
+            skills=""
+            n_skills=len(slots_skills)
+            for skill in slots_skills:
+                skills+=skill
+                if n_skills>1:
+                    n_skills-=1
+                    skills+=", "
+        br="\n"
+        text_label_player_data=str(f"Data Body {br} {br} Poder: {poder} {br}Velocidade: {speed} {br}Vida: {vida} : {100*vida/vida_max} % {br}Habilidades {skills}{br}Drivers: {str_drivers}")
+        player_data=Label(text=text_label_player_data)
+        self.equipped_panel.add_widget(player_data)
+        for child in self.equipped_panel.children[:]:
+            if child!=player_data:
+                self.equipped_panel.remove_widget(child)
+        if not self.equipped_panel in self.selection_panel.children:
+            self.selection_panel.add_widget(self.equipped_panel)
 
     def equipaveis(self, *args):
         self.preparar_menu()
@@ -358,3 +405,7 @@ class Menu_player(Popup):
             self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
             if self.scroll_view.parent is None:
                 self.layout.add_widget(self.scroll_view)
+    
+    def cpu(self,*args):
+        self.preparar_menu()
+        self.show_drivers()
