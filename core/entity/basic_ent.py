@@ -1,15 +1,70 @@
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, RoundedRectangle
 from kivy.clock import Clock
+from kivy.core.window import Window
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty, BooleanProperty, NumericProperty
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import ButtonBehavior
+from kivy.uix.label import Label
 
 import json
 import os
 from utils.resourcesPath import resource_path
+from utils.customizedButton import CustomizedButton
 from core.entity.interact import distancia
 from core.BitCoreSkills import SKILLS
 from saved.itens_db import ITENS
+
+
+class Ballon(ButtonBehavior,Image):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.source=resource_path("assets/ui/exclamacao.png")
+    
+    def on_release(self):
+        if not self.parent:
+            return
+        self.parent.add_interact_menu()
+        self.parent.remove_widget(self)
+
+
+class Escolha(CustomizedButton):
+    def __init__(self, text, func, **kwargs):
+        super().__init__(**kwargs)
+        self.text=text
+        self.func=func
+    
+    def on_release(self):
+        self.func()
+
+
+class Menu_interact(FloatLayout):
+    def __init__(self, nome_npc="", escolhas=[], funcs=[], **kwargs):
+        super().__init__(**kwargs)
+        self.largura=200
+        self.size_hint=(None,None)
+        self.npc=nome_npc
+        self.i=0
+        self.std_height=35
+        if escolhas:
+            for text in escolhas:
+                self.add_opc(text,self.i,funcs[self.i])
+                self.i+=1
+        self.size=(self.largura,self.i*self.std_height)
+        self.add_widget(
+            Label(
+                text=self.npc, 
+                font_size=40,
+                pos=(Window.width/2 - self.largura/2,Window.height*0.6+self.std_height*2)
+            )
+        )
+    
+    def add_opc(self, text, i, func):
+        opc=Escolha(text=text,func=func)
+        self.add_widget(opc)
+        opc.height=self.std_height
+        opc.pos=Window.width/2 - self.largura/2,Window.height*0.6-(i*self.std_height*2)
 
 class Barra(Widget):
     modificador = NumericProperty(100)
@@ -109,7 +164,7 @@ class BasicEnt(Image):
         if self.parent:
             self.world = self.parent.parent.parent
         else:
-            Clock.schedule_once(self.procurar_parent, 0.2)
+            Clock.schedule_once(self.procurar_parent, 0.1)
             
 
     def atualizar(self, *args):

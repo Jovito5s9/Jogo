@@ -1,7 +1,13 @@
 from kivy.clock import Clock
-from core.entity.basic_ent import BasicEnt
+from kivy.core.window import Window
+from core.entity.basic_ent import BasicEnt, Menu_interact, Escolha
 from core.entity.interact import atacar, distancia
 from utils.resourcesPath import resource_path
+
+class DriverInteract(Menu_interact):
+    def __init__(self, nome_npc="", escolhas=..., funcs=..., **kwargs):
+        super().__init__(nome_npc, escolhas, funcs, **kwargs)
+
 
 class Player(BasicEnt):
     def __init__(self, **kwargs):
@@ -17,10 +23,14 @@ class Player(BasicEnt):
         self.atacando_frames = 3
         self.tamanho = 4
 
+        self.driver_menu=None
 
         self.drivers=[]
+        self.drivers_cache=[]
 
         self.respawning=False
+
+        self.menu_is_active=False
 
         self.atualizar()
         self.repulsao = 20
@@ -35,6 +45,8 @@ class Player(BasicEnt):
         Clock.schedule_interval(self.check_vida, 1 / 3)
         self.load_data()
 
+        Clock.schedule_interval(self.driver_atualizar,0.1)
+
 
         if not self.bitcores:
             self.bitcores = {
@@ -45,6 +57,51 @@ class Player(BasicEnt):
             "núcleo da vitalidade extendida":1
         }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
     
+    def driver_atualizar(self,*args):
+        if self.menu_is_active:
+            return
+        if self.drivers==self.drivers_cache:
+            return
+        driver = [item for item in self.drivers if item not in self.drivers_cache]
+        driver=driver[0]
+        self.menu_is_active=True
+        self.add_interact_menu(driver=driver)
+        pass
+
+    def add_interact_menu(self,driver):
+        interactions_text=[
+            f"aceitar novo driver: {driver}",
+            "não atualizar"
+        ]
+        interactions_funcs=[
+            self.aceitar_driver,
+            self.free_menu
+        ]
+        self.driver_menu=DriverInteract(nome_npc=driver,escolhas=interactions_text,funcs=interactions_funcs)
+        self.world.parent.parent.add_widget(self.driver_menu)
+    
+    def aceitar_driver(self,*args):
+        print(self.drivers_cache)
+        driver = [item for item in self.drivers if item not in self.drivers_cache]
+        if not driver:
+            return
+        driver=driver[0]
+        self.drivers_cache.append(driver)
+        l=[]
+        for i in self.drivers_cache:
+            if not i in l:
+                l.append(i)
+        l.sort()
+        self.drivers_cache=l
+        self.free_menu()
+        print(self.drivers_cache)
+
+    def free_menu(self,*args):
+        self.menu_is_active=False
+        if self.driver_menu in self.world.parent.parent.children:
+            self.world.parent.parent.remove_widget(self.driver_menu)
+
+
     def unlock_skill(self,skill):
         self.drivers.append(skill)
         
