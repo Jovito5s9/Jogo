@@ -1,12 +1,22 @@
 from kivy.clock import Clock
 from kivy.core.window import Window
-from core.entity.basic_ent import BasicEnt, Menu_interact, Escolha
+from core.entity.basic_ent import BasicEnt, Menu_interact, Ballon as blln
 from core.entity.interact import atacar, distancia
 from utils.resourcesPath import resource_path
 
 class DriverInteract(Menu_interact):
     def __init__(self, nome_npc="", escolhas=..., funcs=..., **kwargs):
         super().__init__(nome_npc, escolhas, funcs, **kwargs)
+    
+class Ballon(blln):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def on_release(self):
+        if not self.parent:
+            return
+        self.parent.add_interact_menu()
+        self.parent.remove_widget(self)
 
 
 class Player(BasicEnt):
@@ -24,6 +34,7 @@ class Player(BasicEnt):
         self.tamanho = 4
 
         self.driver_menu=None
+        self.ballon=Ballon()
 
         self.drivers=[]
         self.drivers_cache=[]
@@ -45,7 +56,7 @@ class Player(BasicEnt):
         Clock.schedule_interval(self.check_vida, 1 / 3)
         self.load_data()
 
-        Clock.schedule_interval(self.driver_atualizar,0.1)
+        Clock.schedule_interval(self.driver_atualizar,1/40)
 
 
         if not self.bitcores:
@@ -58,20 +69,26 @@ class Player(BasicEnt):
         }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
     
     def driver_atualizar(self,*args):
-        if self.menu_is_active:
-            return
         if self.drivers==self.drivers_cache:
             return
+        if self.menu_is_active:
+            return
+        self.add_ballon()
+
+    def add_ballon(self,*args):
+        std_size=100
+        if not self.ballon in self.children:
+            self.add_widget(self.ballon)
+        self.ballon.pos=self.center_x - std_size/2,self.y+self.height*0.4
+        self.ballon.size=(std_size,std_size)
+
+    def add_interact_menu(self,*args):
+        self.menu_is_active=True
         driver = [item for item in self.drivers if item not in self.drivers_cache]
         driver=driver[0]
-        self.menu_is_active=True
-        self.add_interact_menu(driver=driver)
-        pass
-
-    def add_interact_menu(self,driver):
         interactions_text=[
-            f"aceitar novo driver: {driver}",
-            "não atualizar"
+            f"instalar driver",
+            "não instalar driver"
         ]
         interactions_funcs=[
             self.aceitar_driver,
