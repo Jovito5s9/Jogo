@@ -3,7 +3,7 @@
     "colunas": 42
 ,
     "entrada":{
-        "1":[1,10]
+        "1":[0,10]
     },
     "spawn":{
         "enemies":["drone"],
@@ -946,25 +946,25 @@
         [19, 28, "pedra.png", 23, true]
     ],
     "colliders":[
-        [0, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [1, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [2, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [3, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [4, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [5, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [6, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [7, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [8, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [9, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [10, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [11, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [12, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [13, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [14, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [15, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [16, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [17, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [18, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
-        [19, 0, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"]
+        [0, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [1, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [2, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [3, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [4, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [5, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [6, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [7, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [8, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [9, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [10, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [11, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [12, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [13, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [14, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [15, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [16, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [17, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [18, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"],
+        [19, -1, "vazio.png", 0, true, "load_mapa","fora_da_estufa","2"]
     ]
 }
