@@ -7,6 +7,7 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties import OptionProperty
+from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 
 from utils.resourcesPath import resource_path
@@ -20,6 +21,20 @@ import os
 
 class InteractiveImage(ButtonBehavior, Image):
     pass
+
+class Item(InteractiveImage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        texture = Image(source=resource_path("assets/ui/item_bg.png")).texture
+        with self.canvas.before:
+            Color(0.3, 0.3, 0.3, 0.5)
+            self.item_bg = Rectangle(texture=texture, pos=self.pos, size=self.size)
+        self.bind(pos=self.update_bg, size=self.update_bg)
+    
+    def update_bg(self, *args):
+        self.item_bg.pos = self.pos
+        self.item_bg.size = self.size
+
 
 class Menu_player(Popup):
     tipo = OptionProperty("inventario", options=("inventario", "equipaveis", "core"))
@@ -63,17 +78,21 @@ class Menu_player(Popup):
     
     def menu_equipaveis(self,*args):
         if self.tipo=="equipaveis":
-            pass
+            return
         self.tipo="equipaveis"
         self.on_open()
     
     def menu_inventario(self,*args):
         if self.tipo=="inventario":
-            pass
+            return
         self.tipo="inventario"
         self.on_open()
     
     def preparar_menu(self, *args):
+        with self.canvas.before:
+            Color(1, 1, 1, 1)
+            self.bg_rect = Rectangle(pos=self.pos, size=self.size)
+        self.background_color = (1, 1, 1, 1)
         self.layout.clear_widgets()
 
         browse_layout =FloatLayout(size_hint=(1, 0.2))
@@ -320,7 +339,7 @@ class Menu_player(Popup):
 
             img_source = self.safe_image(info.get("source",""))
 
-            btn = InteractiveImage(
+            btn = Item(
                 source=resource_path(img_source),
                 size_hint=(None, None),
                 allow_stretch=True,
