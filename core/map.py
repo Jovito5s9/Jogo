@@ -1,5 +1,6 @@
 from kivy.core.window import Window
 from kivy.uix.image import Image
+from kivy.uix.label import Label
 from kivy.clock import Clock
 import json
 import random
@@ -22,6 +23,7 @@ class Object(Obj):
 
 class Map:
     def __init__(self, world):
+        self.letreiro = None
         self.world = world
 
         self.respawn_map = "inicial"
@@ -113,6 +115,27 @@ class Map:
             ent.pos=point
             self.world.map_layout.add_widget(ent)
             self.world.ents.append(ent)
+
+    def letreiro_msg(self, msg, duration=2):
+        if self.letreiro:
+            return
+        self.letreiro = Label(
+            text=msg,
+            font_size=60,
+            bold=True,
+            color=(0.15, 0.4, 0.15, 1),
+        )
+        self.world.map_layout.add_widget(self.letreiro)
+        Clock.schedule_once(self.remover_letreiro, duration)
+    
+    def remover_letreiro(self, *args):
+        if self.letreiro:
+            self.world.map_layout.remove_widget(self.letreiro)
+            self.letreiro = None
+
+    def show_dungeon_level(self, level):
+        self.letreiro_msg(f"Nível {level}", duration=3)
+        self.letreiro.pos_hint = {"center_x": 0.5, "center_y": 0.8}
 
     def limpar_mapa(self):
         for obj in self.obj_list[:]:
@@ -266,6 +289,10 @@ class Map:
 
         if self.nivel == 10 and hasattr(self.world, "gerar_boss"):
             self.world.gerar_boss()
+        
+        if self.type == "esgoto":
+            self.show_dungeon_level(self.nivel)
+        self.world.trocando_mapa = False
 
 
     def re_map(self, type=None, nivel=1):
@@ -277,9 +304,8 @@ class Map:
             self.carregar_mapa(self.masmorra[self.nivel])
         else:
             if type == "esgoto":
-                self.world.create(type)
-            else:
-                self.world.create(self.colunas, self.linhas, type)
+                self.type=type
+                self.world.create(colunas=self.colunas, linhas=self.linhas, tipo=type)
 
 
     def load_mapa(self, mapa, respawn=False, entrada=0):
@@ -343,6 +369,7 @@ class Map:
                 self.respawn_map = self.respawn_map.replace(".json", "")
             if "core/maps/" in self.respawn_map:
                 self.respawn_map = self.respawn_map.replace("core/maps/", "")
+        self.world.trocando_mapa = False
 
     
     def carregar_mapa(self, sala, entrada=[]):
@@ -412,4 +439,8 @@ class Map:
     )
             else:
                 self.world.player.pos = (offset_x, offset_y)
+
+        if self.type == "esgoto":
+            self.show_dungeon_level(self.nivel)
+        self.world.trocando_mapa = False
 

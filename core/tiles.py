@@ -257,11 +257,16 @@ class Object(Tile):
         if not self.world:
             return
         if self.type in ("descer_esgoto.png", "subir_esgoto.png"):
+            ent_is_ok = False
             for ent in self.world.ents:
                 if not ent.vivo:
                     continue
                 if not ent == self.world.player:
-                    return
+                    continue
+                if ent.grid == (self.coluna, self.linha):
+                    ent_is_ok = True
+            if not ent_is_ok:
+                return
             if not self.world.trocando_mapa:
                 if self.type == "descer_esgoto.png":
                     self.world.map.re_map(type="esgoto")
