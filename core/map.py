@@ -305,7 +305,7 @@ class Map:
         else:
             if type == "esgoto":
                 self.type=type
-                self.world.create(colunas=self.colunas, linhas=self.linhas, tipo=type)
+                self.world.create(colunas=25, linhas=25, tipo=type)
 
 
     def load_mapa(self, mapa, respawn=False, entrada=0):

@@ -261,10 +261,9 @@ class Object(Tile):
             for ent in self.world.ents:
                 if not ent.vivo:
                     continue
-                if not ent == self.world.player:
-                    continue
-                if ent.grid == (self.coluna, self.linha):
+                if ent == self.world.player and ent.grid == (self.coluna, self.linha):
                     ent_is_ok = True
+                    break
             if not ent_is_ok:
                 return
             if not self.world.trocando_mapa:
