@@ -2,6 +2,10 @@ from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 
 from utils.customizedButton import CustomizedButton
+from utils.resourcesPath import resource_path
+from screens.shared import configuracoes
+
+import json
 
 class MenuPause(Popup):
     def __init__(self, **kwargs):
@@ -14,6 +18,9 @@ class MenuPause(Popup):
         self.separator_height = 0
 
 
+        self.linguagem=configuracoes().get("linguagem","pt")
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
+
         self.layout=BoxLayout(
             orientation='vertical',
             padding=(100,30,100,30),
@@ -21,21 +28,21 @@ class MenuPause(Popup):
         )
 
         self.button_continue = CustomizedButton(
-            text='Continuar',
+            text=self.ui_texts["continue"],
             font_size=45,
             bold=True,
             color=(0.1, 0.1, 0.1, 1),
         )
         self.button_continue.bind(on_release=self.continuar)
         self.button_config = CustomizedButton(
-            text='Configurações',
+            text=self.ui_texts["settings"],
             font_size=40,
             bold=True,
             color=(0.1, 0.1, 0.1, 1),
         )
         self.button_config.bind(on_release=self.configs)
         self.button_quit = CustomizedButton(
-            text='Menu Principal',
+            text=self.ui_texts["main_menu"],
             font_size=40,
             bold=True,
             color=(0.1, 0.1, 0.1, 1),

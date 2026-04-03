@@ -5,13 +5,19 @@ from kivy.app import App
 
 from utils.customizedButton import CustomizedButton
 from utils.resourcesPath import resource_path
-from screens.shared import STD_font_size
+from screens.shared import STD_font_size, configuracoes
+
+import json
 
 class MenuScreen(Screen):
     def __init__(self, GameScreenManager=None, **kwargs):
         super().__init__(**kwargs)
         global STD_font_size
         self.GameScreenManager=GameScreenManager
+
+        self.linguagem=configuracoes().get("linguagem","pt")
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
+
         background=Image(
             source=resource_path("assets/geral/dungeon_background.png"),
             size=self.size,
@@ -30,7 +36,7 @@ class MenuScreen(Screen):
         )
           
         self.button_play = CustomizedButton(
-            text='Jogar',
+            text=self.ui_texts["play"],
             font_size=STD_font_size*1.2,
             bold=True,
             color=(0.1, 0.1, 0.1, 1),
@@ -39,7 +45,7 @@ class MenuScreen(Screen):
         )
         self.button_play.bind(on_release=self.jogar)
         self.button_configs = CustomizedButton(
-            text='Configurações',
+            text=self.ui_texts["settings"],
             font_size=STD_font_size*1.2,
             bold=True,
             color=(0.1, 0.1, 0.1, 1),
@@ -48,7 +54,7 @@ class MenuScreen(Screen):
         )
         self.button_configs.bind(on_release=self.configurar)
         self.button_sair = CustomizedButton(
-            text='Sair',
+            text=self.ui_texts["exit"],
             font_size=STD_font_size*1.2,
             bold=True,
             color=(0.1, 0.1, 0.1, 1),

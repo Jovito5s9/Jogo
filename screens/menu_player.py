@@ -61,8 +61,15 @@ class Menu_player(Popup):
 
         self.linguagem=configuracoes().get("linguagem","pt")
         self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
-
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         self.player = None
+
+        if self.linguagem!=configuracoes().get("linguagem","pt"):
+            self.linguagem=configuracoes().get("linguagem","pt")
+
+            self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
+
+            self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
 
         self.menu = {
             "inventario": self.inventario,
@@ -78,6 +85,7 @@ class Menu_player(Popup):
         if self.linguagem!=configuracoes().get("linguagem","pt"):
             self.linguagem=configuracoes().get("linguagem","pt")
             self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
+            self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         self.menu[self.tipo]()
         Clock.schedule_once(lambda dt: self.atualizar_equipados(), 0)
 
@@ -129,7 +137,7 @@ class Menu_player(Popup):
             spacing=6
         )
         self.selected_item_panel.add_widget(
-            Label(text="Nenhum item selecionado", font_size=STD_font_size*0.6)
+            Label(text=self.ui_texts["no_items_selected"], font_size=STD_font_size*0.6)
         )
 
         self.equipped_panel = BoxLayout(
@@ -140,7 +148,7 @@ class Menu_player(Popup):
         )
 
         equipped_title = Label(
-            text="Equipados",
+            text=self.ui_texts["equipped"],
             font_size=STD_font_size*0.5,
             size_hint=(1, 0.2)
         )
@@ -220,7 +228,7 @@ class Menu_player(Popup):
     #auxilia nas identificacoes
             if slot_equipado is not None:
                 desequipar_button = CustomizedButton(
-                    text='desequipar',
+                    text=self.ui_texts["unequip"],
                     font_size=STD_font_size*0.6,
                     size_hint=(0.8, None),
                     height=40
@@ -239,7 +247,7 @@ class Menu_player(Popup):
 
                 if slot_livre is not None:
                     equipar_button = CustomizedButton(#equipar
-                        text=f'equipar (slot {slot_livre})',
+                        text=f'{self.ui_texts["equip"]} (slot {slot_livre})',
                         font_size=STD_font_size*0.6,
                         size_hint=(0.8, None),
                         height=40
@@ -249,7 +257,7 @@ class Menu_player(Popup):
 
                 else:
                     sem_slot = Label(
-                        text="Sem slots livres. Desequipe um item antes de equipar.",
+                        text=self.ui_texts["no_slots"],
                         font_size=STD_font_size*0.45,
                         size_hint=(1, None),
                         height=40
@@ -335,7 +343,7 @@ class Menu_player(Popup):
         itens = self.itens_dict.get(self.tipo, {})
 
         if not inventario:
-            self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
+            self.grid.add_widget(Label(text=self.ui_texts["no_items"], font_size=STD_font_size*0.8, size_hint_y=None, height=40))
             if self.scroll_view.parent is None:
                 self.layout.add_widget(self.scroll_view)
             return
@@ -396,7 +404,7 @@ class Menu_player(Popup):
                     n_skills-=1
                     skills+=", "
         br="\n"
-        text_label_player_data=str(f"Data Body {br} {br} Poder: {poder} {br}Velocidade: {speed} {br}Vida: {vida} : {100*vida/vida_max} % {br}Habilidades {skills}{br}Drivers: {str_drivers}")
+        text_label_player_data=str(f"Data Body {br} {br}power: {poder} {br}velocity: {speed} {br}health: {vida} : {100*vida/vida_max} % {br}skills: {skills}{br}drivers: {str_drivers}")
         player_data=Label(text=text_label_player_data)
         self.equipped_panel.add_widget(player_data)
         for child in self.equipped_panel.children[:]:
@@ -407,9 +415,12 @@ class Menu_player(Popup):
 
     def equipaveis(self, *args):
         self.preparar_menu()
-
+        print(self.tipo)
         if not self.player:
             return
+        if not self.selection_panel.parent:
+            self.layout.add_widget(self.selection_panel)
+        self.atualizar_equipados()
 
         inventario = self.player.bitcores
 

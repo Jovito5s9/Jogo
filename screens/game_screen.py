@@ -255,7 +255,7 @@ class Game(FloatLayout):
                 self.menu_player.dismiss()
                 return
             self.menu_player.tipo=tipo
-            self.menu_player.on_open()
+            self.menu_player.open()
 
         else:
             self.menu_player.tipo=tipo
@@ -274,7 +274,6 @@ class Game(FloatLayout):
     
     def on_key_down(self, window, key, scancode, codepoint, modifiers):
         self.key_pressed.add(key)
-
         if key == self.keymap["pause"] and not self._pause_pressed:
             self.pause()
             self._pause_pressed = True
@@ -282,6 +281,10 @@ class Game(FloatLayout):
 
         elif key == self.keymap["inventory"]:
             self.menu_window(tipo="inventario")
+        elif key == self.keymap["equip"]:
+            self.menu_window(tipo="equipaveis")
+        elif key == self.keymap["core"]:
+            self.menu_window(tipo="core")
     
     def on_key_up(self, window, key, *args):
         if key in self.key_pressed:

@@ -16,14 +16,16 @@ class ConfiguracoesScreen(Screen):
         self.configs=configuracoes()
         self.teclado=self.configs["teclado"]
         self.configs_path=resource_path("saved/configuracoes.json")
+        self.linguagem = self.configs["linguagem"]
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         if self.teclado:
-            self.input='Modo teclado'
+            self.input=self.ui_texts["keyboard_mode"]
         else:
-            self.input='Modo toque'
+            self.input=self.ui_texts["touch_mode"]
         if self.configs["font"]==35:
-            self.font='fonte normal'
+            self.font=self.ui_texts["low_font_size"]
         else:
-            self.font='fonte grande'
+            self.font=self.ui_texts["high_font_size"]
 
         self.layout=FloatLayout()
         layout_inputs=FloatLayout(
@@ -40,7 +42,7 @@ class ConfiguracoesScreen(Screen):
             )
 
         self.label_inputs=Label(
-            text='Layout de controle:',
+            text=self.ui_texts["control_layout"],
             font_size=STD_font_size,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
@@ -53,7 +55,7 @@ class ConfiguracoesScreen(Screen):
             )
         
         self.label_font=Label(
-            text='Tamanho da fonte:',
+            text=self.ui_texts["font_size"],
             font_size=STD_font_size,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
@@ -66,13 +68,13 @@ class ConfiguracoesScreen(Screen):
             )
                 
         self.label_linguagem=Label(
-            text='Linguagem atual:',
+            text=self.ui_texts["language"],
             font_size=STD_font_size,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.2,'center_y':0.5}
             )
         self.button_linguagem=CustomizedButton(
-            text=f'Linguagem: {self.configs["linguagem"]}',
+            text=f'{self.ui_texts["language"]}: {self.configs["linguagem"]}',
             font_size=STD_font_size*0.8,
             size_hint=(0.5,1),
             pos_hint={'center_x':0.78,'center_y':0.5}
@@ -105,9 +107,9 @@ class ConfiguracoesScreen(Screen):
         with open(self.configs_path,"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         if self.configs["teclado"]:
-            self.input='Modo teclado'
+            self.input=self.ui_texts["keyboard_mode"]
         else:
-            self.input='Modo toque'
+            self.input=self.ui_texts["touch_mode"]
         self.button_inputs.text=f'{self.input}'
     
 
@@ -120,11 +122,11 @@ class ConfiguracoesScreen(Screen):
 
         if self.configs["font"]==35:
             self.configs["font"]=40
-            self.font='fonte grande'
+            self.font=self.ui_texts["high_font_size"]
         else:
             self.configs["font"]=35
-            self.font='fonte normal'
-        
+            self.font=self.ui_texts["low_font_size"]
+
         STD_font_size=self.configs["font"]
 
         with open(self.configs_path,"w",encoding="utf-8") as old_config:
@@ -140,12 +142,18 @@ class ConfiguracoesScreen(Screen):
         current_index = linguagens.index(self.configs.get("linguagem", "pt"))
         next_index = (current_index + 1) % len(linguagens)
         self.configs["linguagem"] = linguagens[next_index]
+        self.linguagem = self.configs["linguagem"]
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         with open(self.configs_path,"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
-        self.button_linguagem.text=f'Linguagem: {self.configs["linguagem"]}'
+        self.button_linguagem.text=f'{self.ui_texts["language"]}: {self.configs["linguagem"]}'
+        self.remove_widget(self.layout)
+        self.layout=FloatLayout()
+        self.__init__(GameScreenManager=self.GameScreenManager)
     
 
     def ir_para_menu(self,window,key,*args):
         if key==27:
+            screen = self.GameScreenManager.get_screen('menu').__init__(GameScreenManager=self.GameScreenManager)
             self.GameScreenManager.current='menu'
             return True
