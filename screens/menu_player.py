@@ -70,7 +70,11 @@ class Menu_player(Popup):
             "core":self.cpu
         }
 
+    def on_tipo(self, *args):
+        self.menu[self.tipo]()
+
     def on_open(self):
+        self.on_dismiss()
         if self.linguagem!=configuracoes().get("linguagem","pt"):
             self.linguagem=configuracoes().get("linguagem","pt")
             self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
@@ -87,18 +91,13 @@ class Menu_player(Popup):
         if self.tipo=="equipaveis":
             return
         self.tipo="equipaveis"
-        self.on_open()
     
     def menu_inventario(self,*args):
         if self.tipo=="inventario":
             return
         self.tipo="inventario"
-        self.on_open()
     
     def preparar_menu(self, *args):
-        with self.canvas.before:
-            Color(1, 1, 1, 1)
-            self.bg_rect = Rectangle(pos=self.pos, size=self.size)
         self.background_color = (1, 1, 1, 1)
         self.layout.clear_widgets()
 
