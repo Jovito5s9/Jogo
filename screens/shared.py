@@ -14,9 +14,14 @@ def configuracoes():
             with open(configs_path, "w", encoding="utf-8") as config:
                 configs["font"] = 35
                 json.dump(configs, config)
+        if not "linguagem" in configs:
+            with open(configs_path, "w", encoding="utf-8") as config:
+                configs["linguagem"] = "pt"
+                json.dump(configs, config)
     except Exception:
         newconfig = {
             "teclado": False,
+            "linguagem": "pt",
             "font": 35
         }
         configs = newconfig

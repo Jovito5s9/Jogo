@@ -3,6 +3,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.core.window import Window
 import json
+import os
 
 from utils.customizedButton import CustomizedButton
 from utils.resourcesPath import resource_path
@@ -33,6 +34,11 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,0.08),
             pos_hint={'center_x':0.5,'center_y':0.3}
             )
+        layout_linguagem=FloatLayout(
+            size_hint=(0.5,0.08),
+            pos_hint={'center_x':0.5,'center_y':0.2}
+            )
+
         self.label_inputs=Label(
             text='Layout de controle:',
             font_size=STD_font_size,
@@ -58,6 +64,19 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,1),
             pos_hint={'center_x':0.78,'center_y':0.5}
             )
+                
+        self.label_linguagem=Label(
+            text='Linguagem atual:',
+            font_size=STD_font_size,
+            size_hint=(0.5,1),
+            pos_hint={'center_x':0.2,'center_y':0.5}
+            )
+        self.button_linguagem=CustomizedButton(
+            text=f'Linguagem: {self.configs["linguagem"]}',
+            font_size=STD_font_size*0.8,
+            size_hint=(0.5,1),
+            pos_hint={'center_x':0.78,'center_y':0.5}
+            )
         
         self.button_inputs.bind(on_release=self.trocar_input)
         layout_inputs.add_widget(self.button_inputs)
@@ -68,6 +87,11 @@ class ConfiguracoesScreen(Screen):
         layout_font.add_widget(self.button_font)
         layout_font.add_widget(self.label_font)
         self.layout.add_widget(layout_font)
+
+        self.button_linguagem.bind(on_release=self.trocar_linguagem)
+        layout_linguagem.add_widget(self.button_linguagem)
+        layout_linguagem.add_widget(self.label_linguagem)
+        self.layout.add_widget(layout_linguagem)
 
         self.add_widget(self.layout)
 
@@ -106,6 +130,19 @@ class ConfiguracoesScreen(Screen):
         with open(self.configs_path,"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         self.button_font.text=f'{self.font}'
+
+    def trocar_linguagem(self,*args):
+        with open(self.configs_path,"r",encoding="utf-8") as config:
+            if self.configs != json.load(config):
+                self.configs=json.load(config)
+        linguagens = os.listdir(resource_path("content/itens"))
+        linguagens = [linguagem.split(".")[0] for linguagem in linguagens if linguagem.endswith(".json")]
+        current_index = linguagens.index(self.configs.get("linguagem", "pt"))
+        next_index = (current_index + 1) % len(linguagens)
+        self.configs["linguagem"] = linguagens[next_index]
+        with open(self.configs_path,"w",encoding="utf-8") as old_config:
+            json.dump(self.configs,old_config)
+        self.button_linguagem.text=f'Linguagem: {self.configs["linguagem"]}'
     
 
     def ir_para_menu(self,window,key,*args):

@@ -13,8 +13,9 @@ from kivy.clock import Clock
 from utils.resourcesPath import resource_path
 from utils.customizedButton import CustomizedButton
 from core.BitCoreSkills import NAME_TO_SKILL_ID
-from saved.itens_db import ITENS
 from screens.shared import STD_font_size
+from screens.shared import configuracoes
+
 from functools import partial
 import json
 import os
@@ -58,6 +59,9 @@ class Menu_player(Popup):
         self.scroll_view = None
         self.grid = None
 
+        self.linguagem=configuracoes().get("linguagem","pt")
+        self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
+
         self.player = None
 
         self.menu = {
@@ -67,6 +71,9 @@ class Menu_player(Popup):
         }
 
     def on_open(self):
+        if self.linguagem!=configuracoes().get("linguagem","pt"):
+            self.linguagem=configuracoes().get("linguagem","pt")
+            self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
         self.menu[self.tipo]()
         Clock.schedule_once(lambda dt: self.atualizar_equipados(), 0)
 
@@ -144,8 +151,7 @@ class Menu_player(Popup):
         self.equipped_panel.add_widget(self.equipped_grid)
 
         self.selection_panel.add_widget(self.selected_item_panel)
-        if self.tipo=="equipaveis":
-            self.selection_panel.add_widget(self.equipped_panel)
+        self.selection_panel.add_widget(self.equipped_panel)
 
         self.layout.add_widget(self.selection_panel)
 
@@ -158,6 +164,7 @@ class Menu_player(Popup):
 
     def on_item_selected(self, widget):
         nome = getattr(widget, "item_nome", "Desconhecido")
+        nome_visivel = self.itens_dict.get(self.tipo, {}).get(nome, {}).get("nome", nome)
         info = getattr(widget, "item_info", {}) or {}
         quantidade = getattr(widget, "item_quantidade", "")
 
@@ -175,7 +182,7 @@ class Menu_player(Popup):
             spacing=4
         )
         nome_label = Label(
-            text=f"{nome}  {quantidade}",
+            text=f"{nome_visivel}  {quantidade}",
             font_size=STD_font_size*0.7,
             size_hint=(1, None),
             height=30
@@ -302,7 +309,7 @@ class Menu_player(Popup):
             src = resource_path("assets/ui/slot_vazio.png")
 
             if skill_id:
-                for _, item_data in ITENS.get("equipaveis", {}).items():
+                for _, item_data in self.itens_dict.get("equipaveis", {}).items():
                     if item_data.get("skill") == skill_id:
                         src = self.safe_image(item_data.get("source"))
                         break
@@ -325,7 +332,7 @@ class Menu_player(Popup):
         if self.grid:
             self.grid.clear_widgets()
 
-        itens = ITENS.get(self.tipo, {})
+        itens = self.itens_dict.get(self.tipo, {})
 
         if not inventario:
             self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
