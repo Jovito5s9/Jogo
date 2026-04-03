@@ -9,6 +9,10 @@
         "1": [
             8,
             13
+        ],
+        "2": [
+            20,
+            7
         ]
     },
     "background": "inicial.png",
@@ -569,7 +573,6 @@
         [4, 20, "teto_quebrado.png", 0, true],
         [5, 19, "teto_quebrado.png", 0, true],
         [7, 18, "teto_quebrado.png", 0, true],
-        [7, 19, "descer_esgoto.png", 0, true],
         [8, 18, "teto_quebrado.png", 0, true],
         [9, 19, "teto_quebrado.png", 0, true],
         [10, 18, "teto_quebrado.png", 0, true],
@@ -578,6 +581,7 @@
         [12, 17, "teto_quebrado.png", 0, true],
         [13, 19, "teto_quebrado.png", 0, true],
         [13, 16, "teto_quebrado.png", 0, true],
+        [7, 19, "descer_esgoto.png", 0, true],
         [0, 16, "pc.png", 0, true],
 
         

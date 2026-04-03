@@ -299,7 +299,10 @@ class Map:
         self.limpar_mapa()
         if type == self.type:
             self.nivel += nivel
-
+        if self.type == "esgoto" and self.nivel>10:
+            self.type=None
+            self.nivel=0
+            self.load_mapa("inicial", entrada=2)
         if self.nivel in self.masmorra:
             self.carregar_mapa(self.masmorra[self.nivel])
         else:
