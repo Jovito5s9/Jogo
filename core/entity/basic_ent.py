@@ -14,8 +14,8 @@ from utils.resourcesPath import resource_path
 from utils.customizedButton import CustomizedButton
 from core.entity.interact import distancia
 from core.BitCoreSkills import SKILLS
-from saved.itens_db import ITENS
 
+itens_dict = json.load(open(resource_path("content/itens/pt.json"), "r", encoding="utf-8"))
 
 class Ballon(ButtonBehavior,Image):
     def __init__(self, **kwargs):
@@ -424,7 +424,7 @@ class BasicEnt(Image):
 
         if item == "equipaveis":
             equip_map = {}
-            itens_equip = ITENS.get("equipaveis", {})
+            itens_equip = itens_dict.get("equipaveis", {})
 
             for slot, skill_id in list(getattr(self, "skills_slots", {}).items()):
                 try:
@@ -515,7 +515,7 @@ class BasicEnt(Image):
                     if not (1 <= idx <= self.max_skills):
                         continue
 
-                    item_data = ITENS.get("equipaveis", {}).get(nome_item)
+                    item_data = itens_dict.get("equipaveis", {}).get(nome_item)
                     if not item_data:
                         continue
 
