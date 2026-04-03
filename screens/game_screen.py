@@ -144,6 +144,22 @@ class Game(FloatLayout):
         self.keyboard_clock = None
         self._joystick_start_event = None
 
+        self.keymap = {
+            "move_up": 119,
+            "move_down": 115,
+            "move_left": 97,
+            "move_right": 100,
+
+            "attack": 32,
+            "heavy": 98,
+
+            "inventory": 105,
+            "equip": 101,
+            "core": 99,
+
+            "pause": 27
+        }
+
         #self.world.create(20,15)
         self.world.load_mapa("inicial", respawn=True)
         self.inventario_menu=False
@@ -151,6 +167,7 @@ class Game(FloatLayout):
         self.menu_pause=MenuPause()
         self.menu_player.player=self.player
         self.pausado = False
+        self._pause_pressed = False
 
         self.interface = Interface()
         self.add_widget(self.interface)
@@ -255,45 +272,55 @@ class Game(FloatLayout):
         Window.unbind(on_key_down=self.on_key_down)
         Window.unbind(on_key_up=self.on_key_up)
     
-    def on_key_down(self, window, key, *args):
+    def on_key_down(self, window, key, scancode, codepoint, modifiers):
         self.key_pressed.add(key)
-        if 117 in self.key_pressed:
-            self.pause() #u, nao esquecer de remapiar as teclas q ta bagunçado kk
-        if key == 105:
+
+        if key == self.keymap["pause"] and not self._pause_pressed:
+            self.pause()
+            self._pause_pressed = True
+            return True
+
+        elif key == self.keymap["inventory"]:
             self.menu_window(tipo="inventario")
-        if key == 101:
-            self.menu_window(tipo="equipaveis")
-        if key == 99:
-            self.menu_window(tipo="core")
     
     def on_key_up(self, window, key, *args):
-        self.key_pressed.remove(key)
-    
-    def keyboard_actions(self,*args):
-        if 32 in self.key_pressed: 
-            self.ataque()
-        if 98 in self.key_pressed:
-            self.quebrar()
-        if 119 in self.key_pressed:
-            self.player.speed_y=0.9
-        elif 115 in self.key_pressed:
-            self.player.speed_y=-0.9
-        elif self.player.speed_y!=0:
-            self.player.speed_y=0
+        if key in self.key_pressed:
+            self.key_pressed.remove(key)
 
-        if 100 in self.key_pressed:
-            self.player.speed_x=0.9
-        elif 97 in self.key_pressed:
-            self.player.speed_x=-0.9
-        elif self.player.speed_x!=0:
-            self.player.speed_x=0
+        if key == self.keymap["pause"]:
+            self._pause_pressed = False
+
+    def keyboard_actions(self, *args):
+        if self.keymap["attack"] in self.key_pressed:
+            self.ataque()
+        if self.keymap["heavy"] in self.key_pressed:
+            self.quebrar()
+
+        if self.keymap["move_up"] in self.key_pressed:
+            self.player.speed_y = 0.9
+        elif self.keymap["move_down"] in self.key_pressed:
+            self.player.speed_y = -0.9
+        else:
+            self.player.speed_y = 0
+
+        if self.keymap["move_right"] in self.key_pressed:
+            self.player.speed_x = 0.9
+        elif self.keymap["move_left"] in self.key_pressed:
+            self.player.speed_x = -0.9
+        else:
+            self.player.speed_x = 0
         
 class GameScreen(Screen): 
     def __init__(self, GameScreenManager=None, **kwargs):
         super().__init__(**kwargs)
         self.GameScreenManager=GameScreenManager
-        Window.bind(on_keyboard=self.ir_para_menu)
-    
+
+    def on_pre_leave(self, *args):
+        if hasattr(self, "game"):
+            self.game.keyboard_desactive()
+            self.game.key_pressed.clear()
+            self.game._pause_pressed = False
+
     def on_pre_enter(self, *args):
         try:
             self.game.pre_enter()
@@ -301,8 +328,3 @@ class GameScreen(Screen):
             self.game=Game()
             self.add_widget(self.game)
             self.game.pre_enter()
-    
-    def ir_para_menu(self,window,key,*args):
-        if key==27:
-            self.GameScreenManager.current='menu'
-            return True
