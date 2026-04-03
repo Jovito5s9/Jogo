@@ -106,6 +106,8 @@ class World(FloatLayout):
             self.camera.player = self.player
         
     def respawn_player(self, *args):
+        if self.map.nivel:
+            self.map.nivel = 0
         for obj in self.map.obj_list[:]:
             self.map.obj_list.remove(obj)
             try:

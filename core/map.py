@@ -312,8 +312,10 @@ class Map:
 
 
     def load_mapa(self, mapa, respawn=False, entrada=0):
-        mapa = "core/maps/" + mapa + ".json"
-
+        if not "content/maps/" in mapa:
+            mapa = "content/maps/" + mapa
+        if not ".json" in mapa:
+            mapa = mapa + ".json"
         with open(resource_path(mapa), "r") as file:
             data = json.load(file)
         
