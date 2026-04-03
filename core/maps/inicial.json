@@ -527,18 +527,7 @@
         [13, 29, "ladrilhos.png"],
         [13, 30, "ladrilhos.png"],
         [13, 31, "ladrilhos.png"],
-        [13, 32, "ladrilhos.png"],
-        [14, 22, "ladrilhos.png"],
-        [14, 23, "ladrilhos.png"],
-        [14, 24, "ladrilhos.png"],
-        [14, 25, "ladrilhos.png"],
-        [14, 26, "ladrilhos.png"],
-        [14, 27, "ladrilhos.png"],
-        [14, 28, "ladrilhos.png"],
-        [14, 29, "ladrilhos.png"],
-        [14, 30, "ladrilhos.png"],
-        [14, 31, "ladrilhos.png"],
-        [14, 32, "ladrilhos.png"]
+        [13, 32, "ladrilhos.png"]
     ],
     "objs": [
         [2, 3, "terra_arada.png", 0, true],
