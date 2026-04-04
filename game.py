@@ -1,9 +1,9 @@
 from screens.menu_screen import MenuScreen
 from screens.game_screen import GameScreen
 from screens.config_screen import ConfiguracoesScreen
-from kivy.uix.screenmanager import ScreenManager
+from kivy.uix.screenmanager import ScreenManager, NoTransition
 
-GameScreenManager=ScreenManager()
+GameScreenManager=ScreenManager(transition=NoTransition())
 
 GameScreenManager.add_widget(MenuScreen(name='menu', GameScreenManager=GameScreenManager))
 GameScreenManager.add_widget(ConfiguracoesScreen(name='configurações', GameScreenManager=GameScreenManager))
