@@ -19,7 +19,7 @@ class MenuScreen(Screen):
         self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
 
         background=Image(
-            source=resource_path("assets/geral/dungeon_background.png"),
+            source=resource_path("assets/geral/outside_background.png"),
             size=self.size,
             allow_stretch=True,
             keep_ratio=False
