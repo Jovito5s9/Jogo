@@ -345,7 +345,7 @@ class GameScreen(Screen):
         self.game.size_hint = (None, None)
         self.game.size = (size * 20, size * 15)
         self.game.pos = (0, 0)
-        if platform == "android" or 1:
+        if platform == "android":
             self.viewport = Viewport(size_hint=(None, None))
             self.layout.add_widget(self.viewport)
             self.viewport.add_widget(self.game)
@@ -353,6 +353,8 @@ class GameScreen(Screen):
             self.layout.add_widget(self.game)
 
         def ajustar_viewport(*args):
+            if not self.viewport:
+                return
             android_extra_grids = ((Window.width / size) - 20) / 2
             recuo = android_extra_grids * size
             self.viewport.size = (size * 20, size * 15)
@@ -372,11 +374,12 @@ class GameScreen(Screen):
         self._ensure_game()
 
         def reajustar(*args):
+            if not self.viewport:
+                return
             android_extra_grids = ((Window.width / size) - 20) / 2
             recuo = android_extra_grids * size
-            if self.viewport:
-                self.viewport.size = (size * 20, size * 15)
-                self.viewport.pos = (recuo, 0)
+            self.viewport.size = (size * 20, size * 15)
+            self.viewport.pos = (recuo, 0)
 
         Clock.schedule_once(reajustar, 0)
 
