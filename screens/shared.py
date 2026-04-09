@@ -1,8 +1,10 @@
 import json
 from utils.resourcesPath import resource_path
+from kivy.core.window import Window
 
 STD_font_size = 35
 
+size = Window.height / 12.5
 
 def configuracoes():
     global STD_font_size

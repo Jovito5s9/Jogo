@@ -1,17 +1,22 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.behaviors import ButtonBehavior
+from kivy.graphics import Color, Rectangle
 
 from core.entity.player import Player
 from core.world import World
 from utils.joystick import Joystick
 from utils.resourcesPath import resource_path
-from screens.shared import configuracoes
+from screens.shared import configuracoes, size
 from screens.menu_player import Menu_player
 from screens.menu_pause import MenuPause
+
+import platform
 
 class InteractiveImage(ButtonBehavior, Image):
     pass
@@ -312,10 +317,29 @@ class Game(FloatLayout):
             self.player.speed_x = -0.9
         else:
             self.player.speed_x = 0
-        
+
+class Limite(Widget):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.size_hint=(None,1)
+        with self.canvas:
+            Color(0,0,0,1)
+            self.rect=Rectangle(pos=self.pos,size=self.size)
+        self.bind(pos=self.update_rect,size=self.update_rect)
+    
+    def update_rect(self,*args):
+        self.rect.pos=self.pos
+        self.rect.size=self.size
+
 class GameScreen(Screen): 
     def __init__(self, GameScreenManager=None, **kwargs):
         super().__init__(**kwargs)
+        self.layout = FloatLayout(
+            size=(size*20, size*15),
+            size_hint=(None, None),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+        self.add_widget(self.layout)
         self.GameScreenManager=GameScreenManager
 
     def on_pre_leave(self, *args):
@@ -329,5 +353,18 @@ class GameScreen(Screen):
             self.game.pre_enter()
         except:
             self.game=Game()
-            self.add_widget(self.game)
+            if platform.system() != "Android":
+                android_extra_grids = ((Window.width / size) - 20) / 2
+                limites_width = android_extra_grids * size
+                esquerdo = Limite(size=(limites_width, Window.height))
+                direito = Limite(size=(limites_width, Window.height), pos=(Window.width - limites_width, 0))
+
+                self.game.size_hint = (None, None)
+                self.game.size = (size*20, size*15)
+
+                self.layout.add_widget(esquerdo,index=0)
+                self.layout.add_widget(self.game,index=2)
+                self.layout.add_widget(direito,index=1)
+            else:
+                self.layout.add_widget(self.game)
             self.game.pre_enter()

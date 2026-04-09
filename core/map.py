@@ -7,8 +7,7 @@ import random
 from utils.resourcesPath import resource_path
 from core.tiles import Object as Obj, Grid as Grd
 from core.entity.ent_factory import create_ent
-
-size = Window.height / 12.5
+from screens.shared import size
 
 
 class Grid(Grd):

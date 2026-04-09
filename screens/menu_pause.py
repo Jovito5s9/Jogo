@@ -60,13 +60,13 @@ class MenuPause(Popup):
         self.dismiss()
     
     def configs(self,*args):
-        if self.game.parent.parent.current:
+        if self.game.parent.parent.parent.current:
             self.game.pausado=False
-            self.game.parent.parent.current='configurações'
+            self.game.parent.parent.parent.current='configurações'
             self.dismiss()
 
     def menu(self,*args):
-        if self.game.parent.parent.current:
+        if self.game.parent.parent.parent.current:
             self.game.pausado=False
-            self.game.parent.parent.current='menu'
+            self.game.parent.parent.parent.current='menu'
             self.dismiss()

@@ -7,8 +7,7 @@ from kivy.clock import Clock
 from core.map import Map
 from core.camera import Camera
 from core.entity.ent_factory import create_ent
-
-size = Window.height / 12.5
+from screens.shared import size
 
 
 class World(FloatLayout):
