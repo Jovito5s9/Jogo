@@ -14,6 +14,7 @@ from utils.resourcesPath import resource_path
 from utils.customizedButton import CustomizedButton
 from core.entity.interact import distancia
 from core.BitCoreSkills import SKILLS
+from screens.shared import configuracoes
 
 itens_dict = json.load(open(resource_path("content/itens/pt.json"), "r", encoding="utf-8"))
 
@@ -127,6 +128,7 @@ class BasicEnt(Image):
         self.alcance_fisico = 70
         self.dano_contato = 0
         self.velocidade = 3
+        self.velocidade_fps = 0
         self.speed_x = 0
         self.speed_y = 0
         self.facing_right = True
@@ -148,6 +150,7 @@ class BasicEnt(Image):
         self.skills_ativas = {}
         self.max_skills = 2
         self.dano_causado=0
+
         if self.parent:
             self.world = self.parent.parent.parent
         else:
@@ -210,11 +213,11 @@ class BasicEnt(Image):
     
     def move_x(self, *args):
         if self.vivo:
-            self.x += self.speed_x * self.velocidade
+            self.x += self.speed_x * (self.velocidade+self.velocidade_fps)
 
     def move_y(self, *args):
         if self.vivo:
-            self.y += self.speed_y * self.velocidade
+            self.y += self.speed_y * (self.velocidade+self.velocidade_fps)
 
     def atualizar_pos(self, *args):
         # atualiza posição da barra de vida (se existir)

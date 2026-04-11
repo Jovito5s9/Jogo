@@ -19,6 +19,8 @@ class World(FloatLayout):
         self.size_hint = (None, None)
         self.size = (Window.width, Window.height)
 
+        self.fps = 60
+
         self.player = None
         self.ents = []
         self.boss = None
@@ -243,10 +245,18 @@ class World(FloatLayout):
         if self.ev_spawn_ents:
             self.ev_spawn_ents.cancel()
 
-        self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/60)
-        self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
-        self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
-        self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1/3)
+        self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/self.fps)
+        self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/self.fps)
+        self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/self.fps)
+        self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1/4)
+        if self.fps == 30:
+            for ent in self.ents:
+                if ent.velocidade_fps == 0:
+                    ent.velocidade_fps = ent.velocidade
+        else:
+            for ent in self.ents:
+                if ent.velocidade_fps != 0:
+                    ent.velocidade_fps = 0
     
     def pausar(self,*args):
         if self.ev_colisao:

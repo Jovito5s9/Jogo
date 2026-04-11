@@ -20,11 +20,16 @@ def configuracoes():
             with open(configs_path, "w", encoding="utf-8") as config:
                 configs["linguagem"] = "pt"
                 json.dump(configs, config)
+        if not "fps" in configs:
+            with open(configs_path, "w", encoding="utf-8") as config:
+                configs["fps"] = 60
+                json.dump(configs, config)
     except Exception:
         newconfig = {
             "teclado": False,
             "linguagem": "pt",
-            "font": 35
+            "font": 35,
+            "fps": 60
         }
         configs = newconfig
         with open(configs_path, "w", encoding="utf-8") as config:

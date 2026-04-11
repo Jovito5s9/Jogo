@@ -189,6 +189,9 @@ class Game(FloatLayout):
         self.menu_pause.game = self
 
     def pre_enter(self, *args):
+        fps = configuracoes()["fps"]
+        if fps != self.world.fps:
+            self.world.fps = fps
         if self.joystick_clock:
             self.joystick_clock.cancel()
             self.joystick_clock = None
@@ -217,6 +220,8 @@ class Game(FloatLayout):
         else:
             self.keyboard_active()
             self.keyboard_clock = Clock.schedule_interval(self.keyboard_actions, 1 / 20)
+            
+        self.world.atualizar()
 
     def _try_start_joystick(self, dt):
         if getattr(self.interface, "joystick", None) and self.interface.joystick.parent:
@@ -236,6 +241,8 @@ class Game(FloatLayout):
             if getattr(self, "keyboard_clock", None):
                 self.keyboard_clock.cancel()
                 self.keyboard_clock = None
+
+        self.world.pausar()
 
     def joystick_movs(self, dt):
         j = getattr(self.interface, "joystick", None)

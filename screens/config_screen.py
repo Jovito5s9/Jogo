@@ -17,6 +17,12 @@ class ConfiguracoesScreen(Screen):
         self.teclado=self.configs["teclado"]
         self.configs_path=resource_path("saved/configuracoes.json")
         self.linguagem = self.configs["linguagem"]
+        fps = self.configs["fps"]
+        self.fps_texts = {
+            30: "low",
+            60: "medium",
+            120: "high"
+        }
         self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         if self.teclado:
             self.input=self.ui_texts["keyboard_mode"]
@@ -40,6 +46,11 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,0.08),
             pos_hint={'center_x':0.5,'center_y':0.2}
             )
+        layout_fps=FloatLayout(
+            size_hint=(0.5,0.08),
+            pos_hint={'center_x':0.5,'center_y':0.1}
+            )
+
 
         self.label_inputs=Label(
             text=self.ui_texts["control_layout"],
@@ -54,6 +65,7 @@ class ConfiguracoesScreen(Screen):
             pos_hint={'center_x':0.78,'center_y':0.5}
             )
         
+
         self.label_font=Label(
             text=self.ui_texts["font_size"],
             font_size=STD_font_size,
@@ -66,7 +78,8 @@ class ConfiguracoesScreen(Screen):
             size_hint=(0.5,1),
             pos_hint={'center_x':0.78,'center_y':0.5}
             )
-                
+
+
         self.label_linguagem=Label(
             text=self.ui_texts["language"],
             font_size=STD_font_size,
@@ -80,6 +93,21 @@ class ConfiguracoesScreen(Screen):
             pos_hint={'center_x':0.78,'center_y':0.5}
             )
         
+
+        self.label_fps=Label(
+            text=self.ui_texts["frame_rate"],
+            font_size=STD_font_size,
+            size_hint=(0.5,1),
+            pos_hint={'center_x':0.2,'center_y':0.5}
+            )
+        self.button_fps=CustomizedButton(
+            text=f'{self.ui_texts.get(self.fps_texts.get(fps, fps), fps)}',
+            font_size=STD_font_size*0.8,
+            size_hint=(0.5,1),
+            pos_hint={'center_x':0.78,'center_y':0.5}
+            )
+        
+
         self.button_inputs.bind(on_release=self.trocar_input)
         layout_inputs.add_widget(self.button_inputs)
         layout_inputs.add_widget(self.label_inputs)
@@ -94,6 +122,11 @@ class ConfiguracoesScreen(Screen):
         layout_linguagem.add_widget(self.button_linguagem)
         layout_linguagem.add_widget(self.label_linguagem)
         self.layout.add_widget(layout_linguagem)
+
+        self.button_fps.bind(on_release=self.trocar_fps)
+        layout_fps.add_widget(self.button_fps)
+        layout_fps.add_widget(self.label_fps)
+        self.layout.add_widget(layout_fps)
 
         self.add_widget(self.layout)
 
@@ -150,6 +183,20 @@ class ConfiguracoesScreen(Screen):
         self.remove_widget(self.layout)
         self.layout=FloatLayout()
         self.__init__(GameScreenManager=self.GameScreenManager)
+
+    def trocar_fps(self,*args):
+        fps_list = [30, 60, 120]
+        with open(self.configs_path,"r",encoding="utf-8") as config:
+            if self.configs != json.load(config):
+                self.configs=json.load(config)
+        current_index = fps_list.index(self.configs.get("fps", 60))
+        next_index = (current_index + 1) % len(fps_list)
+        self.configs["fps"] = fps_list[next_index]
+        self.fps = self.configs["fps"]
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
+        with open(self.configs_path,"w",encoding="utf-8") as old_config:
+            json.dump(self.configs,old_config)
+        self.button_fps.text=f'{self.ui_texts.get(self.fps_texts.get(self.configs["fps"], self.configs["fps"]))}'
     
 
     def ir_para_menu(self,window,key,*args):
