@@ -27,6 +27,7 @@
     "max_skills": 0
   },
   "drops": {
+    "sucata": [0, 2]
   },
   "acoes": ["perseguir", "rastrear", "autodestruct"],
   "ataque_name":"autodestruct",

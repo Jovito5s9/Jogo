@@ -40,6 +40,7 @@ class Ratona(BasicEnt):
         self.velocidade = 1.5
         self.alcance_fisico = 450
         self.list_drops["carne"] = random.randint(3, 7)
+        self.list_drops["gosma"] = 1
 
     def get_hitbox(self, *args):
         x = self.x + (self.width * 0.16)

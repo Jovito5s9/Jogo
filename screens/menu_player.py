@@ -158,10 +158,10 @@ class Menu_player(Popup):
         self.equipped_panel.add_widget(self.equipped_grid)
 
         self.selection_panel.add_widget(self.selected_item_panel)
-        self.selection_panel.add_widget(self.equipped_panel)
-
         if self.tipo=="equipaveis":
-            self.layout.add_widget(self.selection_panel)
+            self.selection_panel.add_widget(self.equipped_panel)
+
+        self.layout.add_widget(self.selection_panel)
 
         size_px = self.width/8
 

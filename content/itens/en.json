@@ -28,6 +28,20 @@
             "tipo" : "consumable",
             "descrição" : "A small amount of organic matter.",
             "source" : "assets/itens/cristal_vital.png"
+        },
+        "sucata":{
+            "nome": "sucata",
+            "raridade" : "common",
+            "tipo" : "material",
+            "descrição" : "A bit of electronic waste.",
+            "source" : "assets/itens/sucata.png"
+        },
+        "gosma_misteriosa":{
+            "nome": "mysterious slime",
+            "raridade" : "rare",
+            "tipo" : "material",
+            "descrição" : "A very strange slime.",
+            "source" : "assets/itens/gosma_misteriosa.png"
         }
     },
 
