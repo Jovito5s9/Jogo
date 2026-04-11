@@ -59,6 +59,8 @@ class Interface(FloatLayout):
         if not self.configs["teclado"]:
             self.add_ui()
 
+        self.add_button_menu_player()
+
     def add_ui(self, *args):
         if not self.joystick:
             self.add_joytick()
@@ -66,7 +68,6 @@ class Interface(FloatLayout):
             self.add_button_ataque()
         if not self.button_quebrar:
             self.add_button_quebrar()
-        self.add_button_menu_player()
 
         if self.mobile_layout not in self.children:
             self.add_widget(self.mobile_layout)
@@ -103,37 +104,43 @@ class Interface(FloatLayout):
 
     def add_button_menu_player(self, *args):
         self.button_menu = InteractiveImage(
-            size_hint=self.fixed_size,
+            size=(100,100),
+            size_hint=(None, None),
             pos_hint={'center_x': 0.5, 'center_y': 0.925},
             source=resource_path("assets/ui/menu.png"),
             allow_stretch=True,
             keep_ratio=False
         )
         self.add_widget(self.button_menu)
+        Clock.schedule_once(self.bind_button_menu, 1)
+    
+    def bind_button_menu(self, *args):
+        if self.button_menu:
+            self.button_menu.bind(on_release=self.parent.parent.game.menu_window)
 
     def bind_buttons(self, *args):
         if self.button_ataque:
-            self.button_ataque.bind(on_release=self.parent.ataque)
+            self.button_ataque.bind(on_release=self.parent.parent.game.ataque)
         if self.button_quebrar:
-            self.button_quebrar.bind(on_release=self.parent.quebrar)
+            self.button_quebrar.bind(on_release=self.parent.parent.game.quebrar)
         if self.button_menu:
-            self.button_menu.bind(on_release=self.parent.menu_window)
+            self.button_menu.bind(on_release=self.parent.parent.game.menu_window)
         self._bind_event = None
 
     def unbind_buttons(self, *args):
         if self.button_ataque:
             try:
-                self.button_ataque.unbind(on_release=self.parent.ataque)
+                self.button_ataque.unbind(on_release=self.parent.parent.game.ataque)
             except Exception:
                 pass
         if self.button_quebrar:
             try:
-                self.button_quebrar.unbind(on_release=self.parent.quebrar)
+                self.button_quebrar.unbind(on_release=self.parent.parent.game.quebrar)
             except Exception:
                 pass
         if self.button_menu:
             try:
-                self.button_menu.unbind(on_release=self.parent.menu_window)
+                self.button_menu.unbind(on_release=self.parent.parent.game.menu_window)
             except Exception:
                 pass
 
@@ -183,7 +190,6 @@ class Game(FloatLayout):
         self._pause_pressed = False
 
         self.interface = Interface()
-        self.add_widget(self.interface)
 
     def on_parent(self, *args):
         self.menu_pause.game = self
@@ -356,9 +362,12 @@ class GameScreen(Screen):
             self.viewport = Viewport(size_hint=(None, None))
             self.layout.add_widget(self.viewport)
             self.viewport.add_widget(self.game)
+            if not self.game.interface in self.layout.children:
+                self.layout.add_widget(self.game.interface)
         else:
             self.layout.add_widget(self.game)
-
+            if not self.game.interface in self.layout.children:
+                self.layout.add_widget(self.game.interface)
         def ajustar_viewport(*args):
             if not self.viewport:
                 return
