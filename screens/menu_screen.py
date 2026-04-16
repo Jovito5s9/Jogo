@@ -4,6 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import ButtonBehavior
+from kivy.utils import platform
 from kivy.app import App
 
 from utils.customizedButton import CustomizedButton
@@ -12,6 +13,16 @@ from screens.shared import STD_font_size, configuracoes
 
 import json
 import subprocess
+import webbrowser
+
+def open_link(url):
+    try:
+        if platform == "linux":
+            subprocess.Popen(["xdg-open", url])
+        else:
+            webbrowser.open(url)
+    except Exception as e:
+        print("Erro ao abrir link:", e)
 
 class InteractiveImage(ButtonBehavior, Image):
     pass
@@ -78,30 +89,30 @@ class MenuScreen(Screen):
 
         self.redes_layout = BoxLayout(
             size_hint=(None, None),
-            height=40,
-            pos_hint={'center_x': 0.05, 'center_y': 0.03},
-            spacing=10
+            height=60,
+            pos_hint={'center_x': 0.05, 'center_y': 0.035},
+            spacing=15
         )
         self.layout.add_widget(self.redes_layout)
         self.follow_label = Label(
             text=self.ui_texts["follow_us"],
-            font_size=STD_font_size * 0.8,
+            font_size=STD_font_size * 0.9,
             color=(0.2, 0.2, 0.2, 1),
-            pos_hint={'center_x': 0.05, 'center_y': 0.075},
+            pos_hint={'center_x': 0.055, 'center_y': 0.09},
             bold=True
         )
         self.layout.add_widget(self.follow_label)
         self.instagram_button = InteractiveImage(
             source=resource_path("assets/geral/redes_sociais/Instagram.png"),
             size_hint=(None, None),
-            size=(40, 40)
+            size=(60, 60)
         )
         self.instagram_button.bind(on_release=self.go_to_instagram)
         self.redes_layout.add_widget(self.instagram_button)
         self.facebook_button = InteractiveImage(
             source=resource_path("assets/geral/redes_sociais/Facebook.png"),
             size_hint=(None, None),
-            size=(40, 40)
+            size=(60, 60)
         )
         self.facebook_button.bind(on_release=self.go_to_facebook)
         self.redes_layout.add_widget(self.facebook_button)
@@ -118,13 +129,7 @@ class MenuScreen(Screen):
         jogo.stop()
 
     def go_to_instagram(self, *args):
-        try:
-            subprocess.Popen(["xdg-open", "https://www.instagram.com/solarburn.studio/"])
-        except Exception as e:
-            print("Erro ao abrir Instagram:", e)
+        open_link("https://www.instagram.com/solarburn.studio/")
 
     def go_to_facebook(self, *args):
-        try:
-            subprocess.Popen(["xdg-open", "https://www.facebook.com/people/SolarBurn-Studio/61575485297715/"])
-        except Exception as e:
-            print("Erro ao abrir Facebook:", e)
+        open_link("https://www.facebook.com/people/SolarBurn-Studio/61575485297715/")

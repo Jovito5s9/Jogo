@@ -30,7 +30,7 @@ class SplashScreen(Screen):
         )
         self.layout.add_widget(self.label)
         self.add_widget(self.layout)
-        Clock.schedule_once(self.go_to_menu, 1.8)
+        Clock.schedule_once(self.go_to_menu, 3)
 
     def go_to_menu(self, dt):
         self.GameScreenManager.current = 'menu'

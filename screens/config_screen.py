@@ -165,6 +165,9 @@ class ConfiguracoesScreen(Screen):
         with open(self.configs_path,"w",encoding="utf-8") as old_config:
             json.dump(self.configs,old_config)
         self.button_font.text=f'{self.font}'
+        self.remove_widget(self.layout)
+        self.layout=FloatLayout()
+        self.__init__(GameScreenManager=self.GameScreenManager)
 
     def trocar_linguagem(self,*args):
         with open(self.configs_path,"r",encoding="utf-8") as config:
