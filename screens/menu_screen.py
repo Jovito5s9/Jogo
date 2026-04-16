@@ -1,6 +1,9 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.uix.image import Image
+from kivy.uix.button import ButtonBehavior
 from kivy.app import App
 
 from utils.customizedButton import CustomizedButton
@@ -8,6 +11,10 @@ from utils.resourcesPath import resource_path
 from screens.shared import STD_font_size, configuracoes
 
 import json
+import subprocess
+
+class InteractiveImage(ButtonBehavior, Image):
+    pass
 
 class MenuScreen(Screen):
     def __init__(self, GameScreenManager=None, **kwargs):
@@ -68,6 +75,38 @@ class MenuScreen(Screen):
         self.layout.add_widget(self.button_configs)
         self.layout.add_widget(self.button_sair)
 
+
+        self.redes_layout = BoxLayout(
+            size_hint=(None, None),
+            height=40,
+            pos_hint={'center_x': 0.05, 'center_y': 0.03},
+            spacing=10
+        )
+        self.layout.add_widget(self.redes_layout)
+        self.follow_label = Label(
+            text=self.ui_texts["follow_us"],
+            font_size=STD_font_size * 0.8,
+            color=(0.2, 0.2, 0.2, 1),
+            pos_hint={'center_x': 0.05, 'center_y': 0.075},
+            bold=True
+        )
+        self.layout.add_widget(self.follow_label)
+        self.instagram_button = InteractiveImage(
+            source=resource_path("assets/geral/redes_sociais/Instagram.png"),
+            size_hint=(None, None),
+            size=(40, 40)
+        )
+        self.instagram_button.bind(on_release=self.go_to_instagram)
+        self.redes_layout.add_widget(self.instagram_button)
+        self.facebook_button = InteractiveImage(
+            source=resource_path("assets/geral/redes_sociais/Facebook.png"),
+            size_hint=(None, None),
+            size=(40, 40)
+        )
+        self.facebook_button.bind(on_release=self.go_to_facebook)
+        self.redes_layout.add_widget(self.facebook_button)
+
+
     def jogar(self,*args):
         self.GameScreenManager.current='game'
     
@@ -77,3 +116,15 @@ class MenuScreen(Screen):
     def sair(self,*args):
         jogo=App.get_running_app()
         jogo.stop()
+
+    def go_to_instagram(self, *args):
+        try:
+            subprocess.Popen(["xdg-open", "https://www.instagram.com/solarburn.studio/"])
+        except Exception as e:
+            print("Erro ao abrir Instagram:", e)
+
+    def go_to_facebook(self, *args):
+        try:
+            subprocess.Popen(["xdg-open", "https://www.facebook.com/people/SolarBurn-Studio/61575485297715/"])
+        except Exception as e:
+            print("Erro ao abrir Facebook:", e)
