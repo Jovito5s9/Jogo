@@ -261,7 +261,11 @@ class Object(Tile):
             for ent in self.world.ents:
                 if not ent.vivo:
                     continue
-                if ent == self.world.player and ent.grid == (self.coluna, self.linha):
+                if ent == self.world.player and ent.grid in [(self.coluna, self.linha),\
+                    (self.coluna, self.linha-1), \
+                    (self.coluna, self.linha+1), \
+                    (self.coluna-1, self.linha), \
+                    (self.coluna+1, self.linha)]:
                     ent_is_ok = True
                     break
             if not ent_is_ok:

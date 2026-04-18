@@ -57,6 +57,8 @@ class Player(BasicEnt):
         self.load_data()
 
         Clock.schedule_interval(self.driver_atualizar,1/40)
+        self.power = 1000
+        self.alcance_fisico=1500
 
 
         if not self.bitcores:

@@ -302,6 +302,7 @@ class Map:
             self.type=None
             self.nivel=0
             self.load_mapa("inicial", entrada=2)
+            return
         if self.nivel in self.masmorra:
             self.carregar_mapa(self.masmorra[self.nivel])
         else:
