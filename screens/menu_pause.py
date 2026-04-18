@@ -1,5 +1,6 @@
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
+from kivy.utils import platform
 
 from utils.customizedButton import CustomizedButton
 from utils.resourcesPath import resource_path
@@ -60,13 +61,26 @@ class MenuPause(Popup):
         self.dismiss()
     
     def configs(self,*args):
-        if self.game.parent.parent.parent.current:
+        if platform == "android":
+            if self.game.parent.parent.parent.parent.current:
+                self.game.pausado=False
+                self.game.parent.parent.parent.parent.current='configurações'
+                self.dismiss()
+
+        elif self.game.parent.parent.parent.current:
             self.game.pausado=False
             self.game.parent.parent.parent.current='configurações'
             self.dismiss()
 
     def menu(self,*args):
-        if self.game.parent.parent.parent.current:
+        if platform == "android":
+            if self.game.parent.parent.parent.parent.current:
+                self.game.pausado=False
+                self.game.parent.parent.parent.parent.current='menu'
+                self.game.parent.parent.parent.reset_game=True
+                self.dismiss()
+        elif self.game.parent.parent.parent.current:
             self.game.pausado=False
             self.game.parent.parent.parent.current='menu'
+            self.game.parent.parent.reset_game=True
             self.dismiss()

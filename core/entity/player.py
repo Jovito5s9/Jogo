@@ -57,8 +57,6 @@ class Player(BasicEnt):
         self.load_data()
 
         Clock.schedule_interval(self.driver_atualizar,1/40)
-        self.power = 1000
-        self.alcance_fisico=1500
 
 
         if not self.bitcores:
@@ -100,7 +98,6 @@ class Player(BasicEnt):
         self.world.parent.parent.add_widget(self.driver_menu)
     
     def aceitar_driver(self,*args):
-        print(self.drivers_cache)
         driver = [item for item in self.drivers if item not in self.drivers_cache]
         if not driver:
             return
@@ -113,7 +110,6 @@ class Player(BasicEnt):
         l.sort()
         self.drivers_cache=l
         self.free_menu()
-        print(self.drivers_cache)
 
     def free_menu(self,*args):
         self.menu_is_active=False

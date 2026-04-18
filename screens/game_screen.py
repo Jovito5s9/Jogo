@@ -16,6 +16,7 @@ from screens.shared import configuracoes, size
 from screens.menu_player import Menu_player
 from screens.menu_pause import MenuPause
 from kivy.utils import platform
+from kivy.base import EventLoop
 
 
 
@@ -347,13 +348,16 @@ class GameScreen(Screen):
         self.GameScreenManager = GameScreenManager
 
         self.game = None
+        self.reset_game = True
         self.viewport = None
         self._viewport_size_ev = None
+        EventLoop.window.bind(on_keyboard=self.bloquear_voltar)
 
     def _ensure_game(self):
-        if self.game is not None:
+        if self.game is not None and not self.reset_game:
             return
-
+        if self.reset_game:
+            self.reset_game = False
         self.game = Game()
         self.game.size_hint = (None, None)
         self.game.size = (size * 20, size * 15)
@@ -382,9 +386,18 @@ class GameScreen(Screen):
 
         self.game.pre_enter()
 
-    def on_pre_leave(self, *args):
-        if not self.game.pausado:
-            self.game.pause()
+    def bloquear_voltar(self, window, key, *largs):
+        if key == 27:
+            screen=self.GameScreenManager.current_screen
+            if screen.name == "configurações":
+                if not self.reset_game:
+                    self.GameScreenManager.current='game'
+                    return True
+                self.GameScreenManager.current='menu'
+                return
+            if hasattr(getattr(screen, "game", None), "pause"):
+                self.game.pause()
+            return True
 
     def on_leave(self, *args):
         if self.game:
