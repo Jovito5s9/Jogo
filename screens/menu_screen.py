@@ -90,7 +90,7 @@ class MenuScreen(Screen):
         self.redes_layout = BoxLayout(
             size_hint=(None, None),
             height=60,
-            pos_hint={'center_x': 0.05, 'center_y': 0.035},
+            pos_hint={'center_x': 0.05, 'center_y': 0.075},
             spacing=15
         )
         self.layout.add_widget(self.redes_layout)
@@ -98,7 +98,7 @@ class MenuScreen(Screen):
             text=self.ui_texts["follow_us"],
             font_size=STD_font_size * 0.9,
             color=(0.2, 0.2, 0.2, 1),
-            pos_hint={'center_x': 0.055, 'center_y': 0.09},
+            pos_hint={'center_x': 0.055, 'center_y': 0.125},
             bold=True
         )
         self.layout.add_widget(self.follow_label)
@@ -116,6 +116,15 @@ class MenuScreen(Screen):
         )
         self.facebook_button.bind(on_release=self.go_to_facebook)
         self.redes_layout.add_widget(self.facebook_button)
+    
+        self.conquista_button = InteractiveImage(
+            source=resource_path("assets/ui/conquista.png"),
+            size_hint=(None, None),
+            size=(100, 100),
+            pos_hint={'center_x': 0.95, 'center_y': 0.1}
+        )
+        #self.conquista_button.bind(on_release=self.conquistas)
+        #self.layout.add_widget(self.conquista_button) ##############entra na proxima atualização
 
 
     def jogar(self,*args):
@@ -133,3 +142,6 @@ class MenuScreen(Screen):
 
     def go_to_facebook(self, *args):
         open_link("https://www.facebook.com/people/SolarBurn-Studio/61575485297715/")
+    
+    def conquistas(self, *args):
+        self.GameScreenManager.current='conquistas'
