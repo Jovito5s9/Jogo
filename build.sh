@@ -19,7 +19,9 @@ pyinstaller \
   --icon="assets/geral/logo_RadioRoots.png" \
   --add-data "assets:assets" \
   --add-data "saved:saved" \
+  --add-data "content:content" \
   "$ENTRY_POINT"
+python "$ENTRY_POINT"
 
 echo "📄 Copiando run.sh..."
 cp packaging/run.sh "dist/$APP_NAME/run.sh"

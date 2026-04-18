@@ -3,7 +3,9 @@ from core.entity.interact import distancia
 from kivy.clock import Clock
 from kivy.core.window import Window
 
-size = Window.height / 12.5
+from utils.resourcesPath import resource_path
+
+from screens.shared import size
 
 
 class NPC(BasicEnt):
@@ -13,8 +15,8 @@ class NPC(BasicEnt):
         self.global_pos=self.pos
         self.i_frames=True
         self.sources={
-            "idle":"assets/sprites/gabiru/idle.png",
-            "atacando":"assets/sprites/gabiru/olhando.png"
+            "idle":resource_path("assets/sprites/gabiru/idle.png"),
+            "atacando":resource_path("assets/sprites/gabiru/olhando.png")
         }
         self.idle_frames=2
         self.atacando_frames=2
