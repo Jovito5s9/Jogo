@@ -10,3 +10,4 @@ GameScreenManager.add_widget(SplashScreen(name='splash', GameScreenManager=GameS
 GameScreenManager.add_widget(MenuScreen(name='menu', GameScreenManager=GameScreenManager))
 GameScreenManager.add_widget(ConfiguracoesScreen(name='configurações', GameScreenManager=GameScreenManager))
 GameScreenManager.add_widget(GameScreen(name='game',GameScreenManager=GameScreenManager))
+GameScreenManager.get_screen('splash').init_screen()

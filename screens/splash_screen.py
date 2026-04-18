@@ -12,6 +12,8 @@ class SplashScreen(Screen):
     def __init__(self, GameScreenManager=None, **kwargs):
         super().__init__(**kwargs)
         self.GameScreenManager=GameScreenManager
+    
+    def init_screen(self):
         with self.canvas:
             Color(0.1, 0.1, 0.15, 1)
             self.bg_rect = Rectangle(size=Window.size, pos=self.pos)
