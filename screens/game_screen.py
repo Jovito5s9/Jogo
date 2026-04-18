@@ -358,6 +358,8 @@ class GameScreen(Screen):
         self.game.size_hint = (None, None)
         self.game.size = (size * 20, size * 15)
         self.game.pos = (0, 0)
+        self.game._pause_pressed = False
+        self.game.pausado = False
         if platform == "android":
             self.viewport = Viewport(size_hint=(None, None))
             self.layout.add_widget(self.viewport)
@@ -381,10 +383,15 @@ class GameScreen(Screen):
         self.game.pre_enter()
 
     def on_pre_leave(self, *args):
+        if not self.game.pausado:
+            self.game.pause()
+
+    def on_leave(self, *args):
         if self.game:
             self.game.keyboard_desactive()
             self.game.key_pressed.clear()
             self.game._pause_pressed = False
+            self.game.menu_pause.dismiss()
 
     def on_pre_enter(self, *args):
         self._ensure_game()
