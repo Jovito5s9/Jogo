@@ -70,6 +70,9 @@ Habilidades concedidas por estranhos chips tecnológicos.
 
 ➡ [Detalhes técnicos](docs/tecnico/stack.md)
 
+
+➡ [Arquitetura do projeto](docs/tecnico/arquitetura.md)
+
 ---
 
 ## 📚 Documentação
