@@ -1,0 +1,36 @@
+{
+  "class": "Rato",
+  "descricao": "Rato do esgoto",
+  "sources": {
+    "idle": "assets/sprites/rato/idle.png",
+    "running": "assets/sprites/rato/running.png",
+    "morto": "assets/sprites/rato/morto.png",
+    "atacar": "assets/sprites/rato/garras.png"
+  },
+  "sprite": {
+    "frame_width": 32,
+    "frame_height": 32,
+    "idle_frames": 2,
+    "running_frames": 2,
+    "atacando_frames": 2,
+    "tamanho": 2.8
+  },
+  "atributos": {
+    "vida_maxima": 30,
+    "vida": 30,
+    "dano": 5,
+    "velocidade": 1.5,
+    "repulsao": 10,
+    "alcance_fisico": 70,
+    "raio_visao": 300,
+    "i_frames_time": 0.8,
+    "max_skills": 2
+  },
+  "drops": {
+    "carne": [0, 2]
+  },
+  "acoes": ["perseguir", "rastrear", "atacar"],
+  "ataque_name":"atacar",
+  "ai_interval": 10,
+  "pos": [200, 150]
+}

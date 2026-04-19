@@ -7,13 +7,15 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties import OptionProperty
+from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 
 from utils.resourcesPath import resource_path
 from utils.customizedButton import CustomizedButton
 from core.BitCoreSkills import NAME_TO_SKILL_ID
-from saved.itens_db import ITENS
 from screens.shared import STD_font_size
+from screens.shared import configuracoes
+
 from functools import partial
 import json
 import os
@@ -21,8 +23,22 @@ import os
 class InteractiveImage(ButtonBehavior, Image):
     pass
 
+class Item(InteractiveImage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        texture = Image(source=resource_path("assets/ui/item_bg.png")).texture
+        with self.canvas.before:
+            Color(0.3, 0.3, 0.3, 0.5)
+            self.item_bg = Rectangle(texture=texture, pos=self.pos, size=self.size)
+        self.bind(pos=self.update_bg, size=self.update_bg)
+    
+    def update_bg(self, *args):
+        self.item_bg.pos = self.pos
+        self.item_bg.size = self.size
+
+
 class Menu_player(Popup):
-    tipo = OptionProperty("inventario", options=("inventario", "equipaveis"))
+    tipo = OptionProperty("inventario", options=("inventario", "equipaveis", "core"))
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -39,17 +55,37 @@ class Menu_player(Popup):
         self.selected_item_panel = None
         self.equipped_panel = None
         self.equipped_grid = None
+        self.cpu_layout=None
         self.scroll_view = None
         self.grid = None
 
+        self.linguagem=configuracoes().get("linguagem","pt")
+        self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
+        self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         self.player = None
+
+        if self.linguagem!=configuracoes().get("linguagem","pt"):
+            self.linguagem=configuracoes().get("linguagem","pt")
+
+            self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
+
+            self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
 
         self.menu = {
             "inventario": self.inventario,
-            "equipaveis": self.equipaveis
+            "equipaveis": self.equipaveis,
+            "core":self.cpu
         }
 
+    def on_tipo(self, *args):
+        self.menu[self.tipo]()
+
     def on_open(self):
+        self.on_dismiss()
+        if self.linguagem!=configuracoes().get("linguagem","pt"):
+            self.linguagem=configuracoes().get("linguagem","pt")
+            self.itens_dict = json.load(open(resource_path(f"content/itens/{self.linguagem}.json"), "r", encoding="utf-8"))
+            self.ui_texts = json.load(open(resource_path(f"content/ui/{self.linguagem}.json"), "r", encoding="utf-8"))
         self.menu[self.tipo]()
         Clock.schedule_once(lambda dt: self.atualizar_equipados(), 0)
 
@@ -61,17 +97,16 @@ class Menu_player(Popup):
     
     def menu_equipaveis(self,*args):
         if self.tipo=="equipaveis":
-            pass
+            return
         self.tipo="equipaveis"
-        self.on_open()
     
     def menu_inventario(self,*args):
         if self.tipo=="inventario":
-            pass
+            return
         self.tipo="inventario"
-        self.on_open()
     
     def preparar_menu(self, *args):
+        self.background_color = (1, 1, 1, 1)
         self.layout.clear_widgets()
 
         browse_layout =FloatLayout(size_hint=(1, 0.2))
@@ -102,7 +137,7 @@ class Menu_player(Popup):
             spacing=6
         )
         self.selected_item_panel.add_widget(
-            Label(text="Nenhum item selecionado", font_size=STD_font_size*0.6)
+            Label(text=self.ui_texts["no_items_selected"], font_size=STD_font_size*0.6)
         )
 
         self.equipped_panel = BoxLayout(
@@ -113,7 +148,7 @@ class Menu_player(Popup):
         )
 
         equipped_title = Label(
-            text="Equipados",
+            text=self.ui_texts["equipped"],
             font_size=STD_font_size*0.5,
             size_hint=(1, 0.2)
         )
@@ -123,7 +158,8 @@ class Menu_player(Popup):
         self.equipped_panel.add_widget(self.equipped_grid)
 
         self.selection_panel.add_widget(self.selected_item_panel)
-        self.selection_panel.add_widget(self.equipped_panel)
+        if self.tipo=="equipaveis":
+            self.selection_panel.add_widget(self.equipped_panel)
 
         self.layout.add_widget(self.selection_panel)
 
@@ -136,6 +172,7 @@ class Menu_player(Popup):
 
     def on_item_selected(self, widget):
         nome = getattr(widget, "item_nome", "Desconhecido")
+        nome_visivel = self.itens_dict.get(self.tipo, {}).get(nome, {}).get("nome", nome)
         info = getattr(widget, "item_info", {}) or {}
         quantidade = getattr(widget, "item_quantidade", "")
 
@@ -153,7 +190,7 @@ class Menu_player(Popup):
             spacing=4
         )
         nome_label = Label(
-            text=f"{nome}  x{quantidade}",
+            text=f"{nome_visivel}  {quantidade}",
             font_size=STD_font_size*0.7,
             size_hint=(1, None),
             height=30
@@ -191,7 +228,7 @@ class Menu_player(Popup):
     #auxilia nas identificacoes
             if slot_equipado is not None:
                 desequipar_button = CustomizedButton(
-                    text='desequipar',
+                    text=self.ui_texts["unequip"],
                     font_size=STD_font_size*0.6,
                     size_hint=(0.8, None),
                     height=40
@@ -210,7 +247,7 @@ class Menu_player(Popup):
 
                 if slot_livre is not None:
                     equipar_button = CustomizedButton(#equipar
-                        text=f'equipar (slot {slot_livre})',
+                        text=f'{self.ui_texts["equip"]} (slot {slot_livre})',
                         font_size=STD_font_size*0.6,
                         size_hint=(0.8, None),
                         height=40
@@ -220,7 +257,7 @@ class Menu_player(Popup):
 
                 else:
                     sem_slot = Label(
-                        text="Sem slots livres. Desequipe um item antes de equipar.",
+                        text=self.ui_texts["no_slots"],
                         font_size=STD_font_size*0.45,
                         size_hint=(1, None),
                         height=40
@@ -246,7 +283,8 @@ class Menu_player(Popup):
 
 
     def atualizar_equipados(self):
-
+        if self.tipo!="equipaveis":
+            return
         player = getattr(self, "player", None)
         if not player:
             return
@@ -279,7 +317,7 @@ class Menu_player(Popup):
             src = resource_path("assets/ui/slot_vazio.png")
 
             if skill_id:
-                for _, item_data in ITENS.get("equipaveis", {}).items():
+                for _, item_data in self.itens_dict.get("equipaveis", {}).items():
                     if item_data.get("skill") == skill_id:
                         src = self.safe_image(item_data.get("source"))
                         break
@@ -302,10 +340,10 @@ class Menu_player(Popup):
         if self.grid:
             self.grid.clear_widgets()
 
-        itens = ITENS.get(self.tipo, {})
+        itens = self.itens_dict.get(self.tipo, {})
 
         if not inventario:
-            self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
+            self.grid.add_widget(Label(text=self.ui_texts["no_items"], font_size=STD_font_size*0.8, size_hint_y=None, height=40))
             if self.scroll_view.parent is None:
                 self.layout.add_widget(self.scroll_view)
             return
@@ -314,9 +352,9 @@ class Menu_player(Popup):
 
             info = itens.get(nome, {})
 
-            img_source = self.safe_image(info.get("source"))
+            img_source = self.safe_image(info.get("source",""))
 
-            btn = InteractiveImage(
+            btn = Item(
                 source=resource_path(img_source),
                 size_hint=(None, None),
                 allow_stretch=True,
@@ -324,7 +362,8 @@ class Menu_player(Popup):
             )
             btn.item_nome = nome
             btn.item_info = info
-            btn.item_quantidade = quantidade
+            if quantidade!=1:
+                btn.item_quantidade = "x "+str(quantidade)
             btn.bind(on_press=self.on_item_selected)
 
             self.grid.add_widget(btn)
@@ -332,11 +371,56 @@ class Menu_player(Popup):
         if self.scroll_view.parent is None:
             self.layout.add_widget(self.scroll_view)
 
+    def show_drivers(self,*args):
+        drivers = self.player.drivers
+        self.grid.cols=1
+        drivers_to_show={}
+        for driver in drivers:
+            drivers_to_show[driver]=1
+
+        str_drivers=" --- "
+        if drivers:
+            str_drivers=""
+            n_drivers=len(drivers_to_show)
+            for d in drivers_to_show:
+                str_drivers+=d
+                if n_drivers>1:
+                    n_drivers-=1
+                    str_drivers+=", "
+        self.adicionar_itens(drivers_to_show)
+
+        poder=self.player.power
+        speed=self.player.velocidade
+        vida=self.player.vida
+        vida_max=self.player.vida_maxima
+        skills=" --- "
+        slots_skills=self.player.skills_slots.values()
+        if slots_skills:
+            skills=""
+            n_skills=len(slots_skills)
+            for skill in slots_skills:
+                skills+=skill
+                if n_skills>1:
+                    n_skills-=1
+                    skills+=", "
+        br="\n"
+        text_label_player_data=str(f"Data Body {br} {br}power: {poder} {br}velocity: {speed} {br}health: {vida} : {100*vida/vida_max} % {br}skills: {skills}{br}drivers: {str_drivers}")
+        player_data=Label(text=text_label_player_data)
+        self.equipped_panel.add_widget(player_data)
+        for child in self.equipped_panel.children[:]:
+            if child!=player_data:
+                self.equipped_panel.remove_widget(child)
+        if not self.equipped_panel in self.selection_panel.children:
+            self.selection_panel.add_widget(self.equipped_panel)
+
     def equipaveis(self, *args):
         self.preparar_menu()
-
+        print(self.tipo)
         if not self.player:
             return
+        if not self.selection_panel.parent:
+            self.layout.add_widget(self.selection_panel)
+        self.atualizar_equipados()
 
         inventario = self.player.bitcores
 
@@ -358,3 +442,7 @@ class Menu_player(Popup):
             self.grid.add_widget(Label(text="Sem itens", font_size=STD_font_size*0.8, size_hint_y=None, height=40))
             if self.scroll_view.parent is None:
                 self.layout.add_widget(self.scroll_view)
+    
+    def cpu(self,*args):
+        self.preparar_menu()
+        self.show_drivers()

@@ -1,16 +1,71 @@
-from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, RoundedRectangle
 from kivy.clock import Clock
+from kivy.core.window import Window
 from kivy.uix.image import Image
 from kivy.properties import OptionProperty, BooleanProperty, NumericProperty
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import ButtonBehavior
+from kivy.uix.label import Label
 
-import random
 import json
 import os
 from utils.resourcesPath import resource_path
+from utils.customizedButton import CustomizedButton
+from core.entity.interact import distancia
 from core.BitCoreSkills import SKILLS
-from saved.itens_db import ITENS
+from screens.shared import configuracoes
+
+itens_dict = json.load(open(resource_path("content/itens/pt.json"), "r", encoding="utf-8"))
+
+class Ballon(ButtonBehavior,Image):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.source=resource_path("assets/ui/exclamacao.png")
+    
+    def on_release(self):
+        if not self.parent:
+            return
+        self.parent.add_interact_menu()
+        self.parent.remove_widget(self)
+
+
+class Escolha(CustomizedButton):
+    def __init__(self, text, func, **kwargs):
+        super().__init__(**kwargs)
+        self.text=text
+        self.func=func
+    
+    def on_release(self):
+        self.func()
+
+
+class Menu_interact(FloatLayout):
+    def __init__(self, nome_npc="", escolhas=[], funcs=[], **kwargs):
+        super().__init__(**kwargs)
+        self.largura=200
+        self.size_hint=(None,None)
+        self.npc=nome_npc
+        self.i=0
+        self.std_height=35
+        if escolhas:
+            for text in escolhas:
+                self.add_opc(text,self.i,funcs[self.i])
+                self.i+=1
+        self.size=(self.largura,self.i*self.std_height)
+        self.add_widget(
+            Label(
+                text=self.npc, 
+                font_size=40,
+                pos=(Window.width/2 - self.largura/2,Window.height*0.6+self.std_height*2)
+            )
+        )
+    
+    def add_opc(self, text, i, func):
+        opc=Escolha(text=text,func=func)
+        self.add_widget(opc)
+        opc.height=self.std_height
+        opc.pos=Window.width/2 - self.largura/2,Window.height*0.6-(i*self.std_height*2)
 
 class Barra(Widget):
     modificador = NumericProperty(100)
@@ -18,11 +73,18 @@ class Barra(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cor = ([1, 0, 0, 1])
+        self.cor_bg = ([0, 0, 0, 0.5])
         self.w = 1
         self.h = 1
         with self.canvas:
+            self.color = Color(*self.cor_bg)
+            self.bg_rect = RoundedRectangle(
+                pos=self.pos,
+                size=(self.w * (self.modificador / 100) + 1, self.h),
+            )
+        with self.canvas:
             self.color = Color(*self.cor)
-            self.rect = Rectangle(
+            self.rect = RoundedRectangle(
                 pos=self.pos,
                 size=(self.w * (self.modificador / 100) + 1, self.h),
             )
@@ -32,6 +94,8 @@ class Barra(Widget):
 
     def atualizar(self, *args):
         # Posiciona o rect relativo ao centro horizontal definido por self.w
+        self.bg_rect.pos = (self.x - (self.w / 2), self.y)
+        self.bg_rect.size = (self.w * 1 + 1, self.h)
         self.rect.pos = (self.x - (self.w / 2), self.y)
         self.rect.size = (self.w * (self.modificador / 100) + 1, self.h)
 
@@ -60,9 +124,11 @@ class BasicEnt(Image):
         self.power = 5
         self.dano = self.power
         self.atacando = False
+        self.ataque_delay=False
         self.alcance_fisico = 70
         self.dano_contato = 0
         self.velocidade = 3
+        self.velocidade_fps = 0
         self.speed_x = 0
         self.speed_y = 0
         self.facing_right = True
@@ -85,10 +151,24 @@ class BasicEnt(Image):
         self.max_skills = 2
         self.dano_causado=0
 
+        if self.parent:
+            self.world = self.parent.parent.parent
+        else:
+            self.world = None
+            self.procurar_parent()
+
         # atributos de animação (inicialmente vazios)
         self.sprite_sheet = None
         self.total_frames = 1
         self.current_frame = 0
+        self.auto_destruir_is_ok=False
+    
+    def procurar_parent(self, *args):
+        if self.parent:
+            self.world = self.parent.parent.parent
+        else:
+            Clock.schedule_once(self.procurar_parent, 0.1)
+            
 
     def atualizar(self, *args):
         # Carrega o sprite sheet
@@ -124,33 +204,39 @@ class BasicEnt(Image):
         except Exception:
             # Se for usado em contexto onde add_widget não é apropriado, ignore silenciosamente
             pass
-
+    
+    def add_player(self, *args):
+        try:
+            self.player = self.world.player
+        except Exception:
+            self.player = None
+    
     def move_x(self, *args):
         if self.vivo:
-            self.x += self.speed_x * self.velocidade
+            self.x += self.speed_x * (self.velocidade+self.velocidade_fps)
 
     def move_y(self, *args):
         if self.vivo:
-            self.y += self.speed_y * self.velocidade
+            self.y += self.speed_y * (self.velocidade+self.velocidade_fps)
 
     def atualizar_pos(self, *args):
+        # atualiza posição da barra de vida (se existir)
+        try:
+            self.barra_vida.pos = (self.center_x, self.center_y)
+        except Exception:
+            pass
         if not self.vivo:
             return
         if self.speed_x > 0:
             self.facing_right = True
         elif self.speed_x < 0:
             self.facing_right = False
-        if self.atacando:
+        if self.atacando and not self.ataque_delay:
             self.estado = "atacando"
         elif self.speed_x != 0 or self.speed_y:
             self.estado = "running"
         else:
             self.estado = "idle"
-        # atualiza posição da barra de vida (se existir)
-        try:
-            self.barra_vida.pos = (self.center_x, self.center_y)
-        except Exception:
-            pass
         self.hitbox = self.get_hitbox()
 
     def on_estado(self, *args):
@@ -227,22 +313,24 @@ class BasicEnt(Image):
         self.droped = True
 
     def recive_itens(self, list_drops):
+        if not hasattr(self.world.player, "inventario"):
+            return
+        
         for drop, quantidade in list_drops.items():
-            if quantidade == 0:
-                pass
+            if quantidade <= 0:
+                continue
             # garante que parent e parent.player existam
-            try:
-                self.parent.player.inventario[drop] = self.parent.player.inventario.get(drop, 0) + quantidade
-                self.save_data("inventario", {drop: self.parent.player.inventario[drop]})
-            except Exception:
-                pass
+            
+            self.world.player.inventario[drop] = self.world.player.inventario.get(drop, 0) + quantidade
+            if hasattr(self.world.player, "save_data"):
+                self.world.player.save_data("inventario", {drop: self.world.player.inventario[drop]})
 
     def morrer(self, *args):
         self.vivo = False
         self.estado = "morto"
         self.speed_x = 0
         self.speed_y = 0
-        if not self.parent.player == self:
+        if not self.world.player == self:
             self.drop()
 
     def on_vida(self, *args):
@@ -330,6 +418,7 @@ class BasicEnt(Image):
 
     def save_data(self, item, key=None):
         path = resource_path("saved/player.json")
+
         try:
             with open(path, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -338,24 +427,30 @@ class BasicEnt(Image):
 
         if item == "equipaveis":
             equip_map = {}
-            itens_equip = ITENS.get("equipaveis", {})
+            itens_equip = itens_dict.get("equipaveis", {})
+
             for slot, skill_id in list(getattr(self, "skills_slots", {}).items()):
                 try:
                     idx = int(slot)
                 except Exception:
                     continue
+
                 if not (1 <= idx <= self.max_skills):
                     continue
+
                 found_name = None
                 for item_name, item_data in itens_equip.items():
                     if item_data.get("skill") == skill_id:
                         found_name = item_name
                         break
+
                 if found_name:
                     equip_map[str(idx)] = found_name
+
             data["equipaveis"] = equip_map
 
         elif item == "bitcores":
+
             if isinstance(key, dict):
                 data.setdefault("bitcores", {})
                 for k, v in key.items():
@@ -363,11 +458,29 @@ class BasicEnt(Image):
             else:
                 data["bitcores"] = key
 
-        else:
-            data[item] = key
+        elif item == "inventario":
 
-        with open(path, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
+            if isinstance(key, dict):
+                data.setdefault("inventario", {})
+
+                for k, v in key.items():
+                    data["inventario"][k] = v
+            else:
+                data["inventario"] = key
+
+        else:
+
+            if isinstance(key, dict):
+                data.setdefault(item, {})
+                for k, v in key.items():
+                    data[item][k] = v
+            else:
+                data[item] = key
+        try:
+            with open(path, "w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
 
 
 
@@ -405,7 +518,7 @@ class BasicEnt(Image):
                     if not (1 <= idx <= self.max_skills):
                         continue
 
-                    item_data = ITENS.get("equipaveis", {}).get(nome_item)
+                    item_data = itens_dict.get("equipaveis", {}).get(nome_item)
                     if not item_data:
                         continue
 
@@ -415,358 +528,32 @@ class BasicEnt(Image):
 
             self.rodar_skills()
 
-
-def mover(ent, dx, dy):
-    ent.speed_x = dx
-    ent.speed_y = dy
-
-
-def perseguir(rastreador):
-    dx = 0
-    dy = 0
-    try:
-        if rastreador.player.center_hitbox_x > rastreador.center_hitbox_x:
-            dx = 1
-        elif rastreador.player.center_hitbox_x < rastreador.center_hitbox_x:
-            dx = -1
-        if rastreador.player.center_hitbox_y > rastreador.center_hitbox_y:
-            dy = 1
-        elif rastreador.player.center_hitbox_y < rastreador.center_hitbox_y:
-            dy = -1
-    except Exception:
-        pass
-    mover(rastreador, dx, dy)
-
-
-def rastrear(rastreador):
-    if not rastreador.player:
-        return
-
-    d = distancia(rastreador)
-    if d > 0 and d <= rastreador.raio_visao:
-        rastreador.alvo = True
-
-
-def atacar(atacante, alvo=None):
-    if alvo is None:
-        if not atacante.player:
-            return
-        alvo = atacante.player
-    if not alvo.i_frames:
-        atacante.estado = "atacando"
-        knockback = 1
-        if not alvo.vivo:
-            knockback = 2
-        if atacante.facing_right:
-            alvo.x += atacante.repulsao * knockback
-        else:
-            alvo.x -= atacante.repulsao * knockback
-        alvo.y += atacante.speed_y * atacante.repulsao * knockback
-        atacante.speed_x = 0
-        atacante.speed_y = 0
-        alvo.vida -= atacante.dano
-    return
-
-
-def distancia(ent1, ent2=None):
-    try:
-        if ent2 is None:
-            d1 = ent1.player.center_hitbox_x - ent1.center_hitbox_x
-            d2 = ent1.player.center_hitbox_y - ent1.center_hitbox_y
-            return ((d1 * d1 + d2 * d2) ** 0.5)
-        else:
-            d1 = ent2.center_hitbox_x - ent1.center_hitbox_x
-            d2 = ent2.center_hitbox_y - ent1.center_hitbox_y
-            return ((d1 * d1 + d2 * d2) ** 0.5)
-    except Exception:
-        return 0
-
-
-# funcao destinada a colocar as possibilidades de acoes de entidades basicas
-def ia_base():
-    acoes = {
-        "perseguir": perseguir,
-        "rastrear": rastrear,
-        "atacar": atacar
-    }
-    return acoes
-
-
-class Rato(BasicEnt):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.sources["idle"] = resource_path("assets/sprites/rato/idle.png")
-        self.sources["running"] = resource_path("assets/sprites/rato/running.png")
-        self.sources["morto"] = resource_path("assets/sprites/rato/morto.png")
-        self.sources["garras"] = resource_path("assets/sprites/rato/garras.png")
-        self.idle_frames = 2
-        self.running_frames = 2
-        self.atacando_frames = 2
-        self.tamanho = 2.8
-
-        self.atualizar()
-        self.acoes = ia_base()
-        Clock.schedule_interval(self.ia, 1 / 10)
-        Clock.schedule_once(self.add_player, 2)
-        self.atributos()
-
-    def atributos(self, *args):
-        self.raio_visao = 300
-        self.vida_maxima = 30
-        self.vida = 30
-        self.dano = 5
-        self.velocidade = 1.5
-        self.list_drops["carne"] = random.randint(0, 2)
-
-    def add_player(self, *args):
-        try:
-            self.player = self.parent.player
-        except Exception:
-            self.player = None
-
     def ia(self, *args):
-        if not self.vivo:
+        if not self.vivo or self.auto_destruir_is_ok:
             return
         if self.alvo:
             if distancia(self) <= self.alcance_fisico and not self.atacando:
-                self.ataque_name = "garras"
-                self.acoes["atacar"](self)
+                self.acoes[self.ataque_name](self)
                 self.atacando = True
-                Clock.schedule_once(self.atualizar_atacando, 0.4)
+                Clock.schedule_once(self.atualizar_atacando, 0.1 * self.atacando_frames)
             else:
                 self.acoes["perseguir"](self)
         else:
             self.acoes["rastrear"](self)
-
+    
     def atualizar_atacando(self, *args):
         self.atacando = False
+        if self.auto_destruir_is_ok:
+            self.vida=0
+            if self in self.world.ents:
+                self.world.ents.remove(self)
+            if self.parent:
+                self.world.map_layout.remove_widget(self)
+            self.morrer()
         if self.speed_x or self.speed_y:
             self.estado = "running"
         else:
             self.estado = "idle"
-
-
-class Rata_mae(BasicEnt):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.sources["idle"] = resource_path("assets/sprites/rata_mae/idle.png")
-        self.sources["preparing"] = resource_path("assets/sprites/rata_mae/preparing.png")
-        self.sources["rolling"] = resource_path("assets/sprites/rata_mae/rolling.png")
-        self.sources["morto"] = resource_path("assets/sprites/rata_mae/dead.png")
-        self.idle_frames = 3
-        self.running_frames = 3
-        self.atacando_frames = 3
-        self.tamanho = 3.5
-        self.alvo_pos = []
-
-        self.atualizar()
-        self.acoes = {
-            "perseguir": perseguir,
-            "rastrear": rastrear,
-            "atacar": self.preparar_rolar
-        }
-        self.investida = None
-        Clock.schedule_interval(self.ia, 1 / 10)
-        Clock.schedule_once(self.add_player, 1)
-        self.atributos()
-        self.frame_width = 96
-        self.frame_height = 64
-
-    def atributos(self, *args):
-        self.raio_visao = 700
-        self.vida_maxima = 450
-        self.vida = 450
-        self.dano_contato = 5
-        self.velocidade = 1.5
-        self.alcance_fisico = 450
-        self.list_drops["carne"] = random.randint(3, 7)
-
-    def get_hitbox(self, *args):
-        x = self.x + (self.width * 0.16)
-        y = self.y + (self.height * 0.1)
-        width = self.width * 0.68
-        height = self.height * 0.6
-        self.get_center_hitbox(x, y, width, height)
-        return [x, y, width, height]
-
-    def add_player(self, *args):
-        try:
-            self.player = self.parent.player
-        except Exception:
-            self.player = None
-
-    def ia(self, *args):
-        if not self.vivo:
-            return
-        if self.alvo:
-            if not self.atacando:
-                self.acoes["atacar"]()
-        else:
-            self.acoes["rastrear"](self)
-
-    def preparar_rolar(self, *args):
-        if self.atacando:
-            return
-        try:
-            self.alvo_pos = self.player.pos
-        except Exception:
-            self.alvo_pos = [0, 0]
-        self.estado = "atacando"
-        self.ataque_name = "preparing"
-        self.atacando = True
-        Clock.schedule_once(self.rolar, 0.3)
-
-    def rolar(self, *args):
-        self.ataque_name = "rolling"
-        self.velocidade *= 2
-        self.investida = Clock.schedule_interval(self.acelerar, 0.05)
-        Clock.schedule_once(self.parar_rolar, 1)
-
-    def parar_rolar(self, *args):
-        self.atacando = False
-        self.estado = "idle"
-        self.velocidade /= 2
-
-        if self.investida:
-            self.investida.cancel()
-            self.investida = None
-
-    def acelerar(self, *args):
-        perseguir(self)
-        x, y = self.alvo_pos
-        if x == 0: x = 1
-        if y == 0: y = 1
-        # mover-se na direção do alvo
-        self.x += self.velocidade * (x / abs(x))
-        self.y += self.velocidade * (y / abs(y))
-
-
-class Player(BasicEnt):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.sources["idle"] = resource_path("assets/sprites/player/idle.png")
-        self.sources["running"] = resource_path("assets/sprites/player/running.png")
-        self.sources["morto"] = resource_path("assets/sprites/player/morto.png")
-        self.sources["soco"] = resource_path("assets/sprites/player/soco.png")
-        self.sources["soco_forte"] = resource_path("assets/sprites/player/soco_forte.png")
-        self.idle_frames = 2
-        self.running_frames = 4
-        self.atacando_frames = 3
-        self.tamanho = 4
-
-        self.respawning=False
-
-        self.atualizar()
-        self.repulsao = 20
-        self.alcance_fisico = 100
-        self.acoes = {
-            "soco_normal": self.soco_normal,
-            "soco_forte": self.soco_forte
-        }
-        self.acao = ""
-        Clock.schedule_interval(self.verificar_acao, 1 / 20)
-        Clock.schedule_interval(self.check_vida, 1 / 3)
-        self.load_data()
-
-        if not self.bitcores:
-            self.bitcores = {
-            "núcleo ceifador de energia": 1,
-            "núcleo do instinto de pânico": 1,
-            "núcleo da esquiva aleatória": 1,
-            "núcleo do punho explosivo":1,
-            "núcleo da vitalidade extendida":1
-        }# so pra garantir que o user vai conseguir testar antes de ter metodo de obtenção em si
     
-    def respawn(self,*args):
-        self.i_frames=True
-        self.vida=self.vida_maxima
-        self.vivo=True
-        self.estado="idle"
-        self.parent.respawn_player()
-
-    def check_vida(self,*args):
-        if self.vivo:
-            return
-        if self.respawning:
-            return
-        self.respawning=True
-        Clock.schedule_once(self.respawn, 3)
-
-    def soco_normal(self, *args):
-        if self.atacando:
-            self.acao = ""
-            return
-        self.ataque_name = "soco"
-        self.atacar()
-        Clock.schedule_once(self.remover_ataque, 0.4)
-
-    def atacar(self, *args):
-        if self.atacando:
-            self.acao = ""
-            return
-        self.atacando = True
-        repulsao = self.repulsao
-        if self.ataque_name == "soco_forte":
-            self.dano = self.power * 1.2
-            self.repulsao = 1.5 * self.repulsao
-        # percorre entidades no parent
-        try:
-            ents = self.parent.ents
-        except Exception:
-            ents = []
-        for ent in ents:
-            if not ent == self:
-                if distancia(self, ent) <= self.alcance_fisico:
-                    if self.facing_right and ent.x >= self.x:
-                        atacar(self, ent)
-                    elif not self.facing_right and ent.x <= self.x:
-                        atacar(self, ent)
-        self.dano_causado=self.dano
-        self.dano = self.power
-        self.repulsao = repulsao
-
-    def remover_ataque(self, *args):
-        self.atacando = False
-        if self.speed_x or self.speed_y:
-            self.estado = "running"
-        else:
-            self.estado = "idle"
-
-    def soco_forte(self, *args):
-        if self.atacando:
-            self.acao = ""
-            return
-        try:
-            alvo_x, alvo_y = self.grid
-        except Exception:
-            alvo_x, alvo_y = (0, 0)
-        if self.facing_right:
-            alvo_x += 1
-        else:
-            alvo_x -= 1
-        try:
-            obj_list = self.parent.obj_list
-        except Exception:
-            obj_list = []
-        for obj in obj_list:
-            if obj.linha == alvo_y and obj.coluna == alvo_x and obj.quebravel:
-                obj.resistencia -= self.power
-            if (obj.coluna, obj.linha) == tuple(self.grid) and obj.quebravel:
-                obj.resistencia -= self.power
-
-        self.ataque_name = "soco_forte"
-        self.atacar()
-        Clock.schedule_once(self.remover_ataque, 0.8)
-
-    def verificar_acao(self, *args):
-        if not self.acao or not self.vivo:
-            return
-
-        action = self.acoes.get(self.acao)
-        if action and callable(action):
-            try:
-                action()
-            except Exception as e:
-                print("Erro ao executar ação", self.acao, ":", e)
-        else:
-            self.acao = ""
+    def autodestruct(self,*args):
+        self.auto_destruir_is_ok=True

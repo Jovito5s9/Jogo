@@ -1,0 +1,36 @@
+{
+  "class": "Drone",
+  "descricao": "Drone auto destrutivo",
+  "sources": {
+    "idle": "assets/sprites/drone/standard.png",
+    "running": "assets/sprites/drone/standard.png",
+    "morto": "assets/sprites/drone/morto.png",
+    "autodestruct": "assets/sprites/drone/explosion.png"
+  },
+  "sprite": {
+    "frame_width": 32,
+    "frame_height": 32,
+    "idle_frames": 4,
+    "running_frames": 4,
+    "atacando_frames": 5,
+    "tamanho": 2.8
+  },
+  "atributos": {
+    "vida_maxima": 20,
+    "vida": 20,
+    "dano": 15,
+    "velocidade": 1.8,
+    "repulsao": 30,
+    "alcance_fisico": 60,
+    "raio_visao": 550,
+    "i_frames_time": 1,
+    "max_skills": 0
+  },
+  "drops": {
+    "sucata": [0, 2]
+  },
+  "acoes": ["perseguir", "rastrear", "autodestruct"],
+  "ataque_name":"autodestruct",
+  "ai_interval": 10,
+  "pos": [200, 150]
+}

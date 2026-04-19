@@ -1,204 +1,13 @@
-from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import NumericProperty, ReferenceListProperty
-from kivy.uix.image import Image
+from kivy.uix.scrollview import ScrollView
+from kivy.properties import NumericProperty
 from kivy.core.window import Window
-from kivy.clock import Clock 
+from kivy.clock import Clock
 
-import random
-
-from core.player import Rato, Rata_mae
-from utils.resourcesPath import resource_path
-
-size = Window.height/12.5
-
-class Object(FloatLayout):
-    linha = NumericProperty(0)
-    coluna = NumericProperty(0)
-    posicao = ReferenceListProperty(linha, coluna)
-
-    patern_x = NumericProperty(0)
-    patern_y = NumericProperty(0)
-    patern_center = ReferenceListProperty(patern_x, patern_y)
-
-    linhas = NumericProperty(0)
-    colunas = NumericProperty(0)
-    max = ReferenceListProperty(linhas, colunas)
-    
-    resistencia = NumericProperty(0)
-
-    def __init__(self, source, ativado=False, **kwargs):
-        super().__init__(**kwargs)
-        self.size_hint = (None, None)
-        
-        global size
-        self.s = source
-        self.type = source
-        self.source = resource_path("assets/tiles/objects/" + f"{source}")
-        self.size = (size, size * 0.8)
-        self.colisivel = True
-        self.quebravel = False
-        self.quebrando = False
-        self.ativado = ativado
-        self.dano_colisao = 0
-        self.drops = {}
-
-        self.image = Image(
-            source=self.source,
-            allow_stretch=True,
-            keep_ratio=False,
-            size=self.size,
-            pos=self.pos
-        )
-        if source == 'pedra.png':
-            self.hitbox = [self.x + (self.width * 0.05), self.y + (self.height * 0.2), self.width * 0.6, self.height * 0.6]
-            self.quebravel = True
-            self.resistencia_max = 23
-            self.resistencia = self.resistencia_max
-            apatita = random.randint(0, 6) - 4
-            mica = random.randint(0, 5) - 3
-            if apatita > 0:
-                self.drops["apatita"] = apatita
-            if mica > 0:
-                self.drops["mica"] = mica
-
-        elif source == 'veneno.png':
-            self.colisivel = False
-            self.dano_colisao = 0.075
-
-        elif self.type == "entrada_esgoto.png":
-            Clock.schedule_once(self.spawn, 0.5)
-        
-        self.add_widget(self.image)
-
-        self.bind(pos=self.update_image_pos)
-        self.bind(patern_center=self.on_center_changed)
-
-        self.position()
-
-    def update_image_pos(self, *args):
-        self.image.pos = self.pos
-
-    def position(self, *args):
-        self.pos = (
-            self.patern_x + (self.coluna * self.width),
-            self.patern_y + (self.linha * self.height)
-        )
-        self.get_hitbox()
-        
-    def get_hitbox(self, *args):
-        if self.s == 'pedra.png':
-            self.hitbox = [self.x + (self.width * 0.15), self.y + (self.height * 0.5), self.width * 0.7, self.height * 0.6]
-        elif self.s in ('entrada_esgoto.png', 'descer_esgoto.png', 'veneno.png', 'subir_esgoto.png'):
-            self.hitbox = [self.x + (self.width * 0.2), self.y + (self.height * 0.7), self.width * 0.6, self.height * 0.4]
-        
-    def spawn(self, *args):
-        if self.ativado and random.randint(1, 10) <= 5:
-            return
-        world = self.parent
-        if not world:
-            return
-        if self.type == "entrada_esgoto.png":
-            rato = Rato()
-            # posiciona o rato na mesma posição do objeto (usa ent.pos)
-            rato.pos = self.pos
-            world.add_widget(rato)
-            world.ents.append(rato)
-            self.ativado = True
-    
-    def quebrar(self, *args):
-        if self.quebravel:
-            try:
-                self.remove_widget(self.image)
-            except Exception:
-                pass
-            self.parent.player.recive_itens(self.drops)
-            if self in self.parent.obj_list:
-                self.parent.obj_list.remove(self)
-            try:
-                self.parent.remove_widget(self)
-            except Exception:
-                pass  
-    
-    def on_resistencia(self, *args):
-        if 100 * self.resistencia / self.resistencia_max < 40:
-            if not self.quebrando:
-                self.image.source = self.image.source.replace(".png", "_quebrando.png")
-                self.quebrando = True
-        if self.resistencia <= 0:
-            Clock.schedule_once(self.quebrar, 0.2)
-    
-    def colisao(self, *args):
-        # lida com portais/veneno
-        if self.type in ('descer_esgoto.png' , 'subir_esgoto.png'):
-            for ent in self.parent.ents:
-                if not ent.vivo:
-                    continue
-                if not ent == self.parent.player:
-                    return
-            if not self.parent.trocando_mapa:
-                if self.type == 'descer_esgoto.png':
-                    self.parent.re_map(type="esgoto")
-                elif self.type == 'subir_esgoto.png':
-                    self.parent.re_map(type="esgoto", nivel=-1)
-        if self.type == 'veneno.png':
-            for ent in self.parent.ents:
-                if ent.grid == (self.coluna, self.linha):
-                    ent.vida -= self.dano_colisao
-
-
-    def on_center_changed(self, *args):
-        self.position()
-
-
-class Grid(FloatLayout):
-    linha = NumericProperty(0)
-    coluna = NumericProperty(0)
-    posicao = ReferenceListProperty(linha, coluna)
-
-    patern_x = NumericProperty(0)
-    patern_y = NumericProperty(0)
-    patern_center = ReferenceListProperty(patern_x, patern_y)
-
-    linhas = NumericProperty(0)
-    colunas = NumericProperty(0)
-    max = ReferenceListProperty(linhas, colunas)
-
-    def __init__(self, source, **kwargs):
-        super().__init__(**kwargs)
-        self.size_hint = (None, None)
-        self.ents = []
-        self.type = source
-        global size
-        self.source = resource_path("assets/tiles/ground/" + f"{source}")
-        self.size = (size, size * 0.8)
-
-        self.image = Image(
-            source=self.source,
-            allow_stretch=True,
-            keep_ratio=False,
-            size=self.size,
-            pos=self.pos
-        )
-        self.add_widget(self.image)
-
-        self.bind(pos=self.update_image_pos)
-        self.bind(patern_center=self.on_center_changed)
-
-        self.position()
-
-    def update_image_pos(self, *args):
-        self.image.pos = self.pos
-
-    def position(self, *args):
-        self.pos = (
-            self.patern_x + (self.coluna * self.width),
-            self.patern_y + (self.linha * self.height)
-        )
-
-    def on_center_changed(self, *args):
-        self.position()
-    
+from core.map import Map
+from core.camera import Camera
+from core.entity.ent_factory import create_ent
+from screens.shared import size
 
 
 class World(FloatLayout):
@@ -208,315 +17,155 @@ class World(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        self.ev_colisao = None
-        self.ev_sprite = None
-        self.trocando_mapa = False
-        self.player = None
         self.size = (Window.width, Window.height)
-        self.limites = []
+
+        self.fps = 60
+
+        self.player = None
         self.ents = []
-        self.obj_list = []
-        self.tiles_list = []
-        self.descida_dungeon = []
-        self.subida_dungeon = []
-        self.masmorra = {}
         self.boss = None
 
-        # mais facil de editar o mapa 
-        self.padrao = {
-            "spawner": {
-                'esgoto': "entrada_esgoto.png",
-                None: "entrada_esgoto.png"
-            },
-            "obj": {
-                'esgoto': "veneno.png",
-                None: "pedra.png"
-                },
-            "grid": {
-                'esgoto': "ladrilhos_esgoto.png",
-                None: "terra.png"
-            }
-        }
+        self.ev_colisao = None
+        self.ev_sprite = None
+        self.ev_camera = None
+        self.ev_spawn_ents = None
 
-        self.nivel = 0
-        self.lista_modificadores = ["coleta", "combate"]
-        self.mapa_modificador = "coleta"
+        self.trocando_mapa = False
+
+        self.scroll_view = ScrollView(size=self.size, do_scroll_x=False, do_scroll_y=False)
+        self.map_layout = FloatLayout(size=self.size, size_hint=(None, None))
+        self.scroll_view.add_widget(self.map_layout)
+        self.scroll_view.scroll_x = 0
+        self.scroll_view.scroll_y = 0
+        self.add_widget(self.scroll_view)   
+        self.map = Map(world=self)
+        self.background = None
+        self.camera = Camera(
+            position=(0, 0), 
+            map_size=(0,0), 
+            player=self.player,
+            parent=self
+            )
+
         self.atualizar()
 
-    def create(self, xm, ym, type=None):
-        type = 'esgoto'
-        self.type = type
-        combate_nivel = 1
-        if self.mapa_modificador == "combate":
-            combate_nivel = 2.5
-        elif self.mapa_modificador == "coleta":
-            combate_nivel = 1
-        if type == "esgoto":
-            if self.nivel <= 0:
-                self.nivel = 1
-            if not self.nivel in self.masmorra:
-                self.masmorra[self.nivel] = {}
-            if self.nivel > 0:
-                self.subida_dungeon = self.descida_dungeon 
-            y = random.randint(0, xm - 1)
-            x = random.randint(0, ym - 1)
-            self.descida_dungeon = (x, y)
-            if self.descida_dungeon == self.subida_dungeon :
-                y = random.randint(0, xm - 1)
-                x = random.randint(0, ym - 1)
-                self.descida_dungeon = (x, y)
-            if self.nivel == 10:
-                combate_nivel = 7
-        if type == None:
-            self.nivel = 0
-        
-        grid_padrao = self.padrao["grid"][type]
-        objeto_padrao = self.padrao["obj"][type]
-        spawner_padrao = self.padrao["spawner"][type]
-        self.linhas = xm
-        self.colunas = ym
 
-        self.size = (size * xm, size * ym * 0.8)
+    def create(self, colunas = 0, linhas = 0, tipo="esgoto"):
+        self.map.create(linhas, colunas, tipo)
+        self.linhas = self.map.linhas
+        self.colunas = self.map.colunas
 
-        # Posição inicial (superior esquerdo) para começar a desenhar centralizado
-        self.offset_x = (Window.width / 2) - (self.width / 2)
-        self.offset_y = (Window.height / 2) - (self.height / 2)
-        self.pos = (self.offset_x, self.offset_y)
-        self.limites = (self.x, self.y, self.x + self.width, self.y + self.height)
-
-        for y in range(self.linhas):
-            for x in range(self.colunas):
-                grid = Grid(
-                    posicao=(x, y),
-                    patern_center=(self.offset_x, self.offset_y),
-                    max=(self.linhas, self.colunas),
-                    source=grid_padrao
-                )
-                self.add_widget(grid)
-                self.tiles_list.append(grid)
-        # coloca player na posição inicial do mapa (usa pos do world)
-        if self.player:
-            self.player.pos = (self.offset_x, self.offset_y)
-        self.ents = [self.player] if self.player else []
-        
-        for y in range(self.linhas):
-            for x in range(self.colunas):
-                if self.descida_dungeon == (x, y):
-                    obj = Object(
-                        posicao=(x, y),
-                        patern_center=(self.offset_x, self.offset_y),
-                        max=(self.linhas, self.colunas),
-                        source="descer_esgoto.png"
-                    )
-                    self.obj_list.append(obj)
-                    self.add_widget(obj)
-                    continue
-                if self.subida_dungeon == (x, y):
-                    obj = Object(
-                        posicao=(x, y),
-                        patern_center=(self.offset_x, self.offset_y),
-                        max=(self.linhas, self.colunas),
-                        source="subir_esgoto.png"
-                    )
-                    self.obj_list.append(obj)
-                    self.add_widget(obj)
-                    continue
-                r = random.randint(0, 10)
-                if r == 0:
-                    if not ((x == 0 or x == 1) and (y == 0 or y == 1)):
-                        m = random.randint(0, 100)
-                        if m < (10 + self.nivel) * combate_nivel:
-                            obj = Object(
-                                posicao=(x, y),
-                                patern_center=(self.offset_x, self.offset_y),
-                                max=(self.linhas, self.colunas),
-                                source=spawner_padrao
-                            )
-                        else:
-                            obj = Object(
-                                posicao=(x, y),
-                                patern_center=(self.offset_x, self.offset_y),
-                                max=(self.linhas, self.colunas),
-                                source=objeto_padrao
-                            )
-                        self.obj_list.append(obj)
-                        self.add_widget(obj)
-        self.masmorra[self.nivel] = {
-            "tiles": [(t.coluna, t.linha, t.type) for t in self.tiles_list],
-            "objs": [(o.coluna, o.linha, o.type, o.resistencia, True) for o in self.obj_list]
-        }
-        try:
-            if self.player:
-                self.remove_widget(self.player)
-        except Exception as e:
-            print(e)
-        if self.player:
-            self.add_widget(self.player)
-        if self.nivel == 10:
-            self.gerar_boss()
+        self.add_player()
+        self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.camera.player = self.player
 
 
-    def carregar_mapa(self, sala):
-        if not sala:
-            return
-        self.tiles_list.clear()
-        self.obj_list.clear()
-        for coluna, linha, tipo in sala["tiles"]:
-            tile = Grid(
-                posicao=(linha, coluna),
-                patern_center=(self.offset_x, self.offset_y),
-                max=(self.linhas, self.colunas),
-                source=tipo
-            )
-            self.tiles_list.append(tile)
-            self.add_widget(tile)
-
-        for coluna, linha, tipo, resistencia, ativado in sala["objs"]:
-            obj = Object(
-                posicao=(linha, coluna),
-                patern_center=(self.offset_x, self.offset_y),
-                max=(self.linhas, self.colunas),
-                source=tipo,
-                ativado=ativado
-            )
-            obj.resistencia = resistencia
-            self.obj_list.append(obj)
-            self.add_widget(obj)
-        try:
-            if self.player:
-                self.remove_widget(self.player)
-        except Exception as e:
-            print(e)
-        if self.player:
-            self.add_widget(self.player)
-    
-
-    def re_map(self, type, nivel=1):
+    def re_map(self, tipo, nivel=1):
         if self.trocando_mapa:
             return
+
         self.trocando_mapa = True
-        if type == self.type:
-            self.nivel += nivel
-        for obj in self.obj_list[:]:
-            self.obj_list.remove(obj)
+        self.map.re_map(tipo, nivel)
+        self.trocando_mapa = False
+
+        self.add_player()
+        self.size = self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.camera.player = self.player
+
+
+    def load_mapa(self, nome, respawn=False):
+        self.map.load_mapa(nome, respawn=respawn)
+        self.linhas = self.map.linhas
+        self.colunas = self.map.colunas
+
+        self.add_player()
+        self.camera.map_size = (self.map.colunas * size, self.map.linhas * size * 0.8)
+        self.camera.player = self.player
+
+
+    def collision_verify(self, *args):
+        for ent in list(self.ents):
+            self.verificar_colisao_horizontal(ent)
+            self.verificar_colisao_vertical(ent)
+            self.map_collision(ent)
+            self.grid_verify(ent)
+
+
+    def add_player(self, *args):
+        try:
+            self.map_layout.remove_widget(self.player)
+            self.map_layout.add_widget(self.player)
+        except:
+            self.map_layout.add_widget(self.player)
+
+        if self.map.spawn_pos:
+            self.player.center = self.map.spawn_pos
+
+        if not self.player in self.ents:
+            self.ents.append(self.player)
+        if hasattr(self, "camera"):
+            self.camera.player = self.player
+        
+    def respawn_player(self, *args):
+        if self.map.nivel:
+            self.map.nivel = 0
+        for obj in self.map.obj_list[:]:
+            self.map.obj_list.remove(obj)
             try:
-                self.remove_widget(obj)
+                self.map_layout.remove_widget(obj)
             except Exception:
                 pass
-        for tile in self.tiles_list[:]:
-            self.tiles_list.remove(tile)
+        for tile in self.map.tiles_list[:]:
+            self.map.tiles_list.remove(tile)
             try:
-                self.remove_widget(tile)
+                self.map_layout.remove_widget(tile)
             except Exception:
                 pass
         for ent in self.ents[:]:
             if ent is not self.player:
-                self.ents.remove(ent)
                 try:
-                    self.remove_widget(ent)
+                    self.map_layout.remove_widget(ent)
                 except Exception:
                     pass
-        self.mapa_modificador = random.choice(self.lista_modificadores)
-        if self.nivel < 0 or self.nivel > 10:
-            self.type = None
-            self.nivel = 0
-        if self.nivel in self.masmorra:
-            self.carregar_mapa(self.masmorra[self.nivel])
-            self.trocando_mapa = False
-            return
+
+        self.ents = [self.player]
+        self.map.ents = [self.player]
+        if self.map.respawn_map:
+            self.trocando_mapa=True
+            self.load_mapa(self.map.respawn_map, respawn=True)
+            self.trocando_mapa=False
         else:
-            self.create(self.linhas, self.colunas, type)
-            self.trocando_mapa = False
-    
+            self.trocando_mapa=True
+            self.load_mapa("inicial", respawn=True)
+            self.trocando_mapa=False
 
-    def add_objects(self, type, grid):
-        grid_x, grid_y = grid
-        obj = Object(
-            posicao=(grid_y, grid_x),
-            patern_center=(self.offset_x, self.offset_y),
-            max=(self.linhas, self.colunas),
-            source=type + ".png"
-        )
-        self.add_widget(obj)
-        self.obj_list.append(obj)
-        # reordena entidades para ficarem por cima
-        for ent in self.ents:
-            try:
-                self.remove_widget(ent)
-                self.add_widget(ent)
-            except Exception:
-                pass
-    
-    
-    def collision_verify(self, *args):        
-        for ent in list(self.ents):
-            self.verificar_colisao_horizontal(ent) 
-            self.verificar_colisao_vertical(ent)
-            self.map_collision(ent)
-            self.grid_verify(ent)
-        
-    def grid_verify(self, ent):
-        tile_width = size
-        tile_height = size * 0.8 
-        # usa center da hitbox para determinar grid
-        grid_x = int((ent.center_hitbox_x - self.x) / tile_width)
-        grid_y = int((ent.center_hitbox_y - self.y) / tile_height)
-        grid_x = max(0, min(self.colunas - 1, grid_x))
-        grid_y = max(0, min(self.linhas - 1, grid_y))
-        ent.grid = (grid_x, grid_y)
-        if ent == self.player:
-            pass
-
-
-    def map_collision(self, ent):
-        ent.hitbox = ent.get_hitbox()
-        right_limit = self.x + self.width - (ent.width * 0.75)
-        left_limit = self.x - (ent.width * 0.25)
-        if ent.x > right_limit:
-            ent.x = right_limit
-        elif ent.x < left_limit:
-            ent.x = left_limit
-        # limites verticais
-        bottom_limit = self.y
-        top_limit = self.y + self.height - (ent.height / 2)
-        if ent.y < bottom_limit:
-            ent.y = bottom_limit
-        elif ent.y > top_limit:
-            ent.y = top_limit
-        try:
-            ent.pos = (ent.x, ent.y)
-        except Exception:
-            pass
-            
     def verificar_colisao_horizontal(self, ent):
         original_x = ent.x
         ent.move_x()
         ent.hitbox = ent.get_hitbox()
-    
-        for obj in self.obj_list:
+
+        for obj in self.map.obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
+
             if self.collision(ent.hitbox, obj.hitbox):
                 obj.colisao()
+
                 if obj.colisivel:
-                    # Reverte X e zera velocidade no eixo X
                     ent.x = original_x
                     ent.speed_x = 0
                     ent.hitbox = ent.get_hitbox()
-                    if self.collision(ent.hitbox, obj.hitbox):
-                        # segundo teste: posiciona ao lado do objeto
-                        ent.x = obj.x + obj.width
-                        ent.speed_x = 0
-                        ent.hitbox = ent.get_hitbox()
+
         for entit in self.ents:
-            if ent == entit:
+            if ent is entit:
                 continue
+
             if self.collision(ent.hitbox, entit.hitbox):
-                # Reverte X e aplica dano por contato quando aplicável
                 if not ent.i_frames:
                     ent.vida -= entit.dano_contato
                 if not entit.i_frames:
                     entit.vida -= ent.dano_contato
+
                 ent.x = original_x
                 ent.speed_x = 0
                 ent.hitbox = ent.get_hitbox()
@@ -526,91 +175,145 @@ class World(FloatLayout):
         original_y = ent.y
         ent.move_y()
         ent.hitbox = ent.get_hitbox()
-    
-        for obj in self.obj_list:
+
+        for obj in self.map.obj_list:
             if not hasattr(obj, "hitbox"):
                 continue
+
             if self.collision(ent.hitbox, obj.hitbox):
                 obj.colisao()
+
                 if obj.colisivel:
                     ent.y = original_y
                     ent.speed_y = 0
                     ent.hitbox = ent.get_hitbox()
-                    if self.collision(ent.hitbox, obj.hitbox):
-                        ent.y = obj.y
-                        ent.speed_y = 0
-                        ent.hitbox = ent.get_hitbox()
 
         for entit in self.ents:
-            if ent == entit:
+            if ent is entit:
                 continue
+
             if self.collision(ent.hitbox, entit.hitbox):
                 ent.y = original_y
                 ent.speed_y = 0
                 ent.hitbox = ent.get_hitbox()
 
-    def atualizar_sprites(self, *args):
-        for ent in self.ents:
-            ent.atualizar_pos()
-        
-    
+
+    def grid_verify(self, ent):
+        tile_width = size
+        tile_height = size * 0.8
+
+        grid_x = int((ent.center_hitbox_x - self.x) / tile_width)
+        grid_y = int((ent.center_hitbox_y - self.y) / tile_height)
+
+        grid_x = max(0, min(self.map.colunas - 1, grid_x))
+        grid_y = max(0, min(self.map.linhas - 1, grid_y))
+
+        ent.grid = (grid_x, grid_y)
+
+
+    def map_collision(self, ent):
+        right_limit = self.x + self.width - (ent.width * 0.75)
+        left_limit = self.x - (ent.width * 0.25)
+
+        if ent.x > right_limit:
+            ent.x = right_limit
+        elif ent.x < left_limit:
+            ent.x = left_limit
+
+        bottom_limit = self.y
+        top_limit = self.y + self.height - size * 1.2
+
+        if ent.y < bottom_limit:
+            ent.y = bottom_limit
+        elif ent.y > top_limit:
+            ent.y = top_limit
+
+        ent.pos = (ent.x, ent.y)
+
+    def collision(self, hitbox1, hitbox2): 
+        x1, y1, w1, h1 = hitbox1 
+        x2, y2, w2, h2 = hitbox2 
+        return ( x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2 )
+
     def atualizar(self, *args):
         if self.ev_colisao:
             self.ev_colisao.cancel()
         if self.ev_sprite:
             self.ev_sprite.cancel()
-        self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/60)
-        self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/30)
+        if self.ev_camera:
+            self.ev_camera.cancel()
+        if self.ev_spawn_ents:
+            self.ev_spawn_ents.cancel()
+
+        self.ev_camera = Clock.schedule_interval(self.atualizar_camera, 1/self.fps)
+        self.ev_colisao = Clock.schedule_interval(self.collision_verify, 1/self.fps)
+        self.ev_sprite = Clock.schedule_interval(self.atualizar_sprites, 1/self.fps)
+        self.ev_spawn_ents = Clock.schedule_interval(self.procedural_ent_spawn, 1/4)
+        if self.fps == 30:
+            for ent in self.ents:
+                if ent.velocidade_fps == 0:
+                    ent.velocidade_fps = ent.velocidade
+        else:
+            for ent in self.ents:
+                if ent.velocidade_fps != 0:
+                    ent.velocidade_fps = 0
     
-    def collision(self, hitbox1, hitbox2):
-        x1, y1, w1, h1 = hitbox1
-        x2, y2, w2, h2 = hitbox2
-        return (
-            x1 < x2 + w2 and
-            x1 + w1 > x2 and
-            y1 < y2 + h2 and
-            y1 + h1 > y2
+    def pausar(self,*args):
+        if self.ev_colisao:
+            self.ev_colisao.cancel()
+        if self.ev_sprite:
+            self.ev_sprite.cancel()
+        if self.ev_camera:
+            self.ev_camera.cancel()
+        if self.ev_spawn_ents:
+            self.ev_spawn_ents.cancel()
+        for ent in self.ents:
+            ent.estado="idle"
+
+    def despausar(self,*args):
+        self.atualizar()
+        
+    def new_limites(self, *args):
+        self.limites = (
+            self.x,
+            self.y,
+            self.width - self.x-size,
+            self.height - self.y-size
         )
 
-    def respawn_player(self,*args):
-        if self.type=='esgoto' and not self.trocando_mapa:
-            self.trocando_mapa=True
-            for obj in self.obj_list[:]:
-                self.obj_list.remove(obj)
-                try:
-                    self.remove_widget(obj)
-                except Exception:
-                    pass
-            for tile in self.tiles_list[:]:
-                self.tiles_list.remove(tile)
-                try:
-                    self.remove_widget(tile)
-                except Exception:
-                    pass
-            for ent in self.ents[:]:
-                if ent is not self.player:
-                    self.ents.remove(ent)
-                    try:
-                        self.remove_widget(ent)
-                    except Exception:
-                        pass
-            self.carregar_mapa(self.masmorra[1])
-            self.trocando_mapa=False
+    def atualizar_camera(self, *args):
+        nova_pos = self.camera.update()
+        if nova_pos:
+            if self.size[0] !=Window.width:
+                self.scroll_view.scroll_x = nova_pos[0]/(self.size[0]-Window.width)
+            if self.size[1] != Window.height:
+                self.scroll_view.scroll_y = nova_pos[1]/(self.size[1]-Window.height)
+            self.new_limites()
 
-    def gerar_boss(self, *args):
-        boss = Rata_mae()
-        self.add_widget(boss)
+    def atualizar_sprites(self, *args):
+        for ent in self.ents:
+            ent.atualizar_pos()
+    
+    def procedural_ent_spawn(self,*args):
+        if self.map.procedural_ent_spawn:
+            self.map.spawn_ent()
+
+
+    def gerar_boss(self):
+        boss = create_ent("ratona")
+        self.map_layout.add_widget(boss)
         self.ents.append(boss)
-        boss.pos = (self.offset_x + self.linhas * size * 0.5, self.offset_y + self.colunas * size * 0.5 * 0.8)
-        self.boss = boss
-        Clock.schedule_once(self.remover_spawners, 0.5)
 
-    def remover_spawners(self, *args):
-        for obj in self.obj_list[:]:
-            if obj.type != self.padrao["spawner"][self.type]:
-                continue
-            try:
-                self.remove_widget(obj)
-                self.obj_list.remove(obj)
-            except Exception:
-                pass
+        boss.pos = (
+            self.x + self.map.linhas * size * 0.5,
+            self.y + self.map.colunas * size * 0.5 * 0.8
+        )
+        self.boss = boss
+        Clock.schedule_once(self.limpar_sala_boss, 0.5)
+    
+    def limpar_sala_boss(self,*args):
+    
+        for obj in self.map.obj_list[:]:
+            if obj.type == self.map.padrao["spawner"][self.map.type]:
+                self.map_layout.remove_widget(obj)
+                self.map.obj_list.remove(obj)

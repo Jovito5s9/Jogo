@@ -1,0 +1,100 @@
+{
+    "inventario":
+    {
+        "carne" : {
+            "nome": "meat",
+            "raridade" : "common",
+            "tipo" : "material",
+            "descrição" : "A bit of organic matter.",
+            "source" : "assets/itens/carne.png"
+        },
+        "apatita" : {
+            "nome": "apatite",
+            "raridade" : "uncommon",
+            "tipo" : "material, consumable",
+            "descrição" : "A mineral that appears to increase\n endurance and strength.",
+            "source" : "assets/itens/apatita.png"
+        },
+        "mica" : {
+            "nome": "mica",
+            "raridade" : "common",
+            "tipo" : "material, consumable",
+            "descrição" : "A mineral that appears to improve\n sugar circulation.",
+            "source" : "assets/itens/mica.png"
+        },
+        "cristal vital" : {
+            "nome": "vital crystal",
+            "raridade" : "rare",
+            "tipo" : "consumable",
+            "descrição" : "A small amount of organic matter.",
+            "source" : "assets/itens/cristal_vital.png"
+        },
+        "sucata":{
+            "nome": "sucata",
+            "raridade" : "common",
+            "tipo" : "material",
+            "descrição" : "A bit of electronic waste.",
+            "source" : "assets/itens/sucata.png"
+        },
+        "gosma_misteriosa":{
+            "nome": "mysterious slime",
+            "raridade" : "rare",
+            "tipo" : "material",
+            "descrição" : "A very strange slime.",
+            "source" : "assets/itens/gosma_misteriosa.png"
+        }
+    },
+
+    "equipaveis":
+    {
+        "núcleo ceifador de energia":{
+            "nome": "energy reaper core",
+            "raridade" : "rare",
+            "tipo" : "BitCore",
+            "skill": "vampirismo",
+            "descrição": "A chip that converts energy released \non impact into bioenergy, feeding vital systems.",
+            "source" : "assets/itens/BitCore/energy_reaper.png"
+        },
+        "núcleo do instinto de pânico":{
+            "nome": "panic instinct core",
+            "raridade" : "rare",
+            "tipo" : "BitCore",
+            "skill": "panico",
+            "descrição": "A neural chip that intercepts pain signals \nand converts them into accelerated motor impulses.",
+            "source" : "assets/itens/BitCore/panic_instinct.png"
+        },
+        "núcleo da esquiva aleatória":{
+            "nome": "random dodge core",
+            "raridade" : "rare",
+            "tipo" : "BitCore",
+            "skill": "esguio",
+            "descrição": "An unstable neural core that triggers evasive \nreflexes unpredictably.",
+            "source" : "assets/itens/BitCore/random_dodge.png"
+        },
+        "núcleo do punho explosivo":{
+            "nome": "explosive fist core",
+            "raridade" : "rare",
+            "tipo" : "BitCore",
+            "skill": "pistao",
+            "descrição": "A core that increases movement power.",
+            "source" : "assets/itens/BitCore/piston.png"
+        },
+        "núcleo da vitalidade extendida":{
+            "nome": "extended vitality core",
+            "raridade" : "rare",
+            "tipo" : "BitCore",
+            "skill": "robusto",
+            "descrição": "An energy chip that provides extra usage \ntime.",
+            "source" : "assets/itens/BitCore/robust.png"
+        }
+    },
+
+    "core":{
+        "tradutor":{
+            "nome": "translator",
+            "tipo":"Driver",
+            "descrição":"An extension of capabilities that allows \ncommunication and signal translation into something even a \npotato could understand.",
+            "source":"assets/ui/driver_comunicacao.png"
+        }
+    }
+}

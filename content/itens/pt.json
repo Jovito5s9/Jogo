@@ -1,36 +1,54 @@
-ITENS = {
-
+{
     "inventario":
     {
         "carne" : {
+            "nome": "carne",
             "raridade" : "comum",
             "tipo" : "material",
             "descrição" : "Um pouco de matéria orgânica.",
             "source" : "assets/itens/carne.png"
         },
         "apatita" : {
+            "nome": "apatita",
             "raridade" : "incomum",
             "tipo" : "material, consumível",
             "descrição" : "Um mineral que aparenta aumentar\n a resistência e força.",
             "source" : "assets/itens/apatita.png"
         },
         "mica" : {
+            "nome": "mica",
             "raridade" : "comum",
             "tipo" : "material, consumível",
             "descrição" : "Um mineral que aparenta aumentar\n a circulação de açúcares.",
             "source" : "assets/itens/mica.png"
         },
         "cristal vital" : {
+            "nome": "cristal vital",
             "raridade" : "raro",
             "tipo" : "consumível",
             "descrição" : "Um pouco de matéria orgânica.",
             "source" : "assets/itens/cristal_vital.png"
+        },
+        "sucata":{
+            "nome": "sucata",
+            "raridade" : "comum",
+            "tipo" : "material",
+            "descrição" : "Um pouco de lixo eletrônico.",
+            "source" : "assets/itens/sucata.png"
+        },
+        "gosma_misteriosa":{
+            "nome": "gosma misteriosa",
+            "raridade" : "raro",
+            "tipo" : "material",
+            "descrição" : "Uma gosma muito estranha.",
+            "source" : "assets/itens/gosma_misteriosa.png"
         }
     },
 
     "equipaveis":
     {
         "núcleo ceifador de energia":{
+            "nome": "núcleo ceifador de energia",
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "vampirismo",
@@ -38,13 +56,15 @@ ITENS = {
             "source" : "assets/itens/BitCore/energy_reaper.png"
         },
         "núcleo do instinto de pânico":{
+            "nome": "núcleo do instinto de pânico",
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "panico",
-            "descrição": "Um chip neural que intercepta sinais\n de dor e os converte em \nimpulsos motores acelerados.",
+            "descrição": "Um chip neural que intercepta sinais\n de dor e os converte em impulsos motores\n acelerados.",
             "source" : "assets/itens/BitCore/panic_instinct.png"
         },
         "núcleo da esquiva aleatória":{
+            "nome": "núcleo da esquiva aleatória",
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "esguio",
@@ -52,6 +72,7 @@ ITENS = {
             "source" : "assets/itens/BitCore/random_dodge.png"
         },
         "núcleo do punho explosivo":{
+            "nome": "núcleo do punho explosivo",
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "pistao",
@@ -59,11 +80,21 @@ ITENS = {
             "source" : "assets/itens/BitCore/piston.png"
         },
         "núcleo da vitalidade extendida":{
+            "nome": "núcleo da vitalidade extendida",
             "raridade" : "raro",
             "tipo" : "BitCore",
             "skill": "robusto",
             "descrição": "Um chip energético que fornece \ntempo de uso extra.",
             "source" : "assets/itens/BitCore/robust.png"
-            }
+        }
+    },
+
+    "core":{
+        "tradutor":{
+            "nome": "tradutor",
+            "tipo":"Driver",
+            "descrição":"Extenção das capacidades que per\nmite comunicação e tradução de sinais para\nalgo que até uma batata entenda.",
+            "source":"assets/ui/driver_comunicacao.png"
+        }
     }
 }
