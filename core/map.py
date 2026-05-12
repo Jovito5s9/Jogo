@@ -312,6 +312,7 @@ class Map:
 
 
     def load_mapa(self, mapa, respawn=False, entrada=0):
+        self.limpar_mapa()
         if not "content/maps/" in mapa:
             mapa = "content/maps/" + mapa
         if not ".json" in mapa:
