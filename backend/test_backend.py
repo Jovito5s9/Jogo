@@ -6,5 +6,3 @@ restore_session()
 
 resp = login(EMAIL, PASSWORD)
 print(resp.user.id)
-
-logout(clear_saved_session=False)

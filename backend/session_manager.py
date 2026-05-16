@@ -132,6 +132,7 @@ class SessionManager:
         refresh_token = session.get("refresh_token")
 
         if not access_token or not refresh_token:
+            print("restore_session: faltando access_token ou refresh_token")
             return False
 
         try:
@@ -139,14 +140,23 @@ class SessionManager:
 
             if hasattr(auth, "set_session"):
                 auth.set_session(access_token, refresh_token)
-                return True
-
-            if hasattr(auth, "refresh_session"):
+            elif hasattr(auth, "refresh_session"):
                 auth.refresh_session(refresh_token)
-                return True
+            else:
+                print("restore_session: cliente Supabase sem set_session/refresh_session")
+                return False
 
-            return False
-        except Exception:
+            # valida de verdade com o servidor
+            try:
+                user_response = auth.get_user()
+                print("restore_session: usuário validado:", user_response.user.id)
+                return True
+            except Exception as e:
+                print("restore_session: sessão carregada, mas get_user falhou:", e)
+                return False
+
+        except Exception as e:
+            print("restore_session: erro ao restaurar sessão:", e)
             return False
 
     def is_logged_in(self) -> bool:

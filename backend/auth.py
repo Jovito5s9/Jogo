@@ -38,7 +38,12 @@ def logout(clear_saved_session: bool = True) -> None:
 
 
 def restore_session() -> bool:
-    return session_manager.restore_session(supabase)
+    ok = session_manager.restore_session(supabase)
+    if ok:
+        print("restore_session: sessão restaurada com sucesso")
+    else:
+        print("restore_session: nenhuma sessão válida foi restaurada")
+    return ok
 
 
 def is_logged_in() -> bool:

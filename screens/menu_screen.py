@@ -10,6 +10,7 @@ from kivy.app import App
 from utils.customizedButton import CustomizedButton
 from utils.resourcesPath import resource_path
 from screens.shared import STD_font_size, configuracoes
+from screens.login_screen import MenuLogin
 
 import json
 import subprocess
@@ -116,6 +117,16 @@ class MenuScreen(Screen):
         )
         self.facebook_button.bind(on_release=self.go_to_facebook)
         self.redes_layout.add_widget(self.facebook_button)
+
+
+        self.login_button = CustomizedButton(
+            text="Login",
+            size_hint=(None, None),
+            size=(100, 100),
+            pos_hint={'center_x': 0.95, 'center_y': 0.1}
+        )
+        self.login_button.bind(on_release=self.login)
+        self.layout.add_widget(self.login_button)
     
         self.conquista_button = InteractiveImage(
             source=resource_path("assets/ui/conquista.png"),
@@ -143,5 +154,8 @@ class MenuScreen(Screen):
     def go_to_facebook(self, *args):
         open_link("https://www.facebook.com/people/SolarBurn-Studio/61575485297715/")
     
+    def login(self,*args):
+        MenuLogin().open()
+
     def conquistas(self, *args):
         self.GameScreenManager.current='conquistas'
