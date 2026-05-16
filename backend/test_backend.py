@@ -1,15 +1,10 @@
 from supabase import create_client
 from supabase_auth.errors import AuthApiError
+from backend.config import load_config
 
-# -------------------------------------------------
-# SUPABASE CONFIG
-# -------------------------------------------------
+config = load_config()
 
-url = "https://vobcctcufpyeotwqaddu.supabase.co"
-
-key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvYmNjdGN1ZnB5ZW90d3FhZGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzc0MjQsImV4cCI6MjA5NDE1MzQyNH0.Xe83ubXKlK4EUd8W8ikiivA362UdOxKnZFiYCeJkpZ8"
-
-supabase = create_client(url, key)
+supabase = create_client(config["url"], config["key"])
 
 # -------------------------------------------------
 # USER DATA

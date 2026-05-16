@@ -1,3 +1,12 @@
-SUPABASE_URL = "https://vobcctcufpyeotwqaddu.supabase.co"
+import os
+from dotenv import load_dotenv
 
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvYmNjdGN1ZnB5ZW90d3FhZGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzc0MjQsImV4cCI6MjA5NDE1MzQyNH0.Xe83ubXKlK4EUd8W8ikiivA362UdOxKnZFiYCeJkpZ8"
+# 1. Carrega as variáveis do arquivo .env para o ambiente
+
+def load_config():
+    load_dotenv()
+    data = {
+    "key" : os.getenv("SUPABASE_ANON_KEY"),
+    "url" : os.getenv("SUPABASE_URL")
+    }
+    return data
